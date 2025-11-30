@@ -11,6 +11,7 @@ This repository contains configuration files, fonts, and an automated installati
 - **Atuin** - Magical shell history with sync capabilities
 - **Fastfetch** - System information display tool
 - **Kitty** - GPU-accelerated terminal emulator
+- **Podman & Podman Compose** - Container management tools
 - **Nerd Fonts** - Patched fonts with icon support (CaskaydiaCove, FiraCode, JetBrains Mono)
 
 ## Contents
