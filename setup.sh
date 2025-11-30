@@ -6,6 +6,7 @@
 # Usage:
 #   ./setup.sh              # Full installation
 #   ./setup.sh --minimal    # Core setup only (no apps, no godot)
+#   ./setup.sh --enhance    # Run terminal enhancement (power tools)
 #   ./setup.sh --skip-vscode
 #   ./setup.sh --skip-qdrant
 #   ./setup.sh --skip-godot
@@ -32,7 +33,9 @@ SKIP_QDRANT=false
 SKIP_GODOT=false
 SKIP_APPS=false
 SKIP_PACKETTRACER=false
+SKIP_VIETNAMESE=false
 MINIMAL=false
+ENHANCE=false
 
 show_help() {
     echo "Terminal Custom Setup Script"
@@ -41,16 +44,19 @@ show_help() {
     echo ""
     echo "Options:"
     echo "  --minimal           Core setup only (shell, dotfiles, fonts)"
+    echo "  --enhance           Install power tools (zoxide, eza, bat, fzf, lazygit, yazi)"
     echo "  --skip-vscode       Skip VS Code installation"
     echo "  --skip-qdrant       Skip Qdrant setup"
     echo "  --skip-godot        Skip Godot installation"
     echo "  --skip-apps         Skip additional apps (Chrome, Dropbox, Flatpaks)"
     echo "  --skip-packettracer Skip Cisco Packet Tracer installation"
+    echo "  --vietnamese        Install Vietnamese input method (ibus-bamboo)"
     echo "  --help              Show this help message"
     echo ""
     echo "Examples:"
     echo "  $0                  # Full installation"
     echo "  $0 --minimal        # Core setup only"
+    echo "  $0 --enhance        # Add power tools to existing setup"
     echo "  $0 --skip-godot --skip-packettracer"
     exit 0
 }
@@ -63,6 +69,9 @@ for arg in "$@"; do
             SKIP_GODOT=true
             SKIP_APPS=true
             SKIP_PACKETTRACER=true
+            ;;
+        --enhance)
+            ENHANCE=true
             ;;
         --skip-vscode)
             SKIP_VSCODE=true
@@ -78,6 +87,10 @@ for arg in "$@"; do
             ;;
         --skip-packettracer)
             SKIP_PACKETTRACER=true
+            ;;
+        --vietnamese)
+            SKIP_VIETNAMESE=false
+            INSTALL_VIETNAMESE=true
             ;;
         --help|-h)
             show_help
@@ -109,6 +122,16 @@ fi
 # =============================================================================
 # Run Setup Scripts
 # =============================================================================
+
+# Handle enhance-only mode
+if $ENHANCE && [[ $# -eq 1 ]]; then
+    log_section "Running Terminal Enhancement..."
+    bash "$SCRIPTS_DIR/enhance_terminal.sh"
+    echo ""
+    echo -e "${GREEN}${BOLD}Terminal enhancement complete!${NC}"
+    echo "Please restart your terminal to apply changes."
+    exit 0
+fi
 
 # 1. Core Setup (always runs)
 log_section "Running Core Setup..."
@@ -162,6 +185,18 @@ else
     log_warn "Skipping Packet Tracer setup"
 fi
 
+# 7. Vietnamese Input Method (if requested)
+if [[ "${INSTALL_VIETNAMESE:-false}" == "true" ]]; then
+    log_section "Running Vietnamese Input Setup..."
+    bash "$SCRIPTS_DIR/input_setup.sh"
+fi
+
+# 8. Terminal Enhancement (if requested)
+if $ENHANCE; then
+    log_section "Running Terminal Enhancement..."
+    bash "$SCRIPTS_DIR/enhance_terminal.sh"
+fi
+
 # =============================================================================
 # Complete
 # =============================================================================
@@ -180,4 +215,16 @@ fi
 
 if ! $SKIP_GODOT; then
     log_info "Run Godot with: godot"
+fi
+
+if $ENHANCE; then
+    echo ""
+    log_info "Power tools installed! New commands available:"
+    echo "  - ls  → eza (with icons)"
+    echo "  - cat → bat (syntax highlighting)"
+    echo "  - cd  → z (smart directory jumping)"
+    echo "  - lg  → lazygit"
+    echo "  - y   → yazi (file manager)"
+    echo ""
+    log_info "Install tmux plugins: Press Ctrl+a then I inside tmux"
 fi
