@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Cisco Packet Tracer 9.0 (AppImage)
+Comment=Cisco Network Simulator
+Exec=/opt/pt/packettracer.AppImage --no-sandbox %f
+Icon=~/.local/share/icons/cisco-pt.png
+Type=Application
+Terminal=false
+StartupNotify=true
+Categories=Education;Network;
