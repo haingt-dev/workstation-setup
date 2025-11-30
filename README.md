@@ -10,6 +10,7 @@ This repository contains configuration files, fonts, and an automated installati
 - **Starship** - Cross-shell prompt with extensive customization
 - **Atuin** - Magical shell history with sync capabilities
 - **Fastfetch** - System information display tool
+- **Kitty** - GPU-accelerated terminal emulator
 - **Nerd Fonts** - Patched fonts with icon support (CaskaydiaCove, FiraCode, JetBrains Mono)
 
 ## Contents
