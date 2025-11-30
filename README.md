@@ -135,7 +135,7 @@ z   → zoxide                    # Smart directory jumping
 - Available at http://localhost:6333
 
 ### Godot Setup (`godot_setup.sh`)
-- Downloads Godot (default: 4.4.1, configurable via `GODOT_VERSION` env var)
+- Downloads Godot (default: 4.5.1, configurable via `GODOT_VERSION` env var)
 - Installs to ~/.local/bin/godot
 - Restores editor settings with VS Code integration
 - Creates desktop entry
