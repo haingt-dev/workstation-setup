@@ -13,6 +13,7 @@
   - [`README.md`](../../README.md:1)
   - [`setup.sh`](../../setup.sh:1)
   - Core scripts under [`scripts/`](../../scripts:1) and configuration under [`assets/`](../../assets:1).
+- Added Vietnamese input support (`ibus-bamboo`) via `scripts/input_setup.sh` and updated `setup.sh` with `--vietnamese` flag.
 
 ## Next Steps
 

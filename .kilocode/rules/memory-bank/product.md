@@ -50,6 +50,7 @@ This repository provides a **single, version-controlled source of truth** for th
    - **Godot** via [`scripts/godot_setup.sh`](../../scripts/godot_setup.sh:1)
    - **Apps** via [`scripts/apps_setup.sh`](../../scripts/apps_setup.sh:1)
    - **Packet Tracer** via [`scripts/packettracer_setup.sh`](../../scripts/packettracer_setup.sh:1) when the .deb is available
+   - Optional **Vietnamese input** via [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1)
    - Optional **terminal enhancement** via [`scripts/enhance_terminal.sh`](../../scripts/enhance_terminal.sh:1)
 
 4. Scripts:
@@ -68,6 +69,7 @@ This repository provides a **single, version-controlled source of truth** for th
 - **Full install**: `./setup.sh` (default, all components enabled).
 - **Minimal**: `./setup.sh --minimal` (core terminal setup only; skips Qdrant, Godot, apps, Packet Tracer).
 - **Enhancement only**: `./setup.sh --enhance` (runs just the enhancement script for power tools and enhanced configs).
+- **Vietnamese support**: `./setup.sh --vietnamese` (installs ibus-bamboo input method).
 - **Selective skipping** via `--skip-vscode`, `--skip-qdrant`, `--skip-godot`, `--skip-apps`, `--skip-packettracer`.
 
 ## User Experience Goals

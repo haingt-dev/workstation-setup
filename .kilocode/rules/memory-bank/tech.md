@@ -30,6 +30,8 @@
   - `podman` and `podman-compose` for containerized services
 - Fonts:
   - Nerd Fonts (CaskaydiaCove, FiraCode) and JetBrains Mono under [`assets/fonts/`](../../assets/fonts:1)
+- Input Method:
+  - `ibus-bamboo` (Vietnamese) installed via [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1)
 
 ## Developer Productivity Stack
 

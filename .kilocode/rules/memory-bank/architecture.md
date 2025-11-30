@@ -34,7 +34,8 @@ At a high level, the system:
   4. [`scripts/godot_setup.sh`](../../scripts/godot_setup.sh:1) (unless `--skip-godot` or `--minimal`)
   5. [`scripts/apps_setup.sh`](../../scripts/apps_setup.sh:1) (unless `--skip-apps` or `--minimal`)
   6. [`scripts/packettracer_setup.sh`](../../scripts/packettracer_setup.sh:1) (if not skipped and installer `.deb` exists)
-  7. [`scripts/enhance_terminal.sh`](../../scripts/enhance_terminal.sh:1) (when `--enhance` is provided)
+  7. [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1) (when `--vietnamese` is provided)
+  8. [`scripts/enhance_terminal.sh`](../../scripts/enhance_terminal.sh:1) (when `--enhance` is provided)
 - Provides summary output and reminders (e.g., log out/in to pick up default shell changes).
 
 ### Orchestration Diagram
@@ -49,8 +50,9 @@ flowchart TD
   F --> G[Optionally run scripts/godot_setup.sh]
   G --> H[Optionally run scripts/apps_setup.sh]
   H --> I[Conditionally run scripts/packettracer_setup.sh]
-  I --> J[Optionally run scripts/enhance_terminal.sh]
-  J --> K[Print completion summary and next steps]
+  I --> J[Optionally run scripts/input_setup.sh]
+  J --> K[Optionally run scripts/enhance_terminal.sh]
+  K --> L[Print completion summary and next steps]
 ```
 
 ## Core Components
@@ -150,6 +152,10 @@ Additional scripts manage specific tools and applications:
   - Locates a Cisco Packet Tracer `.deb` installer.
   - Installs necessary Qt5 dependencies and performs non-interactive installation.
   - Integrates Packet Tracer into the system.
+
+- [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1)
+  - Installs `ibus` and `ibus-bamboo` for Vietnamese input.
+  - Configures environment variables (`GTK_IM_MODULE`, `QT_IM_MODULE`, `XMODIFIERS`) in `~/.profile`.
 
 ## Assets and Configuration Layout
 
