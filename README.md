@@ -19,11 +19,15 @@ This repository contains configuration files, fonts, and an automated installati
 terminal_backup/
 ├── .zshrc                    # Zsh configuration
 ├── .bashrc                   # Bash configuration (backup)
-├── .config/                  # Application configs (starship, atuin, fastfetch)
+├── .config/                  # Application configs (starship, atuin, fastfetch, kitty)
 ├── fonts/                    # Nerd Fonts collection
+├── images/
+│   └── jedi.png              # Custom Fastfetch logo
 ├── install.sh                # Automated installation script
 └── restore_instructions.txt  # Manual plugin installation guide
 ```
+
+> **Note:** The repository includes both `terminal_backup.tar.gz` (compressed archive) and the uncompressed `terminal_backup/` folder for convenience. You can use either one.
 
 ## Quick Start
 
@@ -50,9 +54,10 @@ terminal_backup/
 
 The script will:
 - Update the system
-- Install Zsh, Starship, Atuin, and Fastfetch
+- Install Zsh, Starship, Atuin, Fastfetch, and Kitty terminal
 - Install Zsh plugins (autosuggestions, syntax-highlighting, autocomplete)
-- Restore all configuration files
+- Restore all configuration files (including Kitty config)
+- Install custom Fastfetch logo (jedi.png)
 - Install fonts and refresh font cache
 - Set Zsh as the default shell
 
