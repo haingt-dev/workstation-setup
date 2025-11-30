@@ -34,6 +34,7 @@ CORE_PACKAGES=(
     kitty
     podman
     podman-compose
+    tmux
 )
 
 dnf_install "${CORE_PACKAGES[@]}"
@@ -158,6 +159,15 @@ fi
 # kitty config
 if [[ -d "$BACKUP_DIR/.config/kitty" ]]; then
     copy_dir "$BACKUP_DIR/.config/kitty" ~/.config/kitty
+fi
+
+# tmux config
+if [[ -d "$BACKUP_DIR/.config/tmux" ]]; then
+    copy_dir "$BACKUP_DIR/.config/tmux" ~/.config/tmux
+elif [[ -f "$BACKUP_DIR/.tmux.conf" ]]; then
+    ensure_dir ~/.config/tmux
+    cp "$BACKUP_DIR/.tmux.conf" ~/.config/tmux/tmux.conf
+    log_success "tmux.conf copied to ~/.config/tmux/"
 fi
 
 # =============================================================================
