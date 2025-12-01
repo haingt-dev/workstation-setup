@@ -66,6 +66,8 @@
   - Discord, Obsidian, Anki (Flatpak)
 - Networking tool:
   - Cisco Packet Tracer, installed via converted `.deb` with Qt5 dependencies by [`scripts/packettracer_setup.sh`](../../scripts/packettracer_setup.sh:1) when the installer is present in [`assets/`](../../assets:1)
+- Audio processing:
+  - EasyEffects, installed via [`scripts/easyeffects_setup.sh`](../../scripts/easyeffects_setup.sh:1), with presets/configuration under [`assets/.config/easyeffects`](../../assets/.config/easyeffects:1), used to keep speaker/headphone audio tuning reproducible
 
 ## Configuration and Assets
 
@@ -78,6 +80,7 @@
   - `fish`
   - `kitty`
   - `tmux`
+  - `easyeffects` (audio presets and autoload rules)
   - Optional: `yazi`, `bat` and other tool-specific configs
 - Visual assets:
   - Custom Fastfetch logo at [`assets/images/jedi.png`](../../assets/images/jedi.png:1)

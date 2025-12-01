@@ -23,7 +23,7 @@ At a high level, the system:
 - Global flags:
   - `--minimal` turns on a reduced installation, skipping Qdrant, Godot, apps, and Packet Tracer.
   - `--enhance` enables terminal enhancement.
-  - `--skip-*` flags allow selectively skipping VS Code, Qdrant, Godot, apps, and Packet Tracer.
+  - `--skip-*` flags allow selectively skipping VS Code, Qdrant, Godot, apps, EasyEffects, and Packet Tracer.
 - Performs pre-flight checks via utilities in [`scripts/common.sh`](../../scripts/common.sh:1):
   - Enforces **non-root** execution.
   - Verifies the backup/assets directory exists.
@@ -33,9 +33,10 @@ At a high level, the system:
   3. [`scripts/qdrant_setup.sh`](../../scripts/qdrant_setup.sh:1) (unless `--skip-qdrant` or `--minimal`)
   4. [`scripts/godot_setup.sh`](../../scripts/godot_setup.sh:1) (unless `--skip-godot` or `--minimal`)
   5. [`scripts/apps_setup.sh`](../../scripts/apps_setup.sh:1) (unless `--skip-apps` or `--minimal`)
-  6. [`scripts/packettracer_setup.sh`](../../scripts/packettracer_setup.sh:1) (if not skipped and installer `.deb` exists)
-  7. [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1) (when `--vietnamese` is provided)
-  8. [`scripts/enhance_terminal.sh`](../../scripts/enhance_terminal.sh:1) (when `--enhance` is provided)
+  6. [`scripts/easyeffects_setup.sh`](../../scripts/easyeffects_setup.sh:1) (unless `--skip-easyeffects`)
+  7. [`scripts/packettracer_setup.sh`](../../scripts/packettracer_setup.sh:1) (if not skipped and installer `.deb` exists)
+  8. [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1) (when `--vietnamese` is provided)
+  9. [`scripts/enhance_terminal.sh`](../../scripts/enhance_terminal.sh:1) (when `--enhance` is provided)
 - Provides summary output and reminders (e.g., log out/in to pick up default shell changes).
 
 ### Orchestration Diagram
@@ -157,6 +158,12 @@ Additional scripts manage specific tools and applications:
   - Installs `ibus` and `ibus-bamboo` for Vietnamese input.
   - Configures environment variables (`GTK_IM_MODULE`, `QT_IM_MODULE`, `XMODIFIERS`) in `~/.profile`.
 
+- [`scripts/easyeffects_setup.sh`](../../scripts/easyeffects_setup.sh:1)
+  - Installs EasyEffects via `dnf`.
+  - Restores audio presets and autoload rules from [`assets/.config/easyeffects`](../../assets/.config/easyeffects:1) into `~/.config/easyeffects`.
+  - Optionally copies config into Flatpak path (`~/.var/app/com.github.wwmm.easyeffects/`) if present.
+  - Controlled by `--skip-easyeffects` flag.
+
 ## Assets and Configuration Layout
 
 The [`assets/`](../../assets:1) directory serves as the **configuration source of truth**. Key subtrees:
@@ -173,6 +180,7 @@ The [`assets/`](../../assets:1) directory serves as the **configuration source o
   - [`assets/images/jedi.png`](../../assets/images/jedi.png:1) for `fastfetch`.
   - Godot settings and themes under [`assets/godot/`](../../assets/godot:1).
   - VS Code settings and Kilo Code plugin data under [`assets/vscode/`](../../assets/vscode:1).
+  - EasyEffects audio presets (G560, G435) and autoload rules under [`assets/.config/easyeffects`](../../assets/.config/easyeffects:1).
 
 Scripts primarily treat these as **immutable inputs**, copying them into the user’s home directory and only creating backups on the target side when overwriting.
 

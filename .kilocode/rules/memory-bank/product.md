@@ -49,6 +49,7 @@ This repository provides a **single, version-controlled source of truth** for th
    - **Qdrant** via [`scripts/qdrant_setup.sh`](../../scripts/qdrant_setup.sh:1)
    - **Godot** via [`scripts/godot_setup.sh`](../../scripts/godot_setup.sh:1)
    - **Apps** via [`scripts/apps_setup.sh`](../../scripts/apps_setup.sh:1)
+   - **EasyEffects** via [`scripts/easyeffects_setup.sh`](../../scripts/easyeffects_setup.sh:1) (audio presets)
    - **Packet Tracer** via [`scripts/packettracer_setup.sh`](../../scripts/packettracer_setup.sh:1) when the .deb is available
    - Optional **Vietnamese input** via [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1)
    - Optional **terminal enhancement** via [`scripts/enhance_terminal.sh`](../../scripts/enhance_terminal.sh:1)
@@ -59,6 +60,7 @@ This repository provides a **single, version-controlled source of truth** for th
    - Set Zsh as default shell, configure Kitty, tmux, Starship, Atuin, and power tools.
    - Restore VS Code settings/extensions and Godot editor configuration.
    - Install and configure supporting tools like Qdrant and selected desktop apps.
+   - Restore audio processing presets via EasyEffects for reproducible speaker/headphone tuning.
 
 5. After scripts complete, the user:
    - Logs out/in (for shell change).
@@ -70,7 +72,7 @@ This repository provides a **single, version-controlled source of truth** for th
 - **Minimal**: `./setup.sh --minimal` (core terminal setup only; skips Qdrant, Godot, apps, Packet Tracer).
 - **Enhancement only**: `./setup.sh --enhance` (runs just the enhancement script for power tools and enhanced configs).
 - **Vietnamese support**: `./setup.sh --vietnamese` (installs ibus-bamboo input method).
-- **Selective skipping** via `--skip-vscode`, `--skip-qdrant`, `--skip-godot`, `--skip-apps`, `--skip-packettracer`.
+- **Selective skipping** via `--skip-vscode`, `--skip-qdrant`, `--skip-godot`, `--skip-apps`, `--skip-easyeffects`, `--skip-packettracer`.
 
 ## User Experience Goals
 
