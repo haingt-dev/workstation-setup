@@ -8,12 +8,13 @@ Automated terminal and development environment setup for Nobara 42 / Fedora.
 - **Terminal**: Kitty GPU-accelerated terminal with Catppuccin theme
 - **Fonts**: Nerd Fonts (CaskaydiaCove, FiraCode, JetBrains Mono)
 - **Tmux**: Multiplexer with TPM plugins, session persistence
-- **Power Tools**: zoxide, eza, bat, fzf, lazygit, yazi
+- **Power Tools**: zoxide, eza, bat, fzf, ripgrep, fd-find, lazygit, yazi
 - **Containers**: Podman & Podman Compose
 - **VS Code**: Installation, extensions, and settings restoration
 - **Qdrant**: Vector database with auto-start systemd service
 - **Godot Engine**: Game engine with VS Code integration
 - **Additional Apps**: Chrome, Dropbox, Discord, Obsidian, Anki
+- **Audio Processing**: EasyEffects with pre-tuned presets and autoload rules
 - **Cisco Packet Tracer**: Network simulation tool
 - **Vietnamese Input**: ibus-bamboo for Vietnamese typing
 
@@ -38,12 +39,13 @@ cd terminal-custom
 
 Options:
   --minimal           Core setup only (shell, dotfiles, fonts)
-  --enhance           Install power tools (zoxide, eza, bat, fzf, lazygit, yazi)
+  --enhance           Install power tools (zoxide, eza, bat, fzf, ripgrep, fd-find, lazygit, yazi)
   --skip-vscode       Skip VS Code installation
   --skip-qdrant       Skip Qdrant setup
   --skip-godot        Skip Godot installation
   --skip-apps         Skip additional apps (Chrome, Dropbox, Flatpaks)
   --skip-packettracer Skip Cisco Packet Tracer installation
+  --skip-easyeffects  Skip EasyEffects audio setup
   --vietnamese        Install Vietnamese input method (ibus-bamboo)
   --help              Show help message
 
@@ -75,6 +77,7 @@ Examples:
     ├── qdrant_setup.sh         # Qdrant vector database with Podman
     ├── godot_setup.sh          # Godot Engine installation
     ├── apps_setup.sh           # Chrome, Dropbox, Flatpak apps
+    ├── easyeffects_setup.sh    # EasyEffects audio presets and configuration
     ├── packettracer_setup.sh   # Cisco Packet Tracer installation
     └── input_setup.sh          # Vietnamese input method (ibus-bamboo)
 ```
@@ -150,6 +153,13 @@ z   → zoxide                    # Smart directory jumping
 - Installs Qt5 dependencies
 - Non-interactive installation
 
+### EasyEffects Audio Setup (`easyeffects_setup.sh`)
+- Installs EasyEffects via DNF
+- Restores audio presets and configuration from `assets/.config/easyeffects` into `~/.config/easyeffects`
+- If Flatpak EasyEffects is installed, also syncs presets to `~/.var/app/com.github.wwmm.easyeffects/config/easyeffects`
+- Includes pre-tuned output presets (e.g., G560 speakers, G435 headset)
+- Includes autoload rules so presets switch automatically based on the active audio device
+
 ### Vietnamese Input Setup (`input_setup.sh`)
 - Installs ibus and ibus-bamboo
 - Configures IBus environment variables
@@ -177,6 +187,9 @@ bash scripts/godot_setup.sh --uninstall
 
 # Uninstall Packet Tracer
 bash scripts/packettracer_setup.sh --uninstall
+
+# Run only EasyEffects audio setup
+bash scripts/easyeffects_setup.sh
 
 # Install Vietnamese input
 bash scripts/input_setup.sh
