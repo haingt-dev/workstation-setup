@@ -33,6 +33,7 @@ SKIP_QDRANT=false
 SKIP_GODOT=false
 SKIP_APPS=false
 SKIP_PACKETTRACER=false
+SKIP_EASYEFFECTS=false
 SKIP_VIETNAMESE=false
 MINIMAL=false
 ENHANCE=false
@@ -50,6 +51,7 @@ show_help() {
     echo "  --skip-godot        Skip Godot installation"
     echo "  --skip-apps         Skip additional apps (Chrome, Dropbox, Flatpaks)"
     echo "  --skip-packettracer Skip Cisco Packet Tracer installation"
+    echo "  --skip-easyeffects  Skip EasyEffects audio setup"
     echo "  --vietnamese        Install Vietnamese input method (ibus-bamboo)"
     echo "  --help              Show this help message"
     echo ""
@@ -87,6 +89,9 @@ for arg in "$@"; do
             ;;
         --skip-packettracer)
             SKIP_PACKETTRACER=true
+            ;;
+        --skip-easyeffects)
+            SKIP_EASYEFFECTS=true
             ;;
         --vietnamese)
             SKIP_VIETNAMESE=false
@@ -185,13 +190,21 @@ else
     log_warn "Skipping Packet Tracer setup"
 fi
 
-# 7. Vietnamese Input Method (if requested)
+# 7. EasyEffects Setup
+if ! $SKIP_EASYEFFECTS; then
+    log_section "Running EasyEffects Setup..."
+    bash "$SCRIPTS_DIR/easyeffects_setup.sh"
+else
+    log_warn "Skipping EasyEffects setup"
+fi
+
+# 8. Vietnamese Input Method (if requested)
 if [[ "${INSTALL_VIETNAMESE:-false}" == "true" ]]; then
     log_section "Running Vietnamese Input Setup..."
     bash "$SCRIPTS_DIR/input_setup.sh"
 fi
 
-# 8. Terminal Enhancement (if requested)
+# 9. Terminal Enhancement (if requested)
 if $ENHANCE; then
     log_section "Running Terminal Enhancement..."
     bash "$SCRIPTS_DIR/enhance_terminal.sh"
