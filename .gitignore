@@ -1,3 +1,4 @@
 assets/CiscoPacketTracer_Ubuntu_64bit.deb
 *.deb
 assets/vscode/globalStorage/kilocode.kilo-code/tasks/*/checkpoints/
+.chromium-browser-snapshots/
