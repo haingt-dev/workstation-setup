@@ -35,6 +35,7 @@ SKIP_APPS=false
 SKIP_PACKETTRACER=false
 SKIP_EASYEFFECTS=false
 SKIP_VIETNAMESE=false
+INSTALL_ONEDRIVE=false
 MINIMAL=false
 ENHANCE=false
 
@@ -46,6 +47,7 @@ show_help() {
     echo "Options:"
     echo "  --minimal           Core setup only (shell, dotfiles, fonts)"
     echo "  --enhance           Install power tools (zoxide, eza, bat, fzf, lazygit, yazi)"
+    echo "  --onedrive          Setup OneDrive (supports multiple accounts)"
     echo "  --skip-vscode       Skip VS Code installation"
     echo "  --skip-qdrant       Skip Qdrant setup"
     echo "  --skip-godot        Skip Godot installation"
@@ -96,6 +98,9 @@ for arg in "$@"; do
         --vietnamese)
             SKIP_VIETNAMESE=false
             INSTALL_VIETNAMESE=true
+            ;;
+        --onedrive)
+            INSTALL_ONEDRIVE=true
             ;;
         --help|-h)
             show_help
@@ -204,7 +209,13 @@ if [[ "${INSTALL_VIETNAMESE:-false}" == "true" ]]; then
     bash "$SCRIPTS_DIR/input_setup.sh"
 fi
 
-# 9. Terminal Enhancement (if requested)
+# 9. OneDrive Setup (if requested)
+if $INSTALL_ONEDRIVE; then
+    log_section "Running OneDrive Setup..."
+    bash "$SCRIPTS_DIR/onedrive_setup.sh"
+fi
+
+# 10. Terminal Enhancement (if requested)
 if $ENHANCE; then
     log_section "Running Terminal Enhancement..."
     bash "$SCRIPTS_DIR/enhance_terminal.sh"
