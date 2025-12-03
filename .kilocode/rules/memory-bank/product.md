@@ -68,13 +68,16 @@ This repository provides a **single, version-controlled source of truth** for th
 
 ### Modes and Options
 
-- **Full install**: `./setup.sh` (default, all components enabled).
-- **Minimal**: `./setup.sh --minimal` (core terminal setup only; skips Qdrant, Godot, apps, Packet Tracer).
-- **Exclusive Mode**: Run specific components only (e.g., `./setup.sh --vscode`, `./setup.sh --qdrant`).
-- **Enhancement only**: `./setup.sh --enhance` (runs just the enhancement script for power tools and enhanced configs).
+- **Default (Full)**: `./setup.sh` (runs all standard components).
+- **Explicit Full**: `./setup.sh --full` (same as default, useful for clarity).
+- **Core/Minimal**: `./setup.sh --core` or `./setup.sh --minimal` (core terminal setup only: shell, dotfiles, fonts).
+- **Exclusive Mode**: Run specific components only by passing their flags.
+  - Example: `./setup.sh --vscode --qdrant` (installs ONLY VS Code and Qdrant).
+  - Example: `./setup.sh --enhance` (runs ONLY terminal enhancement).
+  - Example: `./setup.sh --core --enhance` (runs core setup AND enhancement).
 - **OneDrive setup**: `./setup.sh --onedrive` (interactive setup for one or more OneDrive accounts).
 - **Vietnamese support**: `./setup.sh --vietnamese` (installs ibus-bamboo input method).
-- **Selective skipping** via `--skip-vscode`, `--skip-qdrant`, `--skip-godot`, `--skip-apps`, `--skip-easyeffects`, `--skip-packettracer`.
+- **Selective skipping**: In default mode, skip specific parts via `--skip-vscode`, `--skip-qdrant`, `--skip-godot`, `--skip-apps`, `--skip-easyeffects`, `--skip-packettracer`.
 
 ## User Experience Goals
 

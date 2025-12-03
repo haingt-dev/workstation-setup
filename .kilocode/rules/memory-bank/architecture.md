@@ -21,10 +21,12 @@ At a high level, the system:
 [`setup.sh`](../../setup.sh:1) parses CLI arguments and drives the overall flow:
 
 - Global flags:
-  - `--minimal` turns on a reduced installation, skipping Qdrant, Godot, apps, and Packet Tracer.
-  - `--enhance` enables terminal enhancement.
-  - `--skip-*` flags allow selectively skipping VS Code, Qdrant, Godot, apps, EasyEffects, and Packet Tracer.
-  - **Exclusive Mode**: If specific component flags (e.g., `--vscode`, `--qdrant`) are provided, `setup.sh` switches to exclusive mode and runs **only** the requested components.
+  - **Exclusive Mode Triggers**: Providing any component flag switches the script to **Exclusive Mode**, where only explicitly requested components run.
+    - `--full`: Runs the full standard setup (explicitly enables all standard components).
+    - `--core` / `--minimal`: Runs only the core terminal setup (shell, dotfiles, fonts).
+    - `--enhance`: Runs terminal enhancement (can be combined with `--core` or used alone).
+    - Component flags: `--vscode`, `--qdrant`, `--godot`, `--apps`, `--packettracer`, `--easyeffects`, `--onedrive`, `--vietnamese`.
+  - **Skip Flags**: Used in default mode (no exclusive flags) to selectively disable components (e.g., `--skip-vscode`, `--skip-godot`).
 - Performs pre-flight checks via utilities in [`scripts/common.sh`](../../scripts/common.sh:1):
   - Enforces **non-root** execution.
   - Verifies the backup/assets directory exists.

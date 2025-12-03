@@ -15,6 +15,9 @@
 - Added OneDrive integration:
   - [`scripts/onedrive_setup.sh`](../../scripts/onedrive_setup.sh:1) for multi-account setup
   - `--onedrive` flag in [`setup.sh`](../../setup.sh:1)
+- Refactored Terminal Setup:
+  - Merged `core_setup.sh` and `enhance_terminal.sh` into [`scripts/terminal_setup.sh`](../../scripts/terminal_setup.sh:1).
+  - Updated [`setup.sh`](../../setup.sh:1) to support "Exclusive Mode" and new flags (`--full`, `--core`).
 
 ## Next Steps
 
