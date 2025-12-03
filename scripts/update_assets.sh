@@ -158,8 +158,14 @@ if [[ -d "$VSCODE_USER_DIR" ]]; then
     fi
     
     # Generate extensions list
+    # Note: Unset VSCODE_* vars to avoid crash when running from VS Code terminal
     if check_command code; then
-        code --list-extensions > "$BACKUP_DIR/vscode/extensions.txt"
+        (
+            unset VSCODE_ESM_ENTRYPOINT VSCODE_CODE_CACHE_PATH VSCODE_IPC_HOOK
+            unset VSCODE_PID VSCODE_CWD VSCODE_CRASH_REPORTER_PROCESS_TYPE
+            unset VSCODE_NLS_CONFIG VSCODE_HANDLES_UNCAUGHT_ERRORS VSCODE_L10N_BUNDLE_LOCATION
+            code --list-extensions > "$BACKUP_DIR/vscode/extensions.txt"
+        )
         log_success "Updated VS Code extensions.txt"
     fi
     
