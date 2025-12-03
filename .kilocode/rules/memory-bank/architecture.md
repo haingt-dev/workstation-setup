@@ -29,7 +29,7 @@ At a high level, the system:
   - Enforces **non-root** execution.
   - Verifies the backup/assets directory exists.
 - Executes setup scripts in this typical order:
-  1. [`scripts/core_setup.sh`](../../scripts/core_setup.sh:1) (always runs)
+  1. [`scripts/terminal_setup.sh`](../../scripts/terminal_setup.sh:1) (runs core setup, and optionally enhancement if `--enhance` is provided)
   2. [`scripts/vscode_setup.sh`](../../scripts/vscode_setup.sh:1) (unless `--skip-vscode`)
   3. [`scripts/qdrant_setup.sh`](../../scripts/qdrant_setup.sh:1) (unless `--skip-qdrant` or `--minimal`)
   4. [`scripts/godot_setup.sh`](../../scripts/godot_setup.sh:1) (unless `--skip-godot` or `--minimal`)
@@ -38,7 +38,6 @@ At a high level, the system:
   7. [`scripts/onedrive_setup.sh`](../../scripts/onedrive_setup.sh:1) (when `--onedrive` is provided)
   8. [`scripts/packettracer_setup.sh`](../../scripts/packettracer_setup.sh:1) (if not skipped and installer `.deb` exists)
   9. [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1) (when `--vietnamese` is provided)
-  10. [`scripts/enhance_terminal.sh`](../../scripts/enhance_terminal.sh:1) (when `--enhance` is provided)
 - Provides summary output and reminders (e.g., log out/in to pick up default shell changes).
 
 ### Orchestration Diagram
@@ -47,7 +46,7 @@ At a high level, the system:
 flowchart TD
   A[User runs ./setup.sh] --> B[Parse CLI flags]
   B --> C[Pre-flight checks via scripts/common.sh]
-  C --> D[Run scripts/core_setup.sh]
+  C --> D[Run scripts/terminal_setup.sh]
   D --> E[Optionally run scripts/vscode_setup.sh]
   E --> F[Optionally run scripts/qdrant_setup.sh]
   F --> G[Optionally run scripts/godot_setup.sh]
@@ -55,8 +54,7 @@ flowchart TD
   H --> I[Optionally run scripts/onedrive_setup.sh]
   I --> J[Conditionally run scripts/packettracer_setup.sh]
   J --> K[Optionally run scripts/input_setup.sh]
-  K --> L[Optionally run scripts/enhance_terminal.sh]
-  L --> M[Print completion summary and next steps]
+  K --> M[Print completion summary and next steps]
 ```
 
 ## Core Components
@@ -78,56 +76,29 @@ flowchart TD
 
 All other scripts **source** this file and rely on its utilities for consistent behavior and safety.
 
-### Core System Setup
+### Terminal Setup
 
-- File: [`scripts/core_setup.sh`](../../scripts/core_setup.sh:1)
+- File: [`scripts/terminal_setup.sh`](../../scripts/terminal_setup.sh:1)
 - Responsibilities:
-  - Perform `dnf update -y` to bring the system up to date.
-  - Install core packages:
-    - Shell/tools: `zsh`, `git`, `curl`, `wget`, `util-linux-user`, `fastfetch`, `tmux`.
-    - Terminal: `kitty`.
-    - Containers: `podman`, `podman-compose`.
-  - Install Starship:
-    - Prefer `dnf`, fall back to official install script if not available in repos.
-  - Install Atuin:
-    - Prefer `dnf`, fall back to official script.
-  - Install Zsh plugins:
-    - `zsh-autosuggestions`, `zsh-syntax-highlighting`.
-    - `zsh-autocomplete` via `dnf` if possible, else clone into `$HOME/.local/share/zsh/plugins`.
-  - Restore dotfiles from [`assets/`](../../assets:1):
-    - `.zshrc`, `.bashrc`, `.gitconfig` (with backup of any existing `.gitconfig`).
-    - If local `zsh-autocomplete` is used, rewrite the plugin path inside `.zshrc`.
-  - Restore `.config` directories:
-    - `starship`, `atuin`, `fastfetch`, `fish`, `kitty`, `tmux`.
-    - Ensure custom `fastfetch` logos (e.g. `jedi.png`) are placed into the correct assets directory under `~/.config/fastfetch`.
-  - Install fonts:
-    - Copy all `.ttf` files from [`assets/fonts/`](../../assets/fonts:1) into `~/.local/share/fonts`.
-    - Run `fc-cache -fv` to refresh font cache.
-  - Change default shell to Zsh via `chsh`, if not already Zsh.
-
-### Terminal Enhancement
-
-- File: [`scripts/enhance_terminal.sh`](../../scripts/enhance_terminal.sh:1)
-- Responsibilities:
-  - Install power tools:
-    - Using `dnf` for `zoxide`, `eza`, `bat`, `fzf`, `ripgrep`, `fd-find`.
-  - Install Lazygit:
-    - Enable COPR repo `atim/lazygit` if necessary.
-    - Install via `dnf`.
-  - Install Yazi:
-    - Download prebuilt binary zip from GitHub.
-    - Extract and install `yazi` and `ya` under `~/.local/bin`.
-  - Install Tmux Plugin Manager (TPM):
-    - Clone TPM into `~/.tmux/plugins/tpm` if not already present.
-  - Apply enhanced configs from [`assets/`](../../assets:1):
-    - Replace `~/.zshrc` with `assets/.zshrc.enhanced` (backing up any existing file).
-    - Replace `~/.config/tmux/tmux.conf` with `tmux.conf.enhanced`.
-    - Replace or create `~/.config/kitty/kitty.conf` from `kitty.conf.enhanced`.
-    - Copy Catppuccin Kitty theme and Catppuccin Starship theme into appropriate config locations.
-    - Optionally restore configs for tools like `yazi` and `bat` if present in assets.
-  - Perform post-install steps:
-    - Build `bat` theme cache if `bat` is installed.
-    - Print guidance on new aliases, FZF keybindings, and tmux plugin installation.
+  - **Core Setup** (Default):
+    - Perform `dnf update -y`.
+    - Install core packages (zsh, git, curl, wget, util-linux-user, fastfetch, kitty, podman, podman-compose, tmux).
+    - Install Starship and Atuin (dnf or official scripts).
+    - Install Zsh plugins (autosuggestions, syntax-highlighting, autocomplete).
+    - Restore dotfiles (`.zshrc`, `.bashrc`, `.gitconfig`) and config directories (`starship`, `atuin`, `fastfetch`, `fish`, `kitty`, `tmux`).
+    - Install fonts to `~/.local/share/fonts`.
+    - Change default shell to Zsh.
+  - **Enhancement** (via `--enhance` flag):
+    - Install power tools (`zoxide`, `eza`, `bat`, `fzf`, `ripgrep`, `fd-find`).
+    - Install `lazygit` (via COPR) and `yazi` (via prebuilt binary).
+    - Install Tmux Plugin Manager (TPM).
+    - Apply enhanced configs:
+      - Replace `.zshrc` with `.zshrc.enhanced`.
+      - Replace `tmux.conf` with `tmux.conf.enhanced`.
+      - Replace `kitty.conf` with `kitty.conf.enhanced`.
+      - Install Catppuccin themes for Kitty and Starship.
+      - Restore configs for `yazi` and `bat`.
+    - Perform post-install steps (build bat cache, print guidance).
 
 ### Tooling and Apps Setup (External Integrations)
 

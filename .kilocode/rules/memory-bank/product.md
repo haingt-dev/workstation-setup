@@ -44,7 +44,7 @@ This repository provides a **single, version-controlled source of truth** for th
    ```
 
 3. [`setup.sh`](../../setup.sh:1) orchestrates:
-   - **Core setup** via [`scripts/core_setup.sh`](../../scripts/core_setup.sh:1)
+   - **Terminal setup** via [`scripts/terminal_setup.sh`](../../scripts/terminal_setup.sh:1) (handles both core setup and optional enhancements)
    - **VS Code** via [`scripts/vscode_setup.sh`](../../scripts/vscode_setup.sh:1)
    - **Qdrant** via [`scripts/qdrant_setup.sh`](../../scripts/qdrant_setup.sh:1)
    - **Godot** via [`scripts/godot_setup.sh`](../../scripts/godot_setup.sh:1)
@@ -53,7 +53,6 @@ This repository provides a **single, version-controlled source of truth** for th
    - **EasyEffects** via [`scripts/easyeffects_setup.sh`](../../scripts/easyeffects_setup.sh:1) (audio presets)
    - **Packet Tracer** via [`scripts/packettracer_setup.sh`](../../scripts/packettracer_setup.sh:1) when the .deb is available
    - Optional **Vietnamese input** via [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1)
-   - Optional **terminal enhancement** via [`scripts/enhance_terminal.sh`](../../scripts/enhance_terminal.sh:1)
 
 4. Scripts:
    - Install required packages with `dnf` (and other mechanisms where needed).

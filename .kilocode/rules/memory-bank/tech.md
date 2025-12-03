@@ -42,7 +42,7 @@
     - `zsh-autosuggestions`
     - `zsh-syntax-highlighting`
     - `zsh-autocomplete` (via DNF when available, else GitHub clone under `$HOME/.local/share/zsh/plugins`)
-- Power tools (installed by [`scripts/enhance_terminal.sh`](../../scripts/enhance_terminal.sh:1)):
+- Power tools (installed by [`scripts/terminal_setup.sh`](../../scripts/terminal_setup.sh:1) with `--enhance`):
   - `zoxide` (smart `cd`)
   - `eza` (modern `ls`)
   - `bat` (syntax-highlighted `cat`)

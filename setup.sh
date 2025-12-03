@@ -29,6 +29,7 @@ source "$SCRIPTS_DIR/common.sh"
 
 # Standard components (Run by default)
 INSTALL_CORE=true
+INSTALL_ENHANCE=true
 INSTALL_VSCODE=true
 INSTALL_QDRANT=true
 INSTALL_GODOT=true
@@ -39,7 +40,6 @@ INSTALL_EASYEFFECTS=true
 # Optional components (Do not run by default)
 INSTALL_ONEDRIVE=false
 INSTALL_VIETNAMESE=false
-INSTALL_ENHANCE=false
 
 # =============================================================================
 # Argument Parsing
@@ -116,6 +116,7 @@ for arg in "$@"; do
         # Component Flags
         --full)
             INSTALL_CORE=true
+            INSTALL_ENHANCE=true
             INSTALL_VSCODE=true
             INSTALL_QDRANT=true
             INSTALL_GODOT=true
@@ -172,10 +173,17 @@ fi
 # Run Setup Scripts
 # =============================================================================
 
-# 1. Core Setup
-if $INSTALL_CORE; then
-    log_section "Running Core Setup..."
-    bash "$SCRIPTS_DIR/core_setup.sh"
+# 1. Terminal Setup (Core + Enhancement)
+if $INSTALL_CORE || $INSTALL_ENHANCE; then
+    TERMINAL_ARGS=""
+    if $INSTALL_CORE; then TERMINAL_ARGS="$TERMINAL_ARGS --core"; fi
+    if $INSTALL_ENHANCE; then TERMINAL_ARGS="$TERMINAL_ARGS --enhance"; fi
+    
+    # Trim leading space
+    TERMINAL_ARGS=$(echo "$TERMINAL_ARGS" | xargs)
+    
+    log_section "Running Terminal Setup ($TERMINAL_ARGS)..."
+    bash "$SCRIPTS_DIR/terminal_setup.sh" $TERMINAL_ARGS
 fi
 
 # 2. VS Code Setup
@@ -244,12 +252,6 @@ fi
 if $INSTALL_ONEDRIVE; then
     log_section "Running OneDrive Setup..."
     bash "$SCRIPTS_DIR/onedrive_setup.sh"
-fi
-
-# 10. Terminal Enhancement
-if $INSTALL_ENHANCE; then
-    log_section "Running Terminal Enhancement..."
-    bash "$SCRIPTS_DIR/enhance_terminal.sh"
 fi
 
 # =============================================================================

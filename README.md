@@ -84,8 +84,7 @@ Examples:
 │   └── CiscoPacketTracer*.deb  # Packet Tracer installer (optional)
 └── scripts/
     ├── common.sh               # Shared utilities and logging
-    ├── core_setup.sh           # System updates, packages, shell, fonts, dotfiles
-    ├── enhance_terminal.sh     # Power tools and enhanced configs
+    ├── terminal_setup.sh       # Combined terminal setup (core + enhancements)
     ├── vscode_setup.sh         # VS Code installation and configuration
     ├── qdrant_setup.sh         # Qdrant vector database with Podman
     ├── godot_setup.sh          # Godot Engine installation
@@ -98,7 +97,9 @@ Examples:
 
 ## What Gets Installed
 
-### Core Setup (`core_setup.sh`)
+### Terminal Setup (`terminal_setup.sh`)
+
+**Core Setup** (`--core`):
 - System update (dnf)
 - Packages: zsh, git, curl, wget, util-linux-user, fastfetch, kitty, podman, podman-compose, tmux
 - Starship prompt, Atuin shell history
@@ -108,7 +109,7 @@ Examples:
 - Fonts installed to ~/.local/share/fonts
 - Default shell changed to Zsh
 
-### Terminal Enhancement (`enhance_terminal.sh`)
+**Enhancement** (`--enhance`):
 - **Power Tools**:
   - `zoxide` - Smart cd replacement (learns your directories)
   - `eza` - Modern ls with icons, colors, and git status
@@ -190,8 +191,11 @@ z   → zoxide                    # Smart directory jumping
 You can run individual scripts directly:
 
 ```bash
+# Run core terminal setup
+bash scripts/terminal_setup.sh --core
+
 # Run only terminal enhancement
-bash scripts/enhance_terminal.sh
+bash scripts/terminal_setup.sh --enhance
 
 # Run only VS Code setup
 bash scripts/vscode_setup.sh
