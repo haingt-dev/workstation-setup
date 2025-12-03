@@ -78,9 +78,8 @@ while true; do
     read -p "Press Enter to start authentication..."
     
     # Run onedrive with the specific config directory
-    onedrive --confdir="$config_dir" --reauth
-    
-    if [[ $? -eq 0 ]]; then
+    # Using 'if' ensures the script doesn't exit if authentication fails (due to set -e)
+    if onedrive --confdir="$config_dir" --reauth; then
         log_success "Authentication successful for '$account_name'"
         
         # Enable systemd service
