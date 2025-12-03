@@ -4,13 +4,14 @@
 # =============================================================================
 #
 # Usage:
-#   ./setup.sh              # Full installation (Standard components)
-#   ./setup.sh --minimal    # Core setup only
-#   ./setup.sh --full       # Full setup (Standard components)
-#   ./setup.sh --vscode     # Exclusive mode: ONLY setup VS Code
-#   ./setup.sh --enhance    # Exclusive mode: ONLY run enhancement
+#   ./setup.sh              # Full installation (all components)
+#   ./setup.sh --terminal   # Terminal setup only
+#   ./setup.sh --vscode     # VS Code setup only
 #   ./setup.sh --skip-godot # Full installation EXCEPT Godot
 #   ./setup.sh --help
+#
+# Note: This script overwrites existing configs without backup.
+# The repo (assets/) is the single source of truth.
 #
 # =============================================================================
 
@@ -28,8 +29,7 @@ source "$SCRIPTS_DIR/common.sh"
 # =============================================================================
 
 # Standard components (Run by default)
-INSTALL_CORE=true
-INSTALL_ENHANCE=true
+INSTALL_TERMINAL=true
 INSTALL_VSCODE=true
 INSTALL_QDRANT=true
 INSTALL_GODOT=true
@@ -51,12 +51,12 @@ show_help() {
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Modes:"
-    echo "  Default (no args)   Run full standard setup."
+    echo "  Default (no args)   Run full setup (all components)."
     echo "  Exclusive           If any component flag is used, ONLY that component runs."
     echo ""
     echo "Component Flags (Triggers Exclusive Mode):"
-    echo "  --full              Run full standard setup (useful to combine with --enhance)"
-    echo "  --core, --minimal   Core setup (shell, dotfiles, fonts)"
+    echo "  --full              Run full setup (same as default)"
+    echo "  --terminal          Terminal setup (shell, dotfiles, fonts, power tools)"
     echo "  --vscode            VS Code setup"
     echo "  --qdrant            Qdrant setup"
     echo "  --godot             Godot setup"
@@ -65,9 +65,9 @@ show_help() {
     echo "  --easyeffects       EasyEffects audio setup"
     echo "  --onedrive          OneDrive setup (supports multiple accounts)"
     echo "  --vietnamese        Vietnamese input setup (ibus-bamboo)"
-    echo "  --enhance           Terminal enhancement (power tools)"
     echo ""
     echo "Skip Flags (For Default Mode):"
+    echo "  --skip-terminal     Skip terminal setup"
     echo "  --skip-vscode       Skip VS Code"
     echo "  --skip-qdrant       Skip Qdrant"
     echo "  --skip-godot        Skip Godot"
@@ -76,10 +76,13 @@ show_help() {
     echo "  --skip-easyeffects  Skip EasyEffects"
     echo ""
     echo "Examples:"
-    echo "  $0                  # Full standard installation"
+    echo "  $0                  # Full installation"
     echo "  $0 --vscode         # ONLY install VS Code"
-    echo "  $0 --core --enhance # Core setup + Enhancement"
+    echo "  $0 --terminal       # ONLY run terminal setup"
     echo "  $0 --skip-godot     # Full setup EXCEPT Godot"
+    echo ""
+    echo "Note: Running setup will overwrite existing configs (no backup)."
+    echo "The repo (assets/) is the single source of truth."
     exit 0
 }
 
@@ -88,7 +91,7 @@ show_help() {
 EXCLUSIVE_MODE=false
 for arg in "$@"; do
     case $arg in
-        --full|--core|--minimal|--vscode|--qdrant|--godot|--apps|--packettracer|--easyeffects|--onedrive|--vietnamese|--enhance)
+        --full|--terminal|--vscode|--qdrant|--godot|--apps|--packettracer|--easyeffects|--onedrive|--vietnamese)
             EXCLUSIVE_MODE=true
             break
             ;;
@@ -98,7 +101,7 @@ done
 if $EXCLUSIVE_MODE; then
     # In exclusive mode, disable all standard components by default.
     # Only explicitly requested components will be enabled in the loop below.
-    INSTALL_CORE=false
+    INSTALL_TERMINAL=false
     INSTALL_VSCODE=false
     INSTALL_QDRANT=false
     INSTALL_GODOT=false
@@ -107,7 +110,6 @@ if $EXCLUSIVE_MODE; then
     INSTALL_EASYEFFECTS=false
     INSTALL_ONEDRIVE=false
     INSTALL_VIETNAMESE=false
-    INSTALL_ENHANCE=false
 fi
 
 # Parse Flags
@@ -115,8 +117,7 @@ for arg in "$@"; do
     case $arg in
         # Component Flags
         --full)
-            INSTALL_CORE=true
-            INSTALL_ENHANCE=true
+            INSTALL_TERMINAL=true
             INSTALL_VSCODE=true
             INSTALL_QDRANT=true
             INSTALL_GODOT=true
@@ -124,7 +125,7 @@ for arg in "$@"; do
             INSTALL_PACKETTRACER=true
             INSTALL_EASYEFFECTS=true
             ;;
-        --core|--minimal)     INSTALL_CORE=true ;;
+        --terminal)           INSTALL_TERMINAL=true ;;
         --vscode)             INSTALL_VSCODE=true ;;
         --qdrant)             INSTALL_QDRANT=true ;;
         --godot)              INSTALL_GODOT=true ;;
@@ -133,9 +134,9 @@ for arg in "$@"; do
         --easyeffects)        INSTALL_EASYEFFECTS=true ;;
         --onedrive)           INSTALL_ONEDRIVE=true ;;
         --vietnamese)         INSTALL_VIETNAMESE=true ;;
-        --enhance)            INSTALL_ENHANCE=true ;;
 
         # Skip Flags
+        --skip-terminal)      INSTALL_TERMINAL=false ;;
         --skip-vscode)        INSTALL_VSCODE=false ;;
         --skip-qdrant)        INSTALL_QDRANT=false ;;
         --skip-godot)         INSTALL_GODOT=false ;;
@@ -173,17 +174,12 @@ fi
 # Run Setup Scripts
 # =============================================================================
 
-# 1. Terminal Setup (Core + Enhancement)
-if $INSTALL_CORE || $INSTALL_ENHANCE; then
-    TERMINAL_ARGS=""
-    if $INSTALL_CORE; then TERMINAL_ARGS="$TERMINAL_ARGS --core"; fi
-    if $INSTALL_ENHANCE; then TERMINAL_ARGS="$TERMINAL_ARGS --enhance"; fi
-    
-    # Trim leading space
-    TERMINAL_ARGS=$(echo "$TERMINAL_ARGS" | xargs)
-    
-    log_section "Running Terminal Setup ($TERMINAL_ARGS)..."
-    bash "$SCRIPTS_DIR/terminal_setup.sh" $TERMINAL_ARGS
+# 1. Terminal Setup (full: core + enhancement)
+if $INSTALL_TERMINAL; then
+    log_section "Running Terminal Setup..."
+    bash "$SCRIPTS_DIR/terminal_setup.sh"
+elif ! $EXCLUSIVE_MODE; then
+    log_warn "Skipping terminal setup"
 fi
 
 # 2. VS Code Setup
@@ -274,7 +270,7 @@ if $INSTALL_GODOT; then
     log_info "Run Godot with: godot"
 fi
 
-if $INSTALL_ENHANCE; then
+if $INSTALL_TERMINAL; then
     echo ""
     log_info "Power tools installed! New commands available:"
     echo "  - ls  → eza (with icons)"

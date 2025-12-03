@@ -12,9 +12,8 @@ At a high level, the system:
 
 1. Validates that it is running as a non-root user with sudo access.
 2. Uses `dnf` and other installers to provision packages and tools.
-3. Copies configuration files and directories from [`assets/`](../../assets:1) into the user’s home directory.
+3. Copies configuration files and directories from [`assets/`](../../assets:1) into the user's home directory (overwrites without backup).
 4. Optionally installs and configures extra tools (Qdrant, Godot, apps, Packet Tracer).
-5. Optionally performs a **terminal enhancement** step that installs power tools and replaces base configs with enhanced variants.
 
 ## Orchestration Flow
 
@@ -23,23 +22,21 @@ At a high level, the system:
 - Global flags:
   - **Exclusive Mode Triggers**: Providing any component flag switches the script to **Exclusive Mode**, where only explicitly requested components run.
     - `--full`: Runs the full standard setup (explicitly enables all standard components).
-    - `--core` / `--minimal`: Runs only the core terminal setup (shell, dotfiles, fonts).
-    - `--enhance`: Runs terminal enhancement (can be combined with `--core` or used alone).
-    - Component flags: `--vscode`, `--qdrant`, `--godot`, `--apps`, `--packettracer`, `--easyeffects`, `--onedrive`, `--vietnamese`.
+    - Component flags: `--terminal`, `--vscode`, `--qdrant`, `--godot`, `--apps`, `--packettracer`, `--easyeffects`, `--onedrive`, `--vietnamese`.
   - **Skip Flags**: Used in default mode (no exclusive flags) to selectively disable components (e.g., `--skip-vscode`, `--skip-godot`).
 - Performs pre-flight checks via utilities in [`scripts/common.sh`](../../scripts/common.sh:1):
   - Enforces **non-root** execution.
-  - Verifies the backup/assets directory exists.
+  - Verifies the assets directory exists.
 - Executes setup scripts in this typical order:
-  1. [`scripts/terminal_setup.sh`](../../scripts/terminal_setup.sh:1) (runs core setup, and optionally enhancement if `--enhance` is provided)
+  1. [`scripts/terminal_setup.sh`](../../scripts/terminal_setup.sh:1) (unless `--skip-terminal`)
   2. [`scripts/vscode_setup.sh`](../../scripts/vscode_setup.sh:1) (unless `--skip-vscode`)
-  3. [`scripts/qdrant_setup.sh`](../../scripts/qdrant_setup.sh:1) (unless `--skip-qdrant` or `--minimal`)
-  4. [`scripts/godot_setup.sh`](../../scripts/godot_setup.sh:1) (unless `--skip-godot` or `--minimal`)
-  5. [`scripts/apps_setup.sh`](../../scripts/apps_setup.sh:1) (unless `--skip-apps` or `--minimal`)
+  3. [`scripts/qdrant_setup.sh`](../../scripts/qdrant_setup.sh:1) (unless `--skip-qdrant`)
+  4. [`scripts/godot_setup.sh`](../../scripts/godot_setup.sh:1) (unless `--skip-godot`)
+  5. [`scripts/apps_setup.sh`](../../scripts/apps_setup.sh:1) (unless `--skip-apps`)
   6. [`scripts/easyeffects_setup.sh`](../../scripts/easyeffects_setup.sh:1) (unless `--skip-easyeffects`)
-  7. [`scripts/onedrive_setup.sh`](../../scripts/onedrive_setup.sh:1) (when `--onedrive` is provided)
-  8. [`scripts/packettracer_setup.sh`](../../scripts/packettracer_setup.sh:1) (if not skipped and installer `.deb` exists)
-  9. [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1) (when `--vietnamese` is provided)
+  7. [`scripts/packettracer_setup.sh`](../../scripts/packettracer_setup.sh:1) (if not skipped and installer `.deb` exists)
+  8. [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1) (when `--vietnamese` is provided)
+  9. [`scripts/onedrive_setup.sh`](../../scripts/onedrive_setup.sh:1) (when `--onedrive` is provided)
 - Provides summary output and reminders (e.g., log out/in to pick up default shell changes).
 
 ### Orchestration Diagram
@@ -74,33 +71,25 @@ flowchart TD
     - `check_command` to test for program availability.
     - `run_sudo` and `dnf_install` to wrap privileged operations.
     - Safety checks like `check_not_root` and `verify_backup_dir`.
-    - Copy helpers `copy_with_backup` and `copy_dir` that back up existing files where appropriate.
+    - Copy helpers `copy_file` and `copy_dir` that overwrite without backup.
 
 All other scripts **source** this file and rely on its utilities for consistent behavior and safety.
 
 ### Terminal Setup
 
 - File: [`scripts/terminal_setup.sh`](../../scripts/terminal_setup.sh:1)
-- Responsibilities:
-  - **Core Setup** (Default):
-    - Perform `dnf update -y`.
-    - Install core packages (zsh, git, curl, wget, util-linux-user, fastfetch, kitty, podman, podman-compose, tmux).
-    - Install Starship and Atuin (dnf or official scripts).
-    - Install Zsh plugins (autosuggestions, syntax-highlighting, autocomplete).
-    - Restore dotfiles (`.zshrc`, `.bashrc`, `.gitconfig`) and config directories (`starship`, `atuin`, `fastfetch`, `fish`, `kitty`, `tmux`).
-    - Install fonts to `~/.local/share/fonts`.
-    - Change default shell to Zsh.
-  - **Enhancement** (via `--enhance` flag):
-    - Install power tools (`zoxide`, `eza`, `bat`, `fzf`, `ripgrep`, `fd-find`).
-    - Install `lazygit` (via COPR) and `yazi` (via prebuilt binary).
-    - Install Tmux Plugin Manager (TPM).
-    - Apply enhanced configs:
-      - Replace `.zshrc` with `.zshrc.enhanced`.
-      - Replace `tmux.conf` with `tmux.conf.enhanced`.
-      - Replace `kitty.conf` with `kitty.conf.enhanced`.
-      - Install Catppuccin themes for Kitty and Starship.
-      - Restore configs for `yazi` and `bat`.
-    - Perform post-install steps (build bat cache, print guidance).
+- Responsibilities (single, full-featured profile):
+  - Perform `dnf update -y`.
+  - Install core packages (zsh, git, curl, wget, util-linux-user, fastfetch, kitty, podman, podman-compose, tmux).
+  - Install Starship and Atuin (dnf or official scripts).
+  - Install Zsh plugins (autosuggestions, syntax-highlighting, autocomplete).
+  - Install power tools (`zoxide`, `eza`, `bat`, `fzf`, `ripgrep`, `fd-find`).
+  - Install `lazygit` (via COPR) and `yazi` (via prebuilt binary).
+  - Install Tmux Plugin Manager (TPM) from GitHub.
+  - Copy dotfiles (`.zshrc`, `.bashrc`, `.gitconfig`) and config directories (`starship`, `atuin`, `fastfetch`, `fish`, `kitty`, `tmux`) — overwrites without backup.
+  - Install fonts (CaskaydiaCove Nerd Font) to `~/.local/share/fonts`.
+  - Change default shell to Zsh.
+  - Perform post-install steps (build bat cache, print guidance).
 
 ### Tooling and Apps Setup (External Integrations)
 
@@ -108,8 +97,8 @@ Additional scripts manage specific tools and applications:
 
 - [`scripts/vscode_setup.sh`](../../scripts/vscode_setup.sh:1)
   - Installs VS Code (Microsoft repo).
-  - Restores VS Code settings and global storage from [`assets/vscode/`](../../assets/vscode:1).
-  - Installs extensions listed in `extensions.txt`.
+  - Installs extensions listed in [`assets/vscode/extensions.txt`](../../assets/vscode/extensions.txt:1) (if present).
+  - **Does NOT** restore VS Code settings or globalStorage to avoid storing secrets in version control.
 
 - [`scripts/qdrant_setup.sh`](../../scripts/qdrant_setup.sh:1)
   - Uses Podman to run a Qdrant vector DB container.
@@ -151,32 +140,36 @@ The [`assets/`](../../assets:1) directory serves as the **configuration source o
 
 - Root-level dotfiles:
   - [`assets/.zshrc`](../../assets/.zshrc:1)
-  - [`assets/.zshrc.enhanced`](../../assets/.zshrc.enhanced:1)
   - [`assets/.bashrc`](../../assets/.bashrc:1)
   - [`assets/.gitconfig`](../../assets/.gitconfig:1)
 - App-level configuration under [`assets/.config/`](../../assets/.config:1):
   - `starship`, `atuin`, `fastfetch`, `kitty`, `tmux`, and others as needed.
-- Fonts under [`assets/fonts/`](../../assets/fonts:1).
+- Fonts under [`assets/fonts/`](../../assets/fonts:1) (CaskaydiaCove Nerd Font).
 - Tool-specific extras:
   - [`assets/images/jedi.png`](../../assets/images/jedi.png:1) for `fastfetch`.
   - Godot settings and themes under [`assets/godot/`](../../assets/godot:1).
-  - VS Code settings and Kilo Code plugin data under [`assets/vscode/`](../../assets/vscode:1).
-  - EasyEffects audio presets (G560, G435) and autoload rules under [`assets/.config/easyeffects`](../../assets/.config/easyeffects:1).
+  - VS Code extensions list under [`assets/vscode/extensions.txt`](../../assets/vscode/extensions.txt:1).
+  - EasyEffects audio presets and autoload rules under [`assets/.config/easyeffects`](../../assets/.config/easyeffects:1).
 
-Scripts primarily treat these as **immutable inputs**, copying them into the user’s home directory and only creating backups on the target side when overwriting.
+Scripts treat these as **immutable inputs**, copying them into the user's home directory and overwriting existing files without backup.
 
 ## Critical Design Decisions
 
 - **Non-root execution**: All scripts enforce `check_not_root` to avoid running the orchestrator or sub-scripts as root. Privileged operations are performed via `sudo` only where required.
-- **Idempotent copying**:
-  - Copy operations are safe to repeat; they overwrite user-level configs and keep timestamped backups.
+- **Overwrite without backup**:
+  - Copy operations overwrite user-level configs directly.
+  - The repo is the single source of truth; to update config, edit in repo and re-run setup.
   - Fonts and configs can be re-copied without breaking existing setups.
 - **Separation of logic and data**:
   - Bash scripts contain **procedural logic**.
   - [`assets/`](../../assets:1) contains **all user-specific configuration data**, making it easy to adjust the environment by editing assets rather than rewriting scripts.
 - **Feature modularity**:
-  - Each major feature (VS Code, Qdrant, Godot, apps, Packet Tracer, enhancement) lives in its own script.
+  - Each major feature (VS Code, Qdrant, Godot, apps, Packet Tracer) lives in its own script.
   - `setup.sh` composes these features via flags and skip options.
+- **Tmux plugins via TPM**:
+  - Tmux Plugin Manager is cloned from GitHub into `~/.tmux/plugins/tpm`.
+  - Plugins are listed in `tmux.conf` and installed by user pressing `prefix + I`.
+  - No vendor plugin directories in the repo.
 
 ## Future Extension Points
 

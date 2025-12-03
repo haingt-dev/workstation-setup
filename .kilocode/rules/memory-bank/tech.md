@@ -29,7 +29,7 @@
 - Containers:
   - `podman` and `podman-compose` for containerized services
 - Fonts:
-  - Nerd Fonts (CaskaydiaCove, FiraCode) and JetBrains Mono under [`assets/fonts/`](../../assets/fonts:1)
+  - CaskaydiaCove Nerd Font under [`assets/fonts/`](../../assets/fonts:1)
 - Input Method:
   - `ibus-bamboo` (Vietnamese) installed via [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1)
 
@@ -42,7 +42,7 @@
     - `zsh-autosuggestions`
     - `zsh-syntax-highlighting`
     - `zsh-autocomplete` (via DNF when available, else GitHub clone under `$HOME/.local/share/zsh/plugins`)
-- Power tools (installed by [`scripts/terminal_setup.sh`](../../scripts/terminal_setup.sh:1) with `--enhance`):
+- Power tools (installed by [`scripts/terminal_setup.sh`](../../scripts/terminal_setup.sh:1)):
   - `zoxide` (smart `cd`)
   - `eza` (modern `ls`)
   - `bat` (syntax-highlighted `cat`)
@@ -55,8 +55,9 @@
 ## Applications and Services
 
 - Editor:
-  - Visual Studio Code (VS Code), installed and configured via [`scripts/vscode_setup.sh`](../../scripts/vscode_setup.sh:1)
-  - Settings, extensions, and Kilo Code plugin state under [`assets/vscode/`](../../assets/vscode:1)
+  - Visual Studio Code (VS Code), installed via [`scripts/vscode_setup.sh`](../../scripts/vscode_setup.sh:1)
+  - Extensions list under [`assets/vscode/extensions.txt`](../../assets/vscode/extensions.txt:1)
+  - Settings are NOT restored (to avoid storing secrets in version control)
 - Vector database:
   - Qdrant, provisioned via Podman and systemd user service by [`scripts/qdrant_setup.sh`](../../scripts/qdrant_setup.sh:1)
 - Game engine:
@@ -74,36 +75,34 @@
 ## Configuration and Assets
 
 - Dotfiles:
-  - `.zshrc`, `.zshrc.enhanced`, `.bashrc`, `.gitconfig` at the root of [`assets/`](../../assets:1)
+  - `.zshrc`, `.bashrc`, `.gitconfig` at the root of [`assets/`](../../assets:1)
 - Application configs under [`assets/.config/`](../../assets/.config:1):
-  - `starship`
+  - `starship` (with Gruvbox theme by default, Catppuccin alternative available)
   - `atuin`
   - `fastfetch`
   - `fish`
-  - `kitty`
-  - `tmux`
+  - `kitty` (with Catppuccin Mocha theme)
+  - `tmux` (with TPM plugin declarations)
   - `easyeffects` (audio presets and autoload rules)
   - Optional: `yazi`, `bat` and other tool-specific configs
 - Visual assets:
   - Custom Fastfetch logo at [`assets/images/jedi.png`](../../assets/images/jedi.png:1)
-  - Catppuccin Kitty theme and optional Starship theme:
-    - [`assets/.config/kitty/catppuccin-mocha.conf`](../../assets/.config/kitty/catppuccin-mocha.conf:1)
-    - [`assets/.config/kitty/kitty.conf.enhanced`](../../assets/.config/kitty/kitty.conf.enhanced:1)
-    - [`assets/.config/starship/starship-catppuccin.toml`](../../assets/.config/starship/starship-catppuccin.toml:1)
 
 ## Technical Constraints and Patterns
 
 - Execution:
   - All scripts must be run as a non-root user; root execution is explicitly blocked via `check_not_root` in [`scripts/common.sh`](../../scripts/common.sh:1).
   - Privileged operations go through `sudo` wrappers such as `dnf_install`.
-- Idempotency:
-  - Copy helpers (`copy_with_backup`, `copy_dir`) in [`scripts/common.sh`](../../scripts/common.sh:1) back up existing config files and recursively copy directories, allowing safe re-runs.
+- Overwrite semantics:
+  - Copy helpers (`copy_file`, `copy_dir`) in [`scripts/common.sh`](../../scripts/common.sh:1) overwrite existing config files without backup.
+  - The repo is the single source of truth; to update config, edit in repo and re-run setup.
   - Fonts and configuration directories can be re-copied without harm.
 - Structure:
   - Logic lives in Bash scripts under [`scripts/`](../../scripts:1).
   - User-specific and app-specific configuration lives entirely under [`assets/`](../../assets:1).
-- Customization:
-  - Enhancements (power tools, themed configs) are opt-in via `--enhance`, keeping baseline setup and enhancements logically separated.
+- Single profile:
+  - Terminal setup installs a single, full-featured configuration with all power tools and themes.
+  - No separate "core" vs "enhanced" modes.
 
 ## Tool Usage Patterns
 

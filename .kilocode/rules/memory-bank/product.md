@@ -56,9 +56,10 @@ This repository provides a **single, version-controlled source of truth** for th
 
 4. Scripts:
    - Install required packages with `dnf` (and other mechanisms where needed).
-   - Restore dotfiles, fonts, and configuration directories from [`assets/`](../../assets:1).
+   - Copy dotfiles, fonts, and configuration directories from [`assets/`](../../assets:1) (overwrites without backup).
    - Set Zsh as default shell, configure Kitty, tmux, Starship, Atuin, and power tools.
-   - Restore VS Code settings/extensions and Godot editor configuration.
+   - Install VS Code and extensions (settings are NOT restored to avoid storing secrets).
+   - Restore Godot editor configuration.
    - Install and configure supporting tools like Qdrant and selected desktop apps.
    - Restore audio processing presets via EasyEffects for reproducible speaker/headphone tuning.
 
@@ -70,11 +71,9 @@ This repository provides a **single, version-controlled source of truth** for th
 
 - **Default (Full)**: `./setup.sh` (runs all standard components).
 - **Explicit Full**: `./setup.sh --full` (same as default, useful for clarity).
-- **Core/Minimal**: `./setup.sh --core` or `./setup.sh --minimal` (core terminal setup only: shell, dotfiles, fonts).
 - **Exclusive Mode**: Run specific components only by passing their flags.
-  - Example: `./setup.sh --vscode --qdrant` (installs ONLY VS Code and Qdrant).
-  - Example: `./setup.sh --enhance` (runs ONLY terminal enhancement).
-  - Example: `./setup.sh --core --enhance` (runs core setup AND enhancement).
+  - Example: `./setup.sh --vscode` (installs ONLY VS Code).
+  - Example: `./setup.sh --terminal` (runs ONLY terminal setup).
 - **OneDrive setup**: `./setup.sh --onedrive` (interactive setup for one or more OneDrive accounts).
 - **Vietnamese support**: `./setup.sh --vietnamese` (installs ibus-bamboo input method).
 - **Selective skipping**: In default mode, skip specific parts via `--skip-vscode`, `--skip-qdrant`, `--skip-godot`, `--skip-apps`, `--skip-easyeffects`, `--skip-packettracer`.
@@ -91,9 +90,10 @@ This repository provides a **single, version-controlled source of truth** for th
    - Setup should run mostly unattended after entering sudo credentials.
    - Scripts should avoid unnecessary prompts and use non-interactive installs where possible.
 
-3. **Safety and reversibility**
+3. **Overwrite semantics**
 
-   - Existing configs should be backed up where they might be overwritten (e.g., `.gitconfig`, tmux configs).
+   - Setup overwrites existing configs without creating backups.
+   - The repo (`assets/`) is the single source of truth—to change config, edit the repo and re-run setup.
    - Fonts and configs are installed to user-level locations, minimizing system-wide risk.
 
 4. **Consistency across machines**

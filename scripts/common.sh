@@ -86,17 +86,12 @@ verify_backup_dir() {
     fi
 }
 
-# Copy file with backup of existing
-copy_with_backup() {
+# Copy file (overwrite if exists, no backup)
+copy_file() {
     local src="$1"
     local dest="$2"
     
-    if [[ -f "$dest" ]]; then
-        cp "$dest" "${dest}.backup.$(date +%Y%m%d%H%M%S)"
-        log_warn "Backed up existing: $dest"
-    fi
-    
-    cp "$src" "$dest"
+    cp -f "$src" "$dest"
     log_success "Copied: $src -> $dest"
 }
 

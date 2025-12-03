@@ -1,4 +1,10 @@
 assets/CiscoPacketTracer_Ubuntu_64bit.deb
 *.deb
-assets/vscode/globalStorage/kilocode.kilo-code/tasks/*/checkpoints/
 .chromium-browser-snapshots/
+
+# VS Code asset state (do not track secrets or extension runtime data)
+assets/vscode/*
+!assets/vscode/extensions.txt
+
+# VS Code project settings
+.vscode/
