@@ -40,6 +40,7 @@ cd terminal-custom
 
 Options:
   --minimal           Core setup only (shell, dotfiles, fonts)
+  --full              Run full standard setup (useful to combine with --enhance)
   --enhance           Install power tools (zoxide, eza, bat, fzf, ripgrep, fd-find, lazygit, yazi)
   --skip-vscode       Skip VS Code installation
   --skip-qdrant       Skip Qdrant setup
@@ -51,10 +52,20 @@ Options:
   --vietnamese        Install Vietnamese input method (ibus-bamboo)
   --help              Show help message
 
+Exclusive Mode (Run ONLY specific components):
+  ./setup.sh --vscode                     # ONLY install VS Code
+  ./setup.sh --qdrant                     # ONLY setup Qdrant
+  ./setup.sh --godot                      # ONLY install Godot
+  ./setup.sh --apps                       # ONLY install Apps
+  ./setup.sh --packettracer               # ONLY install Packet Tracer
+  ./setup.sh --easyeffects                # ONLY setup EasyEffects
+  ./setup.sh --core --enhance             # Core setup + Enhancement ONLY
+
 Examples:
   ./setup.sh                              # Full installation
   ./setup.sh --minimal                    # Core setup only
-  ./setup.sh --enhance                    # Add power tools to existing setup
+  ./setup.sh --enhance                    # Add power tools to existing setup (Exclusive mode)
+  ./setup.sh --full --enhance             # Full setup + Enhancement
   ./setup.sh --skip-godot --skip-apps     # Skip Godot and apps
 ```
 

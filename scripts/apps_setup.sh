@@ -18,6 +18,12 @@ log_section "Installing Additional Applications"
 # =============================================================================
 log_section "Installing Google Chrome..."
 
+# Ensure dnf-plugins-core is installed (provides config-manager)
+if ! rpm -q dnf-plugins-core &>/dev/null; then
+    log_info "Installing dnf-plugins-core..."
+    dnf_install dnf-plugins-core
+fi
+
 if ! dnf repolist 2>/dev/null | grep -q google-chrome; then
     dnf_install fedora-workstation-repositories
     sudo dnf config-manager setopt google-chrome.enabled=1

@@ -29,6 +29,7 @@ CORE_PACKAGES=(
     git
     curl
     wget
+    unzip
     util-linux-user
     fastfetch
     kitty

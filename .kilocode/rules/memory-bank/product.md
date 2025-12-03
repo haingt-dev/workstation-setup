@@ -71,6 +71,7 @@ This repository provides a **single, version-controlled source of truth** for th
 
 - **Full install**: `./setup.sh` (default, all components enabled).
 - **Minimal**: `./setup.sh --minimal` (core terminal setup only; skips Qdrant, Godot, apps, Packet Tracer).
+- **Exclusive Mode**: Run specific components only (e.g., `./setup.sh --vscode`, `./setup.sh --qdrant`).
 - **Enhancement only**: `./setup.sh --enhance` (runs just the enhancement script for power tools and enhanced configs).
 - **OneDrive setup**: `./setup.sh --onedrive` (interactive setup for one or more OneDrive accounts).
 - **Vietnamese support**: `./setup.sh --vietnamese` (installs ibus-bamboo input method).

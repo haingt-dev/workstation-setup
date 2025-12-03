@@ -40,6 +40,16 @@ ensure_dir "$HOME/.local/share/icons"
 # =============================================================================
 # Download Godot
 # =============================================================================
+# Ensure dependencies are installed
+if ! check_command unzip; then
+    log_info "unzip not found, installing..."
+    dnf_install unzip
+fi
+if ! check_command curl; then
+    log_info "curl not found, installing..."
+    dnf_install curl
+fi
+
 log_section "Downloading Godot ${GODOT_VERSION}..."
 
 GODOT_ZIP="Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"

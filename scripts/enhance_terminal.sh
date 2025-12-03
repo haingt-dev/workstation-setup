@@ -56,6 +56,20 @@ log_section "Installing Yazi..."
 if check_command yazi; then
     log_success "Yazi already installed"
 else
+    # Ensure dependencies are installed
+    if ! check_command unzip; then
+        log_info "unzip not found, installing..."
+        dnf_install unzip
+    fi
+    if ! check_command curl; then
+        log_info "curl not found, installing..."
+        dnf_install curl
+    fi
+    if ! check_command git; then
+        log_info "git not found, installing..."
+        dnf_install git
+    fi
+
     # Yazi is available via cargo or prebuilt binaries
     # Using prebuilt binary for faster installation
     YAZI_VERSION="0.4.2"

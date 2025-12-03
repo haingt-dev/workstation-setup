@@ -24,6 +24,7 @@ At a high level, the system:
   - `--minimal` turns on a reduced installation, skipping Qdrant, Godot, apps, and Packet Tracer.
   - `--enhance` enables terminal enhancement.
   - `--skip-*` flags allow selectively skipping VS Code, Qdrant, Godot, apps, EasyEffects, and Packet Tracer.
+  - **Exclusive Mode**: If specific component flags (e.g., `--vscode`, `--qdrant`) are provided, `setup.sh` switches to exclusive mode and runs **only** the requested components.
 - Performs pre-flight checks via utilities in [`scripts/common.sh`](../../scripts/common.sh:1):
   - Enforces **non-root** execution.
   - Verifies the backup/assets directory exists.

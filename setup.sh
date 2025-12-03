@@ -4,14 +4,12 @@
 # =============================================================================
 #
 # Usage:
-#   ./setup.sh              # Full installation
-#   ./setup.sh --minimal    # Core setup only (no apps, no godot)
-#   ./setup.sh --enhance    # Run terminal enhancement (power tools)
-#   ./setup.sh --skip-vscode
-#   ./setup.sh --skip-qdrant
-#   ./setup.sh --skip-godot
-#   ./setup.sh --skip-apps
-#   ./setup.sh --skip-packettracer
+#   ./setup.sh              # Full installation (Standard components)
+#   ./setup.sh --minimal    # Core setup only
+#   ./setup.sh --full       # Full setup (Standard components)
+#   ./setup.sh --vscode     # Exclusive mode: ONLY setup VS Code
+#   ./setup.sh --enhance    # Exclusive mode: ONLY run enhancement
+#   ./setup.sh --skip-godot # Full installation EXCEPT Godot
 #   ./setup.sh --help
 #
 # =============================================================================
@@ -26,85 +24,126 @@ SCRIPTS_DIR="$SETUP_DIR/scripts"
 source "$SCRIPTS_DIR/common.sh"
 
 # =============================================================================
-# Parse Arguments
+# Configuration & Defaults
 # =============================================================================
-SKIP_VSCODE=false
-SKIP_QDRANT=false
-SKIP_GODOT=false
-SKIP_APPS=false
-SKIP_PACKETTRACER=false
-SKIP_EASYEFFECTS=false
-SKIP_VIETNAMESE=false
+
+# Standard components (Run by default)
+INSTALL_CORE=true
+INSTALL_VSCODE=true
+INSTALL_QDRANT=true
+INSTALL_GODOT=true
+INSTALL_APPS=true
+INSTALL_PACKETTRACER=true
+INSTALL_EASYEFFECTS=true
+
+# Optional components (Do not run by default)
 INSTALL_ONEDRIVE=false
-MINIMAL=false
-ENHANCE=false
+INSTALL_VIETNAMESE=false
+INSTALL_ENHANCE=false
+
+# =============================================================================
+# Argument Parsing
+# =============================================================================
 
 show_help() {
     echo "Terminal Custom Setup Script"
     echo ""
     echo "Usage: $0 [OPTIONS]"
     echo ""
-    echo "Options:"
-    echo "  --minimal           Core setup only (shell, dotfiles, fonts)"
-    echo "  --enhance           Install power tools (zoxide, eza, bat, fzf, lazygit, yazi)"
-    echo "  --onedrive          Setup OneDrive (supports multiple accounts)"
-    echo "  --skip-vscode       Skip VS Code installation"
-    echo "  --skip-qdrant       Skip Qdrant setup"
-    echo "  --skip-godot        Skip Godot installation"
-    echo "  --skip-apps         Skip additional apps (Chrome, Dropbox, Flatpaks)"
-    echo "  --skip-packettracer Skip Cisco Packet Tracer installation"
-    echo "  --skip-easyeffects  Skip EasyEffects audio setup"
-    echo "  --vietnamese        Install Vietnamese input method (ibus-bamboo)"
-    echo "  --help              Show this help message"
+    echo "Modes:"
+    echo "  Default (no args)   Run full standard setup."
+    echo "  Exclusive           If any component flag is used, ONLY that component runs."
+    echo ""
+    echo "Component Flags (Triggers Exclusive Mode):"
+    echo "  --full              Run full standard setup (useful to combine with --enhance)"
+    echo "  --core, --minimal   Core setup (shell, dotfiles, fonts)"
+    echo "  --vscode            VS Code setup"
+    echo "  --qdrant            Qdrant setup"
+    echo "  --godot             Godot setup"
+    echo "  --apps              Additional apps (Chrome, Dropbox, Flatpaks)"
+    echo "  --packettracer      Cisco Packet Tracer setup"
+    echo "  --easyeffects       EasyEffects audio setup"
+    echo "  --onedrive          OneDrive setup (supports multiple accounts)"
+    echo "  --vietnamese        Vietnamese input setup (ibus-bamboo)"
+    echo "  --enhance           Terminal enhancement (power tools)"
+    echo ""
+    echo "Skip Flags (For Default Mode):"
+    echo "  --skip-vscode       Skip VS Code"
+    echo "  --skip-qdrant       Skip Qdrant"
+    echo "  --skip-godot        Skip Godot"
+    echo "  --skip-apps         Skip Apps"
+    echo "  --skip-packettracer Skip Packet Tracer"
+    echo "  --skip-easyeffects  Skip EasyEffects"
     echo ""
     echo "Examples:"
-    echo "  $0                  # Full installation"
-    echo "  $0 --minimal        # Core setup only"
-    echo "  $0 --enhance        # Add power tools to existing setup"
-    echo "  $0 --skip-godot --skip-packettracer"
+    echo "  $0                  # Full standard installation"
+    echo "  $0 --vscode         # ONLY install VS Code"
+    echo "  $0 --core --enhance # Core setup + Enhancement"
+    echo "  $0 --skip-godot     # Full setup EXCEPT Godot"
     exit 0
 }
 
+# Detect Exclusive Mode
+# If any positive component flag is present, switch to exclusive mode.
+EXCLUSIVE_MODE=false
 for arg in "$@"; do
     case $arg in
-        --minimal)
-            MINIMAL=true
-            SKIP_QDRANT=true
-            SKIP_GODOT=true
-            SKIP_APPS=true
-            SKIP_PACKETTRACER=true
+        --full|--core|--minimal|--vscode|--qdrant|--godot|--apps|--packettracer|--easyeffects|--onedrive|--vietnamese|--enhance)
+            EXCLUSIVE_MODE=true
+            break
             ;;
-        --enhance)
-            ENHANCE=true
+    esac
+done
+
+if $EXCLUSIVE_MODE; then
+    # In exclusive mode, disable all standard components by default.
+    # Only explicitly requested components will be enabled in the loop below.
+    INSTALL_CORE=false
+    INSTALL_VSCODE=false
+    INSTALL_QDRANT=false
+    INSTALL_GODOT=false
+    INSTALL_APPS=false
+    INSTALL_PACKETTRACER=false
+    INSTALL_EASYEFFECTS=false
+    INSTALL_ONEDRIVE=false
+    INSTALL_VIETNAMESE=false
+    INSTALL_ENHANCE=false
+fi
+
+# Parse Flags
+for arg in "$@"; do
+    case $arg in
+        # Component Flags
+        --full)
+            INSTALL_CORE=true
+            INSTALL_VSCODE=true
+            INSTALL_QDRANT=true
+            INSTALL_GODOT=true
+            INSTALL_APPS=true
+            INSTALL_PACKETTRACER=true
+            INSTALL_EASYEFFECTS=true
             ;;
-        --skip-vscode)
-            SKIP_VSCODE=true
-            ;;
-        --skip-qdrant)
-            SKIP_QDRANT=true
-            ;;
-        --skip-godot)
-            SKIP_GODOT=true
-            ;;
-        --skip-apps)
-            SKIP_APPS=true
-            ;;
-        --skip-packettracer)
-            SKIP_PACKETTRACER=true
-            ;;
-        --skip-easyeffects)
-            SKIP_EASYEFFECTS=true
-            ;;
-        --vietnamese)
-            SKIP_VIETNAMESE=false
-            INSTALL_VIETNAMESE=true
-            ;;
-        --onedrive)
-            INSTALL_ONEDRIVE=true
-            ;;
-        --help|-h)
-            show_help
-            ;;
+        --core|--minimal)     INSTALL_CORE=true ;;
+        --vscode)             INSTALL_VSCODE=true ;;
+        --qdrant)             INSTALL_QDRANT=true ;;
+        --godot)              INSTALL_GODOT=true ;;
+        --apps)               INSTALL_APPS=true ;;
+        --packettracer)       INSTALL_PACKETTRACER=true ;;
+        --easyeffects)        INSTALL_EASYEFFECTS=true ;;
+        --onedrive)           INSTALL_ONEDRIVE=true ;;
+        --vietnamese)         INSTALL_VIETNAMESE=true ;;
+        --enhance)            INSTALL_ENHANCE=true ;;
+
+        # Skip Flags
+        --skip-vscode)        INSTALL_VSCODE=false ;;
+        --skip-qdrant)        INSTALL_QDRANT=false ;;
+        --skip-godot)         INSTALL_GODOT=false ;;
+        --skip-apps)          INSTALL_APPS=false ;;
+        --skip-packettracer)  INSTALL_PACKETTRACER=false ;;
+        --skip-easyeffects)   INSTALL_EASYEFFECTS=false ;;
+
+        # Other
+        --help|-h)            show_help ;;
         *)
             log_error "Unknown option: $arg"
             echo "Use --help for usage information."
@@ -125,62 +164,54 @@ echo -e "${GREEN}${BOLD}║          Terminal Custom Setup for Nobara/Fedora    
 echo -e "${GREEN}${BOLD}╚══════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
-if $MINIMAL; then
-    log_info "Running in MINIMAL mode (core setup only)"
+if $EXCLUSIVE_MODE; then
+    log_info "Running in EXCLUSIVE MODE (Selected components only)"
 fi
 
 # =============================================================================
 # Run Setup Scripts
 # =============================================================================
 
-# Handle enhance-only mode
-if $ENHANCE && [[ $# -eq 1 ]]; then
-    log_section "Running Terminal Enhancement..."
-    bash "$SCRIPTS_DIR/enhance_terminal.sh"
-    echo ""
-    echo -e "${GREEN}${BOLD}Terminal enhancement complete!${NC}"
-    echo "Please restart your terminal to apply changes."
-    exit 0
+# 1. Core Setup
+if $INSTALL_CORE; then
+    log_section "Running Core Setup..."
+    bash "$SCRIPTS_DIR/core_setup.sh"
 fi
 
-# 1. Core Setup (always runs)
-log_section "Running Core Setup..."
-bash "$SCRIPTS_DIR/core_setup.sh"
-
 # 2. VS Code Setup
-if ! $SKIP_VSCODE; then
+if $INSTALL_VSCODE; then
     log_section "Running VS Code Setup..."
     bash "$SCRIPTS_DIR/vscode_setup.sh"
-else
+elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping VS Code setup"
 fi
 
 # 3. Qdrant Setup
-if ! $SKIP_QDRANT; then
+if $INSTALL_QDRANT; then
     log_section "Running Qdrant Setup..."
     bash "$SCRIPTS_DIR/qdrant_setup.sh"
-else
+elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping Qdrant setup"
 fi
 
 # 4. Godot Setup
-if ! $SKIP_GODOT; then
+if $INSTALL_GODOT; then
     log_section "Running Godot Setup..."
     bash "$SCRIPTS_DIR/godot_setup.sh"
-else
+elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping Godot setup"
 fi
 
 # 5. Additional Apps Setup
-if ! $SKIP_APPS; then
+if $INSTALL_APPS; then
     log_section "Running Apps Setup..."
     bash "$SCRIPTS_DIR/apps_setup.sh"
-else
+elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping additional apps setup"
 fi
 
 # 6. Packet Tracer Setup
-if ! $SKIP_PACKETTRACER; then
+if $INSTALL_PACKETTRACER; then
     # Check if .deb file exists before attempting
     PT_DEB=$(find "$BACKUP_DIR" "$HOME" -maxdepth 1 -type f \( -name "Cisco*Packet*.deb" -o -name "Packet*Tracer*.deb" \) 2>/dev/null | head -1)
     if [[ -n "$PT_DEB" ]]; then
@@ -189,34 +220,34 @@ if ! $SKIP_PACKETTRACER; then
     else
         log_warn "Skipping Packet Tracer setup (installer not found)"
         log_info "To install later, place the .deb file in $BACKUP_DIR and run:"
-        echo "    bash $SCRIPTS_DIR/packettracer_setup.sh"
+        echo "    ./setup.sh --packettracer"
     fi
-else
+elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping Packet Tracer setup"
 fi
 
 # 7. EasyEffects Setup
-if ! $SKIP_EASYEFFECTS; then
+if $INSTALL_EASYEFFECTS; then
     log_section "Running EasyEffects Setup..."
     bash "$SCRIPTS_DIR/easyeffects_setup.sh"
-else
+elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping EasyEffects setup"
 fi
 
-# 8. Vietnamese Input Method (if requested)
-if [[ "${INSTALL_VIETNAMESE:-false}" == "true" ]]; then
+# 8. Vietnamese Input Method
+if $INSTALL_VIETNAMESE; then
     log_section "Running Vietnamese Input Setup..."
     bash "$SCRIPTS_DIR/input_setup.sh"
 fi
 
-# 9. OneDrive Setup (if requested)
+# 9. OneDrive Setup
 if $INSTALL_ONEDRIVE; then
     log_section "Running OneDrive Setup..."
     bash "$SCRIPTS_DIR/onedrive_setup.sh"
 fi
 
-# 10. Terminal Enhancement (if requested)
-if $ENHANCE; then
+# 10. Terminal Enhancement
+if $INSTALL_ENHANCE; then
     log_section "Running Terminal Enhancement..."
     bash "$SCRIPTS_DIR/enhance_terminal.sh"
 fi
@@ -233,15 +264,15 @@ echo "Please log out and log back in for the shell change to take effect."
 echo "Then open a new terminal to enjoy your restored setup!"
 echo ""
 
-if ! $SKIP_QDRANT; then
+if $INSTALL_QDRANT; then
     log_info "Qdrant is running at: http://localhost:6333"
 fi
 
-if ! $SKIP_GODOT; then
+if $INSTALL_GODOT; then
     log_info "Run Godot with: godot"
 fi
 
-if $ENHANCE; then
+if $INSTALL_ENHANCE; then
     echo ""
     log_info "Power tools installed! New commands available:"
     echo "  - ls  → eza (with icons)"
