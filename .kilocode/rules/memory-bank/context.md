@@ -2,7 +2,7 @@
 
 ## Current Work Focus
 
-- Maintaining the Memory Bank in sync with the evolving terminal setup scripts, including new integrations like EasyEffects audio presets.
+- Maintaining the Memory Bank in sync with the evolving terminal setup scripts, including new integrations like OneDrive multi-account support.
 
 ## Recent Changes
 
@@ -12,6 +12,9 @@
   - [`scripts/easyeffects_setup.sh`](../../scripts/easyeffects_setup.sh:1)
   - [`assets/.config/easyeffects`](../../assets/.config/easyeffects:1) with G560 and G435 audio presets
   - `--skip-easyeffects` flag in [`setup.sh`](../../setup.sh:1)
+- Added OneDrive integration:
+  - [`scripts/onedrive_setup.sh`](../../scripts/onedrive_setup.sh:1) for multi-account setup
+  - `--onedrive` flag in [`setup.sh`](../../setup.sh:1)
 
 ## Next Steps
 

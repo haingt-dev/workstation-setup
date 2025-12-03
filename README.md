@@ -14,6 +14,7 @@ Automated terminal and development environment setup for Nobara 42 / Fedora.
 - **Qdrant**: Vector database with auto-start systemd service
 - **Godot Engine**: Game engine with VS Code integration
 - **Additional Apps**: Chrome, Dropbox, Discord, Obsidian, Anki
+- **OneDrive**: Multi-account support via `abraunegg/onedrive` client
 - **Audio Processing**: EasyEffects with pre-tuned presets and autoload rules
 - **Cisco Packet Tracer**: Network simulation tool
 - **Vietnamese Input**: ibus-bamboo for Vietnamese typing
@@ -46,6 +47,7 @@ Options:
   --skip-apps         Skip additional apps (Chrome, Dropbox, Flatpaks)
   --skip-packettracer Skip Cisco Packet Tracer installation
   --skip-easyeffects  Skip EasyEffects audio setup
+  --onedrive          Setup OneDrive (supports multiple accounts)
   --vietnamese        Install Vietnamese input method (ibus-bamboo)
   --help              Show help message
 
@@ -77,6 +79,7 @@ Examples:
     ├── qdrant_setup.sh         # Qdrant vector database with Podman
     ├── godot_setup.sh          # Godot Engine installation
     ├── apps_setup.sh           # Chrome, Dropbox, Flatpak apps
+    ├── onedrive_setup.sh       # OneDrive multi-account setup
     ├── easyeffects_setup.sh    # EasyEffects audio presets and configuration
     ├── packettracer_setup.sh   # Cisco Packet Tracer installation
     └── input_setup.sh          # Vietnamese input method (ibus-bamboo)
@@ -148,6 +151,12 @@ z   → zoxide                    # Smart directory jumping
 - Dropbox (DNF)
 - Discord, Obsidian, Anki (Flatpak)
 
+### OneDrive Setup (`onedrive_setup.sh`)
+- Installs `abraunegg/onedrive` client
+- Interactive setup for multiple accounts (e.g., Personal, Work)
+- Creates isolated configurations in `~/.config/onedrive-<name>`
+- Sets up systemd user services for automatic sync (`onedrive@<name>`)
+
 ### Packet Tracer Setup (`packettracer_setup.sh`)
 - Converts Ubuntu .deb package for Fedora
 - Installs Qt5 dependencies
@@ -193,6 +202,9 @@ bash scripts/easyeffects_setup.sh
 
 # Install Vietnamese input
 bash scripts/input_setup.sh
+
+# Setup OneDrive
+bash scripts/onedrive_setup.sh
 ```
 
 ## Post-Enhancement Setup

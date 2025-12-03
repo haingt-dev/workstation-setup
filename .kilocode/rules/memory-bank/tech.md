@@ -64,6 +64,8 @@
 - Desktop applications (installed by [`scripts/apps_setup.sh`](../../scripts/apps_setup.sh:1)):
   - Google Chrome and Dropbox (DNF)
   - Discord, Obsidian, Anki (Flatpak)
+- Cloud Storage:
+  - OneDrive (`abraunegg/onedrive`), configured via [`scripts/onedrive_setup.sh`](../../scripts/onedrive_setup.sh:1) with multi-account support using named systemd services.
 - Networking tool:
   - Cisco Packet Tracer, installed via converted `.deb` with Qt5 dependencies by [`scripts/packettracer_setup.sh`](../../scripts/packettracer_setup.sh:1) when the installer is present in [`assets/`](../../assets:1)
 - Audio processing:

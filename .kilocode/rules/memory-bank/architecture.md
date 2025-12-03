@@ -34,9 +34,10 @@ At a high level, the system:
   4. [`scripts/godot_setup.sh`](../../scripts/godot_setup.sh:1) (unless `--skip-godot` or `--minimal`)
   5. [`scripts/apps_setup.sh`](../../scripts/apps_setup.sh:1) (unless `--skip-apps` or `--minimal`)
   6. [`scripts/easyeffects_setup.sh`](../../scripts/easyeffects_setup.sh:1) (unless `--skip-easyeffects`)
-  7. [`scripts/packettracer_setup.sh`](../../scripts/packettracer_setup.sh:1) (if not skipped and installer `.deb` exists)
-  8. [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1) (when `--vietnamese` is provided)
-  9. [`scripts/enhance_terminal.sh`](../../scripts/enhance_terminal.sh:1) (when `--enhance` is provided)
+  7. [`scripts/onedrive_setup.sh`](../../scripts/onedrive_setup.sh:1) (when `--onedrive` is provided)
+  8. [`scripts/packettracer_setup.sh`](../../scripts/packettracer_setup.sh:1) (if not skipped and installer `.deb` exists)
+  9. [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1) (when `--vietnamese` is provided)
+  10. [`scripts/enhance_terminal.sh`](../../scripts/enhance_terminal.sh:1) (when `--enhance` is provided)
 - Provides summary output and reminders (e.g., log out/in to pick up default shell changes).
 
 ### Orchestration Diagram
@@ -50,10 +51,11 @@ flowchart TD
   E --> F[Optionally run scripts/qdrant_setup.sh]
   F --> G[Optionally run scripts/godot_setup.sh]
   G --> H[Optionally run scripts/apps_setup.sh]
-  H --> I[Conditionally run scripts/packettracer_setup.sh]
-  I --> J[Optionally run scripts/input_setup.sh]
-  J --> K[Optionally run scripts/enhance_terminal.sh]
-  K --> L[Print completion summary and next steps]
+  H --> I[Optionally run scripts/onedrive_setup.sh]
+  I --> J[Conditionally run scripts/packettracer_setup.sh]
+  J --> K[Optionally run scripts/input_setup.sh]
+  K --> L[Optionally run scripts/enhance_terminal.sh]
+  L --> M[Print completion summary and next steps]
 ```
 
 ## Core Components
@@ -148,6 +150,11 @@ Additional scripts manage specific tools and applications:
 - [`scripts/apps_setup.sh`](../../scripts/apps_setup.sh:1)
   - Installs Google Chrome and Dropbox using `dnf`.
   - Installs Discord, Obsidian, and Anki via Flatpak.
+
+- [`scripts/onedrive_setup.sh`](../../scripts/onedrive_setup.sh:1)
+  - Installs `abraunegg/onedrive` client.
+  - Supports interactive setup for multiple accounts (e.g., Personal, Work).
+  - Configures named systemd user services for automatic background sync.
 
 - [`scripts/packettracer_setup.sh`](../../scripts/packettracer_setup.sh:1)
   - Locates a Cisco Packet Tracer `.deb` installer.
