@@ -48,6 +48,14 @@ dnf_install dropbox nautilus-dropbox
 log_success "Dropbox installed"
 
 # =============================================================================
+# Calibre
+# =============================================================================
+log_section "Installing Calibre..."
+
+dnf_install calibre
+log_success "Calibre installed"
+
+# =============================================================================
 # Flatpak Setup
 # =============================================================================
 log_section "Setting up Flatpak..."
@@ -88,8 +96,9 @@ log_section "Additional Applications Installation Complete!"
 echo ""
 echo "Installed applications:"
 echo "  - Firefox (DNF)"
-# echo "  - Google Chrome (DNF)"
+echo "  - Google Chrome (DNF)"
 echo "  - Dropbox (DNF)"
+echo "  - Calibre (DNF)"
 echo "  - Discord (Flatpak)"
 echo "  - Obsidian (Flatpak)"
 echo "  - Anki (Flatpak)"
