@@ -23,6 +23,7 @@
   - Plugins installed by user pressing `prefix + I`.
 - Fonts simplified:
   - Only CaskaydiaCove Nerd Font in [`assets/fonts/`](../../assets/fonts:1).
+- Added Calibre to desktop apps installed by [`scripts/apps_setup.sh`](../../scripts/apps_setup.sh:1).
 - Synced Memory Bank (product, architecture, tech, context) with current state.
 
 ## Next Steps

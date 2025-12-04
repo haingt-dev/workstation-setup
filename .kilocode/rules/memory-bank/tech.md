@@ -64,7 +64,7 @@
   - Godot Engine, installed by [`scripts/godot_setup.sh`](../../scripts/godot_setup.sh:1) to `~/.local/bin/godot`
 - Desktop applications (installed by [`scripts/apps_setup.sh`](../../scripts/apps_setup.sh:1)):
   - Google Chrome and Dropbox (DNF)
-  - Discord, Obsidian, Anki (Flatpak)
+  - Discord, Obsidian, Anki, Calibre (Flatpak)
 - Cloud Storage:
   - OneDrive (`abraunegg/onedrive`), configured via [`scripts/onedrive_setup.sh`](../../scripts/onedrive_setup.sh:1) with multi-account support using named systemd services.
 - Networking tool:

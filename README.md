@@ -13,7 +13,7 @@ Automated terminal and development environment setup for Nobara 42 / Fedora.
 - **VS Code**: Installation and extensions
 - **Qdrant**: Vector database with auto-start systemd service
 - **Godot Engine**: Game engine with VS Code integration
-- **Additional Apps**: Chrome, Dropbox, Discord, Obsidian, Anki
+- **Additional Apps**: Chrome, Dropbox, Discord, Obsidian, Anki, Calibre
 - **OneDrive**: Multi-account support via `abraunegg/onedrive` client
 - **Audio Processing**: EasyEffects with pre-tuned presets
 - **Cisco Packet Tracer**: Network simulation tool
