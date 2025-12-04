@@ -1,0 +1,201 @@
+# =============================================================================
+# Starship Prompt - Catppuccin Mocha Theme
+# =============================================================================
+
+"$schema" = 'https://starship.rs/config-schema.json'
+
+format = """
+[](color_mauve)\
+$os\
+$username\
+[](bg:color_pink fg:color_mauve)\
+$directory\
+[](fg:color_pink bg:color_blue)\
+$git_branch\
+$git_status\
+[](fg:color_blue bg:color_teal)\
+$c\
+$cpp\
+$rust\
+$golang\
+$nodejs\
+$php\
+$java\
+$kotlin\
+$haskell\
+$python\
+[](fg:color_teal bg:color_surface1)\
+$docker_context\
+$conda\
+$pixi\
+[](fg:color_surface1 bg:color_surface0)\
+$time\
+[ ](fg:color_surface0)\
+$line_break$character"""
+
+palette = 'catppuccin_mocha'
+
+[palettes.catppuccin_mocha]
+color_rosewater = '#f5e0dc'
+color_flamingo = '#f2cdcd'
+color_pink = '#f5c2e7'
+color_mauve = '#cba6f7'
+color_red = '#f38ba8'
+color_maroon = '#eba0ac'
+color_peach = '#fab387'
+color_yellow = '#f9e2af'
+color_green = '#a6e3a1'
+color_teal = '#94e2d5'
+color_sky = '#89dceb'
+color_sapphire = '#74c7ec'
+color_blue = '#89b4fa'
+color_lavender = '#b4befe'
+color_text = '#cdd6f4'
+color_subtext1 = '#bac2de'
+color_subtext0 = '#a6adc8'
+color_overlay2 = '#9399b2'
+color_overlay1 = '#7f849c'
+color_overlay0 = '#6c7086'
+color_surface2 = '#585b70'
+color_surface1 = '#45475a'
+color_surface0 = '#313244'
+color_base = '#1e1e2e'
+color_mantle = '#181825'
+color_crust = '#11111b'
+
+[os]
+disabled = false
+style = "bg:color_mauve fg:color_crust"
+
+[os.symbols]
+Windows = "󰍲"
+Ubuntu = "󰕈"
+SUSE = ""
+Raspbian = "󰐿"
+Mint = "󰣭"
+Macos = "󰀵"
+Manjaro = ""
+Linux = "󰌽"
+Gentoo = "󰣨"
+Fedora = "󰣛"
+Alpine = ""
+Amazon = ""
+Android = ""
+Arch = "󰣇"
+Artix = "󰣇"
+EndeavourOS = ""
+CentOS = ""
+Debian = "󰣚"
+Redhat = "󱄛"
+RedHatEnterprise = "󱄛"
+Pop = ""
+
+[username]
+show_always = true
+style_user = "bg:color_mauve fg:color_crust"
+style_root = "bg:color_mauve fg:color_crust"
+format = '[ $user ]($style)'
+
+[directory]
+style = "fg:color_crust bg:color_pink"
+format = "[ $path ]($style)"
+truncation_length = 3
+truncation_symbol = "…/"
+
+[directory.substitutions]
+"Documents" = "󰈙 "
+"Downloads" = " "
+"Music" = "󰝚 "
+"Pictures" = " "
+"Developer" = "󰲋 "
+"Projects" = " "
+
+[git_branch]
+symbol = ""
+style = "bg:color_blue"
+format = '[[ $symbol $branch ](fg:color_crust bg:color_blue)]($style)'
+
+[git_status]
+style = "bg:color_blue"
+format = '[[($all_status$ahead_behind )](fg:color_crust bg:color_blue)]($style)'
+
+[nodejs]
+symbol = ""
+style = "bg:color_teal"
+format = '[[ $symbol( $version) ](fg:color_crust bg:color_teal)]($style)'
+
+[c]
+symbol = " "
+style = "bg:color_teal"
+format = '[[ $symbol( $version) ](fg:color_crust bg:color_teal)]($style)'
+
+[cpp]
+symbol = " "
+style = "bg:color_teal"
+format = '[[ $symbol( $version) ](fg:color_crust bg:color_teal)]($style)'
+
+[rust]
+symbol = ""
+style = "bg:color_teal"
+format = '[[ $symbol( $version) ](fg:color_crust bg:color_teal)]($style)'
+
+[golang]
+symbol = ""
+style = "bg:color_teal"
+format = '[[ $symbol( $version) ](fg:color_crust bg:color_teal)]($style)'
+
+[php]
+symbol = ""
+style = "bg:color_teal"
+format = '[[ $symbol( $version) ](fg:color_crust bg:color_teal)]($style)'
+
+[java]
+symbol = ""
+style = "bg:color_teal"
+format = '[[ $symbol( $version) ](fg:color_crust bg:color_teal)]($style)'
+
+[kotlin]
+symbol = ""
+style = "bg:color_teal"
+format = '[[ $symbol( $version) ](fg:color_crust bg:color_teal)]($style)'
+
+[haskell]
+symbol = ""
+style = "bg:color_teal"
+format = '[[ $symbol( $version) ](fg:color_crust bg:color_teal)]($style)'
+
+[python]
+symbol = ""
+style = "bg:color_teal"
+format = '[[ $symbol( $version) ](fg:color_crust bg:color_teal)]($style)'
+
+[docker_context]
+symbol = ""
+style = "bg:color_surface1"
+format = '[[ $symbol( $context) ](fg:color_text bg:color_surface1)]($style)'
+
+[conda]
+style = "bg:color_surface1"
+format = '[[ $symbol( $environment) ](fg:color_text bg:color_surface1)]($style)'
+
+[pixi]
+style = "bg:color_surface1"
+format = '[[ $symbol( $version)( $environment) ](fg:color_text bg:color_surface1)]($style)'
+
+[time]
+disabled = false
+time_format = "%R"
+style = "bg:color_surface0"
+format = '[[  $time ](fg:color_text bg:color_surface0)]($style)'
+
+[line_break]
+disabled = false
+
+[character]
+disabled = false
+success_symbol = '[](bold fg:color_green)'
+error_symbol = '[](bold fg:color_red)'
+vimcmd_symbol = '[](bold fg:color_green)'
+vimcmd_replace_one_symbol = '[](bold fg:color_mauve)'
+vimcmd_replace_symbol = '[](bold fg:color_mauve)'
+vimcmd_visual_symbol = '[](bold fg:color_yellow)'

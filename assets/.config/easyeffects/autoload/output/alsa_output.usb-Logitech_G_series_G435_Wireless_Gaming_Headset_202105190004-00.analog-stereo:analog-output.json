@@ -1,0 +1,6 @@
+{
+    "device": "alsa_output.usb-Logitech_G_series_G435_Wireless_Gaming_Headset_202105190004-00.analog-stereo",
+    "device-description": "G435 Wireless Gaming Headset Analog Stereo",
+    "device-profile": "analog-output",
+    "preset-name": "G435"
+}
