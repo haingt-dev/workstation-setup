@@ -25,6 +25,43 @@ else
 fi
 
 # =============================================================================
+# Restore Configurations from Assets
+# =============================================================================
+if [[ -d "$BACKUP_DIR/.config/onedrive/accounts" ]]; then
+    log_info "Restoring OneDrive configurations from assets..."
+    ensure_dir "$HOME/.config/onedrive/accounts"
+    
+    for account_dir in "$BACKUP_DIR/.config/onedrive/accounts"/*/; do
+        if [[ -d "$account_dir" ]]; then
+            account_name=$(basename "$account_dir")
+            config_dest="$HOME/.config/onedrive/accounts/$account_name"
+            ensure_dir "$config_dest"
+            
+            if [[ -f "$account_dir/config" ]]; then
+                # Replace $HOME placeholder with actual home directory
+                sed "s|\$HOME|$HOME|g" "$account_dir/config" > "$config_dest/config"
+                log_success "Restored config for $account_name"
+                
+                # Extract and create sync directory
+                sync_dir=$(grep '^sync_dir' "$config_dest/config" | sed 's/sync_dir = "\(.*\)"/\1/')
+                if [[ -n "$sync_dir" ]]; then
+                    ensure_dir "$sync_dir"
+                    log_info "Ensured sync directory exists: $sync_dir"
+                fi
+                
+                # Enable systemd service
+                if systemctl --user enable --now "onedrive@$account_name" 2>/dev/null; then
+                    log_success "Enabled service for $account_name"
+                else
+                    log_warn "Failed to enable service for $account_name (may need authentication)"
+                fi
+            fi
+        fi
+    done
+    log_success "OneDrive configurations restored. Re-authentication may be required."
+fi
+
+# =============================================================================
 # Multi-Account Configuration Loop
 # =============================================================================
 echo ""
@@ -47,7 +84,7 @@ while true; do
     fi
 
     # Define paths
-    config_dir="$HOME/.config/onedrive-${account_name}"
+    config_dir="$HOME/.config/onedrive/accounts/${account_name}"
     sync_dir="$HOME/OneDrive/${account_name}"
     
     log_info "Creating configuration for '$account_name'..."

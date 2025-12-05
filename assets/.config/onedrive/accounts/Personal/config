@@ -1,0 +1,3 @@
+sync_dir = "$HOME/OneDrive/personal"
+disable_notifications = "true"
+skip_file = ".*[/\\\\].*"
