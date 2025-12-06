@@ -17,6 +17,15 @@ log_section "Installing Vietnamese Input Method (ibus-bamboo)"
 # Install ibus-bamboo
 # =============================================================================
 log_info "Installing ibus and ibus-bamboo..."
+
+# Add OpenBuildService repo for ibus-bamboo if not already added
+FEDORA_VERSION=$(rpm -E %fedora)
+REPO_URL="https://download.opensuse.org/repositories/home:lamlng/Fedora_${FEDORA_VERSION}/home:lamlng.repo"
+if ! dnf repolist | grep -q "home:lamlng"; then
+    log_info "Adding ibus-bamboo repository for Fedora ${FEDORA_VERSION}..."
+    dnf config-manager --add-repo "$REPO_URL"
+fi
+
 dnf_install ibus ibus-bamboo
 
 log_success "ibus-bamboo installed"
@@ -45,6 +54,9 @@ fi
 # Configure input sources
 # =============================================================================
 log_section "Configuring input sources..."
+
+# Preload IBus engines
+env DCONF_PROFILE=ibus dconf write /desktop/ibus/general/preload-engines "['BambooUs', 'Bamboo']"
 
 # Add English and Vietnamese (Bamboo) to input sources
 gsettings set org.gnome.desktop.input-sources sources "[('xkb', 'us'), ('ibus', 'Bamboo')]"
