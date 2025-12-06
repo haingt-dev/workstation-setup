@@ -18,6 +18,9 @@ log_section "Installing Vietnamese Input Method (ibus-bamboo)"
 # =============================================================================
 log_info "Installing ibus and ibus-bamboo..."
 
+# Remove potentially corrupt repo file from previous runs to prevent dnf errors
+sudo rm -f /etc/yum.repos.d/ibus-bamboo.repo
+
 # Add OpenBuildService repo for ibus-bamboo if not already added
 FEDORA_VERSION=$(rpm -E %fedora)
 REPO_URL="https://download.opensuse.org/repositories/home:lamlng/Fedora_${FEDORA_VERSION}/home:lamlng.repo"
