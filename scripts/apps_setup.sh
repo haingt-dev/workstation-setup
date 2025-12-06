@@ -14,6 +14,14 @@ check_not_root
 log_section "Installing Additional Applications"
 
 # =============================================================================
+# Firefox
+# =============================================================================
+log_section "Installing Firefox..."
+
+dnf_install firefox
+log_success "Firefox installed"
+
+# =============================================================================
 # Google Chrome
 # =============================================================================
 log_section "Installing Google Chrome..."
@@ -36,11 +44,16 @@ log_success "Google Chrome installed"
 # =============================================================================
 log_section "Installing Dropbox..."
 
-if ! dnf repolist 2>/dev/null | grep -q dropbox; then
-    sudo dnf config-manager addrepo --from-repofile=https://linux.dropbox.com/fedora/dropbox.repo
-fi
 dnf_install dropbox nautilus-dropbox
 log_success "Dropbox installed"
+
+# =============================================================================
+# Calibre
+# =============================================================================
+log_section "Installing Calibre..."
+
+dnf_install calibre
+log_success "Calibre installed"
 
 # =============================================================================
 # Flatpak Setup
@@ -82,8 +95,10 @@ log_success "Anki installed"
 log_section "Additional Applications Installation Complete!"
 echo ""
 echo "Installed applications:"
+echo "  - Firefox (DNF)"
 echo "  - Google Chrome (DNF)"
 echo "  - Dropbox (DNF)"
+echo "  - Calibre (DNF)"
 echo "  - Discord (Flatpak)"
 echo "  - Obsidian (Flatpak)"
 echo "  - Anki (Flatpak)"

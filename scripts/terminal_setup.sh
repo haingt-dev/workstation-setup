@@ -366,8 +366,14 @@ install_power_tools() {
     # 6. Post-installation Setup
     log_section "Post-installation setup..."
 
-    # Build bat cache
+    # Install Catppuccin Mocha theme for bat and build cache
     if check_command bat; then
+        log_info "Installing Catppuccin Mocha theme for bat..."
+        ensure_dir ~/.config/bat/themes
+        curl -fsSL -o ~/.config/bat/themes/Catppuccin-mocha.tmTheme \
+            "https://raw.githubusercontent.com/catppuccin/bat/main/themes/Catppuccin%20Mocha.tmTheme"
+        log_success "Catppuccin Mocha theme installed for bat"
+        
         log_info "Building bat theme cache..."
         bat cache --build 2>/dev/null || true
         log_success "Bat cache built"

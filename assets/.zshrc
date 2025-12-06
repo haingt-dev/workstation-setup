@@ -97,7 +97,7 @@ if command -v bat &> /dev/null; then
     alias cat='bat --paging=never'
     alias catp='bat'  # with paging
     export MANPAGER="sh -c 'col -bx | bat -l man -p'"
-    export BAT_THEME="Catppuccin Mocha"
+    export BAT_THEME="Catppuccin-mocha"
 fi
 
 # -----------------------------------------------------------------------------

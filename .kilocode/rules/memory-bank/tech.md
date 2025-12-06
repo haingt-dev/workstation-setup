@@ -31,7 +31,8 @@
 - Fonts:
   - CaskaydiaCove Nerd Font under [`assets/fonts/`](../../assets/fonts:1)
 - Input Method:
-  - `ibus-bamboo` (Vietnamese) installed via [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1)
+  - `ibus-bamboo` (Vietnamese) installed via [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1) using OpenBuildService with smart version detection (Fedora Version -> Rawhide -> 42 -> 41).
+  - Automatically configured as the default input source via `gsettings` and `dconf`.
 
 ## Developer Productivity Stack
 
@@ -64,11 +65,12 @@
   - Godot Engine, installed by [`scripts/godot_setup.sh`](../../scripts/godot_setup.sh:1) to `~/.local/bin/godot`
 - Desktop applications (installed by [`scripts/apps_setup.sh`](../../scripts/apps_setup.sh:1)):
   - Google Chrome and Dropbox (DNF)
-  - Discord, Obsidian, Anki (Flatpak)
+  - Discord, Obsidian, Anki, Calibre (Flatpak)
 - Cloud Storage:
   - OneDrive (`abraunegg/onedrive`), configured via [`scripts/onedrive_setup.sh`](../../scripts/onedrive_setup.sh:1) with multi-account support using named systemd services.
 - Networking tool:
   - Cisco Packet Tracer, installed via converted `.deb` with Qt5 dependencies by [`scripts/packettracer_setup.sh`](../../scripts/packettracer_setup.sh:1) when the installer is present in [`assets/`](../../assets:1)
+  - DNS configuration via [`scripts/dns_setup.sh`](../../scripts/dns_setup.sh:1) to set Cloudflare Block Malware (1.1.1.2/1.0.0.2) using `nmcli`.
 - Audio processing:
   - EasyEffects, installed via [`scripts/easyeffects_setup.sh`](../../scripts/easyeffects_setup.sh:1), with presets/configuration under [`assets/.config/easyeffects`](../../assets/.config/easyeffects:1), used to keep speaker/headphone audio tuning reproducible
 

@@ -13,9 +13,16 @@ Automated terminal and development environment setup for Nobara 42 / Fedora.
 - **VS Code**: Installation and extensions
 - **Qdrant**: Vector database with auto-start systemd service
 - **Godot Engine**: Game engine with VS Code integration
+<<<<<<< HEAD
 - **Additional Apps**: Chrome, Dropbox, Discord, Obsidian, Anki
 - **OneDrive**: Multi-account support via `abraunegg/onedrive` client
 - **Audio Processing**: EasyEffects with pre-tuned presets
+=======
+- **Additional Apps**: Chrome, Dropbox, Discord, Obsidian, Anki, Calibre
+- **OneDrive**: Multi-account support via `abraunegg/onedrive` client
+- **Audio Processing**: EasyEffects with pre-tuned presets
+- **DNS**: Cloudflare Block Malware configuration
+>>>>>>> master
 - **Cisco Packet Tracer**: Network simulation tool
 - **Vietnamese Input**: ibus-bamboo for Vietnamese typing
 
@@ -52,6 +59,7 @@ Options:
   --skip-apps         Skip additional apps
   --skip-packettracer Skip Cisco Packet Tracer
   --skip-easyeffects  Skip EasyEffects audio setup
+  --skip-dns          Skip DNS setup
   --onedrive          Setup OneDrive (multiple accounts)
   --vietnamese        Install Vietnamese input method
   --help              Show help message
@@ -60,6 +68,7 @@ Exclusive Mode (Run ONLY specific components):
   ./setup.sh --vscode         # ONLY install VS Code
   ./setup.sh --terminal       # ONLY run terminal setup
   ./setup.sh --qdrant         # ONLY setup Qdrant
+  ./setup.sh --dns            # ONLY setup DNS
 
 Examples:
   ./setup.sh                  # Full installation
@@ -96,6 +105,7 @@ Examples:
     ├── apps_setup.sh           # Chrome, Dropbox, Flatpak apps
     ├── onedrive_setup.sh       # OneDrive multi-account setup
     ├── easyeffects_setup.sh    # EasyEffects audio presets
+    ├── dns_setup.sh            # DNS configuration
     ├── packettracer_setup.sh   # Cisco Packet Tracer
     └── input_setup.sh          # Vietnamese input method
 ```
@@ -152,8 +162,9 @@ z   → zoxide                    # Smart directory jumping
 - **Apps**: Chrome, Dropbox (DNF), Discord, Obsidian, Anki (Flatpak)
 - **OneDrive**: Multi-account sync with systemd services
 - **EasyEffects**: Audio presets for speakers/headsets
+- **DNS**: Cloudflare Block Malware (1.1.1.2/1.0.0.2)
 - **Packet Tracer**: Cisco network simulation
-- **Vietnamese Input**: ibus-bamboo
+- **Vietnamese Input**: ibus-bamboo (auto-configured as default input source)
 
 ## Post-Setup Steps
 

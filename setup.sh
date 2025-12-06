@@ -36,6 +36,7 @@ INSTALL_GODOT=true
 INSTALL_APPS=true
 INSTALL_PACKETTRACER=true
 INSTALL_EASYEFFECTS=true
+INSTALL_DNS=true
 
 # Optional components (Do not run by default)
 INSTALL_ONEDRIVE=false
@@ -63,6 +64,7 @@ show_help() {
     echo "  --apps              Additional apps (Chrome, Dropbox, Flatpaks)"
     echo "  --packettracer      Cisco Packet Tracer setup"
     echo "  --easyeffects       EasyEffects audio setup"
+    echo "  --dns               DNS setup (Cloudflare Block Malware)"
     echo "  --onedrive          OneDrive setup (supports multiple accounts)"
     echo "  --vietnamese        Vietnamese input setup (ibus-bamboo)"
     echo ""
@@ -74,6 +76,7 @@ show_help() {
     echo "  --skip-apps         Skip Apps"
     echo "  --skip-packettracer Skip Packet Tracer"
     echo "  --skip-easyeffects  Skip EasyEffects"
+    echo "  --skip-dns          Skip DNS setup"
     echo ""
     echo "Examples:"
     echo "  $0                  # Full installation"
@@ -91,7 +94,7 @@ show_help() {
 EXCLUSIVE_MODE=false
 for arg in "$@"; do
     case $arg in
-        --full|--terminal|--vscode|--qdrant|--godot|--apps|--packettracer|--easyeffects|--onedrive|--vietnamese)
+        --full|--terminal|--vscode|--qdrant|--godot|--apps|--packettracer|--easyeffects|--dns|--onedrive|--vietnamese)
             EXCLUSIVE_MODE=true
             break
             ;;
@@ -108,6 +111,7 @@ if $EXCLUSIVE_MODE; then
     INSTALL_APPS=false
     INSTALL_PACKETTRACER=false
     INSTALL_EASYEFFECTS=false
+    INSTALL_DNS=false
     INSTALL_ONEDRIVE=false
     INSTALL_VIETNAMESE=false
 fi
@@ -132,6 +136,7 @@ for arg in "$@"; do
         --apps)               INSTALL_APPS=true ;;
         --packettracer)       INSTALL_PACKETTRACER=true ;;
         --easyeffects)        INSTALL_EASYEFFECTS=true ;;
+        --dns)                INSTALL_DNS=true ;;
         --onedrive)           INSTALL_ONEDRIVE=true ;;
         --vietnamese)         INSTALL_VIETNAMESE=true ;;
 
@@ -143,6 +148,7 @@ for arg in "$@"; do
         --skip-apps)          INSTALL_APPS=false ;;
         --skip-packettracer)  INSTALL_PACKETTRACER=false ;;
         --skip-easyeffects)   INSTALL_EASYEFFECTS=false ;;
+        --skip-dns)           INSTALL_DNS=false ;;
 
         # Other
         --help|-h)            show_help ;;
@@ -238,13 +244,21 @@ elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping EasyEffects setup"
 fi
 
-# 8. Vietnamese Input Method
+# 8. DNS Setup
+if $INSTALL_DNS; then
+    log_section "Running DNS Setup..."
+    bash "$SCRIPTS_DIR/dns_setup.sh"
+elif ! $EXCLUSIVE_MODE; then
+    log_warn "Skipping DNS setup"
+fi
+
+# 9. Vietnamese Input Method
 if $INSTALL_VIETNAMESE; then
     log_section "Running Vietnamese Input Setup..."
     bash "$SCRIPTS_DIR/input_setup.sh"
 fi
 
-# 9. OneDrive Setup
+# 10. OneDrive Setup
 if $INSTALL_ONEDRIVE; then
     log_section "Running OneDrive Setup..."
     bash "$SCRIPTS_DIR/onedrive_setup.sh"
