@@ -23,6 +23,13 @@ sudo rm -f /etc/yum.repos.d/ibus-bamboo.repo
 
 # Add OpenBuildService repo for ibus-bamboo if not already added
 FEDORA_VERSION=$(rpm -E %fedora)
+
+# Force fallback to Fedora 41 for newer versions (repo might not exist yet)
+if [ "$FEDORA_VERSION" -gt 41 ]; then
+    log_warn "Fedora ${FEDORA_VERSION} detected. Forcing use of Fedora 41 repository for ibus-bamboo."
+    FEDORA_VERSION="41"
+fi
+
 REPO_URL="https://download.opensuse.org/repositories/home:lamlng/Fedora_${FEDORA_VERSION}/home:lamlng.repo"
 
 # Check if the repository exists for the detected version
@@ -37,6 +44,14 @@ if [ ! -f /etc/yum.repos.d/ibus-bamboo.repo ]; then
     # Use -f to fail silently on server errors (404) so we don't save HTML to the repo file
     if ! sudo curl -f -o /etc/yum.repos.d/ibus-bamboo.repo "$REPO_URL"; then
         log_error "Failed to download repository from $REPO_URL"
+        exit 1
+    fi
+
+    # Verify the downloaded file is a valid repo file (not HTML)
+    if ! grep -q "\[home_lamlng\]" /etc/yum.repos.d/ibus-bamboo.repo; then
+        log_error "Downloaded file is not a valid repository file (likely HTML error page)."
+        log_info "Removing invalid file..."
+        sudo rm -f /etc/yum.repos.d/ibus-bamboo.repo
         exit 1
     fi
 fi
