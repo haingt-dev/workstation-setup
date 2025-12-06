@@ -42,15 +42,26 @@ else
 fi
 
 # =============================================================================
+# Configure input sources
+# =============================================================================
+log_section "Configuring input sources..."
+
+# Add English and Vietnamese (Bamboo) to input sources
+gsettings set org.gnome.desktop.input-sources sources "[('xkb', 'us'), ('ibus', 'Bamboo')]"
+
+# Set Vietnamese as default (index 1)
+gsettings set org.gnome.desktop.input-sources current 1
+
+log_success "Input sources configured with Vietnamese (Bamboo) as default"
+
+# =============================================================================
 # Summary
 # =============================================================================
 log_section "Vietnamese Input Method Setup Complete!"
 echo ""
 echo "To complete setup:"
 echo "  1. Log out and log back in (or reboot)"
-echo "  2. Run: ibus-daemon -drx"
-echo "  3. Open Settings → Keyboard → Input Sources"
-echo "  4. Add 'Vietnamese (Bamboo)' as an input source"
+echo "  2. The input sources are already configured with Vietnamese (Bamboo) as default"
 echo ""
 echo "Keyboard shortcut to switch input: Super+Space (default)"
 echo ""
