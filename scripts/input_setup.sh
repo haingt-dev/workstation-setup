@@ -21,9 +21,21 @@ log_info "Installing ibus and ibus-bamboo..."
 # Add OpenBuildService repo for ibus-bamboo if not already added
 FEDORA_VERSION=$(rpm -E %fedora)
 REPO_URL="https://download.opensuse.org/repositories/home:lamlng/Fedora_${FEDORA_VERSION}/home:lamlng.repo"
+
+# Check if the repository exists for the detected version
+if ! curl --output /dev/null --silent --head --fail "$REPO_URL"; then
+    log_warn "Repository for Fedora ${FEDORA_VERSION} not found. Falling back to Fedora 41."
+    FEDORA_VERSION="41"
+    REPO_URL="https://download.opensuse.org/repositories/home:lamlng/Fedora_${FEDORA_VERSION}/home:lamlng.repo"
+fi
+
 if [ ! -f /etc/yum.repos.d/ibus-bamboo.repo ]; then
     log_info "Downloading ibus-bamboo repository for Fedora ${FEDORA_VERSION}..."
-    sudo curl -o /etc/yum.repos.d/ibus-bamboo.repo "$REPO_URL"
+    # Use -f to fail silently on server errors (404) so we don't save HTML to the repo file
+    if ! sudo curl -f -o /etc/yum.repos.d/ibus-bamboo.repo "$REPO_URL"; then
+        log_error "Failed to download repository from $REPO_URL"
+        exit 1
+    fi
 fi
 
 dnf_install ibus ibus-bamboo
