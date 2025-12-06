@@ -125,8 +125,9 @@ Additional scripts manage specific tools and applications:
   - Integrates Packet Tracer into the system.
 
 - [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1)
-  - Installs `ibus` and `ibus-bamboo` for Vietnamese input.
+  - Installs `ibus` and `ibus-bamboo` for Vietnamese input (smart repo resolution).
   - Configures environment variables (`GTK_IM_MODULE`, `QT_IM_MODULE`, `XMODIFIERS`) in `~/.profile`.
+  - Automatically adds Bamboo to GNOME input sources and sets it as default via `gsettings` and `dconf`.
 
 - [`scripts/easyeffects_setup.sh`](../../scripts/easyeffects_setup.sh:1)
   - Installs EasyEffects via `dnf`.

@@ -31,7 +31,8 @@
 - Fonts:
   - CaskaydiaCove Nerd Font under [`assets/fonts/`](../../assets/fonts:1)
 - Input Method:
-  - `ibus-bamboo` (Vietnamese) installed via [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1)
+  - `ibus-bamboo` (Vietnamese) installed via [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1) using OpenBuildService with smart version detection (Fedora Version -> Rawhide -> 42 -> 41).
+  - Automatically configured as the default input source via `gsettings` and `dconf`.
 
 ## Developer Productivity Stack
 

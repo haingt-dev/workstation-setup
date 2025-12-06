@@ -153,7 +153,7 @@ z   → zoxide                    # Smart directory jumping
 - **OneDrive**: Multi-account sync with systemd services
 - **EasyEffects**: Audio presets for speakers/headsets
 - **Packet Tracer**: Cisco network simulation
-- **Vietnamese Input**: ibus-bamboo
+- **Vietnamese Input**: ibus-bamboo (auto-configured as default input source)
 
 ## Post-Setup Steps
 
