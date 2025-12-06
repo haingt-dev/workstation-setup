@@ -34,9 +34,10 @@ At a high level, the system:
   4. [`scripts/godot_setup.sh`](../../scripts/godot_setup.sh:1) (unless `--skip-godot`)
   5. [`scripts/apps_setup.sh`](../../scripts/apps_setup.sh:1) (unless `--skip-apps`)
   6. [`scripts/easyeffects_setup.sh`](../../scripts/easyeffects_setup.sh:1) (unless `--skip-easyeffects`)
-  7. [`scripts/packettracer_setup.sh`](../../scripts/packettracer_setup.sh:1) (if not skipped and installer `.deb` exists)
-  8. [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1) (when `--vietnamese` is provided)
-  9. [`scripts/onedrive_setup.sh`](../../scripts/onedrive_setup.sh:1) (when `--onedrive` is provided)
+  7. [`scripts/dns_setup.sh`](../../scripts/dns_setup.sh:1) (unless `--skip-dns`)
+  8. [`scripts/packettracer_setup.sh`](../../scripts/packettracer_setup.sh:1) (if not skipped and installer `.deb` exists)
+  9. [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1) (when `--vietnamese` is provided)
+  10. [`scripts/onedrive_setup.sh`](../../scripts/onedrive_setup.sh:1) (when `--onedrive` is provided)
 - Provides summary output and reminders (e.g., log out/in to pick up default shell changes).
 
 ### Orchestration Diagram
@@ -51,9 +52,10 @@ flowchart TD
   F --> G[Optionally run scripts/godot_setup.sh]
   G --> H[Optionally run scripts/apps_setup.sh]
   H --> I[Optionally run scripts/onedrive_setup.sh]
-  I --> J[Conditionally run scripts/packettracer_setup.sh]
-  J --> K[Optionally run scripts/input_setup.sh]
-  K --> M[Print completion summary and next steps]
+  I --> J[Optionally run scripts/dns_setup.sh]
+  J --> K[Conditionally run scripts/packettracer_setup.sh]
+  K --> L[Optionally run scripts/input_setup.sh]
+  L --> M[Print completion summary and next steps]
 ```
 
 ## Core Components
@@ -134,6 +136,12 @@ Additional scripts manage specific tools and applications:
   - Restores audio presets and autoload rules from [`assets/.config/easyeffects`](../../assets/.config/easyeffects:1) into `~/.config/easyeffects`.
   - Optionally copies config into Flatpak path (`~/.var/app/com.github.wwmm.easyeffects/`) if present.
   - Controlled by `--skip-easyeffects` flag.
+
+- [`scripts/dns_setup.sh`](../../scripts/dns_setup.sh:1)
+  - Configures system DNS to Cloudflare Block Malware (1.1.1.2/1.0.0.2) via `nmcli`.
+  - Sets `ignore-auto-dns` to yes for both IPv4 and IPv6.
+  - Restarts the active network connection to apply changes.
+  - Controlled by `--skip-dns` flag.
 
 ## Assets and Configuration Layout
 
