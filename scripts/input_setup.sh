@@ -21,9 +21,9 @@ log_info "Installing ibus and ibus-bamboo..."
 # Add OpenBuildService repo for ibus-bamboo if not already added
 FEDORA_VERSION=$(rpm -E %fedora)
 REPO_URL="https://download.opensuse.org/repositories/home:lamlng/Fedora_${FEDORA_VERSION}/home:lamlng.repo"
-if ! dnf repolist | grep -q "home:lamlng"; then
-    log_info "Adding ibus-bamboo repository for Fedora ${FEDORA_VERSION}..."
-    dnf config-manager --add-repo "$REPO_URL"
+if [ ! -f /etc/yum.repos.d/ibus-bamboo.repo ]; then
+    log_info "Downloading ibus-bamboo repository for Fedora ${FEDORA_VERSION}..."
+    sudo curl -o /etc/yum.repos.d/ibus-bamboo.repo "$REPO_URL"
 fi
 
 dnf_install ibus ibus-bamboo
