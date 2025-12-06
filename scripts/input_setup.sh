@@ -30,13 +30,13 @@ if [ "$FEDORA_VERSION" -gt 41 ]; then
     FEDORA_VERSION="41"
 fi
 
-REPO_URL="https://download.opensuse.org/repositories/home:lamlng/Fedora_${FEDORA_VERSION}/home:lamlng.repo"
+REPO_URL="https://download.opensuse.org/repositories/home:/lamlng/Fedora_${FEDORA_VERSION}/home:lamlng.repo"
 
 # Check if the repository exists for the detected version
 if ! curl --output /dev/null --silent --head --fail "$REPO_URL"; then
     log_warn "Repository for Fedora ${FEDORA_VERSION} not found. Falling back to Fedora 41."
     FEDORA_VERSION="41"
-    REPO_URL="https://download.opensuse.org/repositories/home:lamlng/Fedora_${FEDORA_VERSION}/home:lamlng.repo"
+    REPO_URL="https://download.opensuse.org/repositories/home:/lamlng/Fedora_${FEDORA_VERSION}/home:lamlng.repo"
 fi
 
 if [ ! -f /etc/yum.repos.d/ibus-bamboo.repo ]; then
