@@ -13,16 +13,11 @@ Automated terminal and development environment setup for Nobara 42 / Fedora.
 - **VS Code**: Installation and extensions
 - **Qdrant**: Vector database with auto-start systemd service
 - **Godot Engine**: Game engine with VS Code integration
-<<<<<<< HEAD
-- **Additional Apps**: Chrome, Dropbox, Discord, Obsidian, Anki
-- **OneDrive**: Multi-account support via `abraunegg/onedrive` client
-- **Audio Processing**: EasyEffects with pre-tuned presets
-=======
 - **Additional Apps**: Chrome, Dropbox, Discord, Obsidian, Anki, Calibre
 - **OneDrive**: Multi-account support via `abraunegg/onedrive` client
 - **Audio Processing**: EasyEffects with pre-tuned presets
 - **DNS**: Cloudflare Block Malware configuration
->>>>>>> master
+- **OBS Studio**: Recording and streaming software (Flatpak)
 - **Cisco Packet Tracer**: Network simulation tool
 - **Vietnamese Input**: ibus-bamboo for Vietnamese typing
 
@@ -58,8 +53,12 @@ Options:
   --skip-godot        Skip Godot installation
   --skip-apps         Skip additional apps
   --skip-packettracer Skip Cisco Packet Tracer
+  --skip-obs          Skip OBS Studio
   --skip-easyeffects  Skip EasyEffects audio setup
   --skip-dns          Skip DNS setup
+  --onedrive          Setup OneDrive (multiple accounts)
+  --vietnamese        Install Vietnamese input method
+  --obs               Setup OBS Studio
   --onedrive          Setup OneDrive (multiple accounts)
   --vietnamese        Install Vietnamese input method
   --help              Show help message
@@ -68,12 +67,14 @@ Exclusive Mode (Run ONLY specific components):
   ./setup.sh --vscode         # ONLY install VS Code
   ./setup.sh --terminal       # ONLY run terminal setup
   ./setup.sh --qdrant         # ONLY setup Qdrant
+  ./setup.sh --obs            # ONLY setup OBS Studio
   ./setup.sh --dns            # ONLY setup DNS
 
 Examples:
   ./setup.sh                  # Full installation
   ./setup.sh --terminal       # Terminal setup only
   ./setup.sh --skip-godot     # Full setup EXCEPT Godot
+  ./setup.sh --obs            # OBS Studio setup only
 ```
 
 ## Project Structure
@@ -102,6 +103,7 @@ Examples:
     ├── vscode_setup.sh         # VS Code installation
     ├── qdrant_setup.sh         # Qdrant vector database
     ├── godot_setup.sh          # Godot Engine installation
+    ├── obs_setup.sh            # OBS Studio installation
     ├── apps_setup.sh           # Chrome, Dropbox, Flatpak apps
     ├── onedrive_setup.sh       # OneDrive multi-account setup
     ├── easyeffects_setup.sh    # EasyEffects audio presets
@@ -159,6 +161,7 @@ z   → zoxide                    # Smart directory jumping
 - **VS Code**: Installation via Microsoft repo, extensions from list
 - **Qdrant**: Podman container with systemd service at http://localhost:6333
 - **Godot**: Downloads to ~/.local/bin, creates desktop entry
+- **OBS Studio**: Installed via Flatpak (com.obsproject.Studio)
 - **Apps**: Chrome, Dropbox (DNF), Discord, Obsidian, Anki (Flatpak)
 - **OneDrive**: Multi-account sync with systemd services
 - **EasyEffects**: Audio presets for speakers/headsets

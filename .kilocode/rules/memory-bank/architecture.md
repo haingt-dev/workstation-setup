@@ -22,7 +22,8 @@ At a high level, the system:
 - Global flags:
   - **Exclusive Mode Triggers**: Providing any component flag switches the script to **Exclusive Mode**, where only explicitly requested components run.
     - `--full`: Runs the full standard setup (explicitly enables all standard components).
-    - Component flags: `--terminal`, `--vscode`, `--qdrant`, `--godot`, `--apps`, `--packettracer`, `--easyeffects`, `--onedrive`, `--vietnamese`.
+    - Component flags: `--terminal`, `--vscode`, `--qdrant`, `--godot`, `--apps`, `--packettracer`, `--easyeffects`, `--onedrive`, `--vietnamese`, `--antigravity`.
+
   - **Skip Flags**: Used in default mode (no exclusive flags) to selectively disable components (e.g., `--skip-vscode`, `--skip-godot`).
 - Performs pre-flight checks via utilities in [`scripts/common.sh`](../../scripts/common.sh:1):
   - Enforces **non-root** execution.
@@ -38,7 +39,9 @@ At a high level, the system:
   8. [`scripts/packettracer_setup.sh`](../../scripts/packettracer_setup.sh:1) (if not skipped and installer `.deb` exists)
   9. [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1) (when `--vietnamese` is provided)
   10. [`scripts/onedrive_setup.sh`](../../scripts/onedrive_setup.sh:1) (when `--onedrive` is provided)
+  11. [`scripts/antigravity_setup.sh`](../../scripts/antigravity_setup.sh:1) (unless `--skip-antigravity`)
 - Provides summary output and reminders (e.g., log out/in to pick up default shell changes).
+
 
 ### Orchestration Diagram
 
@@ -55,7 +58,9 @@ flowchart TD
   I --> J[Optionally run scripts/dns_setup.sh]
   J --> K[Conditionally run scripts/packettracer_setup.sh]
   K --> L[Optionally run scripts/input_setup.sh]
-  L --> M[Print completion summary and next steps]
+  L --> M[Run scripts/antigravity_setup.sh]
+  M --> N[Print completion summary and next steps]
+
 ```
 
 ## Core Components
@@ -142,6 +147,12 @@ Additional scripts manage specific tools and applications:
   - Sets `ignore-auto-dns` to yes for both IPv4 and IPv6.
   - Restarts the active network connection to apply changes.
   - Controlled by `--skip-dns` flag.
+
+- [`scripts/antigravity_setup.sh`](../../scripts/antigravity_setup.sh:1)
+  - Deploys Global Antigravity Rules from [`assets/.gemini/GEMINI.md`](../../assets/.gemini/GEMINI.md:1) to `~/.gemini/GEMINI.md`.
+  - Ensures the AI agent has access to the project's ground rules across sessions.
+  - Controlled by `--skip-antigravity` flag.
+
 
 ## Assets and Configuration Layout
 

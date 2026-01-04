@@ -28,7 +28,12 @@
 - Improved `ibus-bamboo` repo resolution in [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1) to support Fedora 42 and Rawhide with fallback logic.
 - Enhanced `ibus-bamboo` setup to automatically configure GNOME input sources and set Bamboo as default using `gsettings` and `dconf`.
 - Added DNS setup script (`scripts/dns_setup.sh`) to configure Cloudflare Block Malware DNS (1.1.1.2/1.0.0.2) via `nmcli`.
+- Integrated **Antigravity Global Rules**:
+  - Rules backed up to `assets/.gemini/GEMINI.md`.
+  - Added `scripts/antigravity_setup.sh` to deploy rules to `~/.gemini/GEMINI.md`.
+  - Updated `setup.sh` with `--antigravity` flag (default in full mode).
 - Synced Memory Bank (product, architecture, tech, context) with current state.
+
 
 ## Next Steps
 

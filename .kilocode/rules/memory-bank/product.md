@@ -52,6 +52,7 @@ This repository provides a **single, version-controlled source of truth** for th
    - **OneDrive** via [`scripts/onedrive_setup.sh`](../../scripts/onedrive_setup.sh:1) (multi-account support)
    - **EasyEffects** via [`scripts/easyeffects_setup.sh`](../../scripts/easyeffects_setup.sh:1) (audio presets)
    - **Packet Tracer** via [`scripts/packettracer_setup.sh`](../../scripts/packettracer_setup.sh:1) when the .deb is available
+   - **Antigravity Rules** via [`scripts/antigravity_setup.sh`](../../scripts/antigravity_setup.sh:1) (AI Agent Rules)
    - Optional **Vietnamese input** via [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1)
 
 4. Scripts:
@@ -76,7 +77,8 @@ This repository provides a **single, version-controlled source of truth** for th
   - Example: `./setup.sh --terminal` (runs ONLY terminal setup).
 - **OneDrive setup**: `./setup.sh --onedrive` (interactive setup for one or more OneDrive accounts).
 - **Vietnamese support**: `./setup.sh --vietnamese` (installs ibus-bamboo input method).
-- **Selective skipping**: In default mode, skip specific parts via `--skip-vscode`, `--skip-qdrant`, `--skip-godot`, `--skip-apps`, `--skip-easyeffects`, `--skip-packettracer`.
+- **Selective skipping**: In default mode, skip specific parts via `--skip-vscode`, `--skip-qdrant`, `--skip-godot`, `--skip-apps`, `--skip-easyeffects`, `--skip-packettracer`, `--skip-antigravity`.
+
 
 ## User Experience Goals
 
