@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Commit message checker script
+# Enforces the format: <type>(<scope>): <description>
+# Types: feat, fix, docs, style, refactor, perf, test, chore
+
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Define the regex pattern
+PATTERN="^(feat|fix|docs|style|refactor|perf|test|chore)(\(.+\))?: .+$"
+
+if [[ ! "$COMMIT_MSG" =~ $PATTERN ]]; then
+    echo "ERROR: Invalid commit message format."
+    echo "The commit message must follow the format: <type>(<scope>): <description>"
+    echo "Allowed types: feat, fix, docs, style, refactor, perf, test, chore"
+    echo "Example: feat(auth): add login validation"
+    exit 1
+fi
