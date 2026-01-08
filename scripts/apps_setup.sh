@@ -108,10 +108,10 @@ log_info "Installing Anki..."
 flatpak install -y flathub net.ankiweb.Anki
 log_success "Anki installed"
 
-# TickTick
-log_info "Installing TickTick..."
-flatpak install -y flathub com.ticktick.TickTick
-log_success "TickTick installed"
+# Super Productivity
+log_info "Installing Super Productivity..."
+flatpak install -y flathub com.superproductivity.SuperProductivity
+log_success "Super Productivity installed"
 
 # =============================================================================
 # Summary
@@ -127,4 +127,4 @@ echo "  - VLC (DNF)"
 echo "  - Discord (Flatpak)"
 echo "  - Obsidian (Flatpak)"
 echo "  - Anki (Flatpak)"
-echo "  - TickTick (Flatpak)"
+echo "  - Super Productivity (Flatpak)"
