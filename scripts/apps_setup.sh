@@ -110,7 +110,7 @@ log_success "Anki installed"
 
 # Super Productivity
 log_info "Installing Super Productivity..."
-flatpak install -y flathub com.superproductivity.SuperProductivity
+flatpak install -y flathub com.super_productivity.SuperProductivity
 log_success "Super Productivity installed"
 
 # =============================================================================
