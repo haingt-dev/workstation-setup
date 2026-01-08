@@ -14,6 +14,17 @@ check_not_root
 log_section "Installing Additional Applications"
 
 # =============================================================================
+# System Update
+# =============================================================================
+log_section "Updating System..."
+
+run_sudo dnf update -y
+if check_command flatpak; then
+    flatpak update -y
+fi
+log_success "System updated"
+
+# =============================================================================
 # Firefox
 # =============================================================================
 log_section "Installing Firefox..."
@@ -56,6 +67,14 @@ dnf_install calibre
 log_success "Calibre installed"
 
 # =============================================================================
+# VLC
+# =============================================================================
+log_section "Installing VLC..."
+
+dnf_install vlc
+log_success "VLC installed"
+
+# =============================================================================
 # Flatpak Setup
 # =============================================================================
 log_section "Setting up Flatpak..."
@@ -89,6 +108,11 @@ log_info "Installing Anki..."
 flatpak install -y flathub net.ankiweb.Anki
 log_success "Anki installed"
 
+# TickTick
+log_info "Installing TickTick..."
+flatpak install -y flathub com.ticktick.TickTick
+log_success "TickTick installed"
+
 # =============================================================================
 # Summary
 # =============================================================================
@@ -99,6 +123,8 @@ echo "  - Firefox (DNF)"
 echo "  - Google Chrome (DNF)"
 echo "  - Dropbox (DNF)"
 echo "  - Calibre (DNF)"
+echo "  - VLC (DNF)"
 echo "  - Discord (Flatpak)"
 echo "  - Obsidian (Flatpak)"
 echo "  - Anki (Flatpak)"
+echo "  - TickTick (Flatpak)"

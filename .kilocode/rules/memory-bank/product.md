@@ -48,7 +48,7 @@ This repository provides a **single, version-controlled source of truth** for th
    - **VS Code** via [`scripts/vscode_setup.sh`](../../scripts/vscode_setup.sh:1)
    - **Qdrant** via [`scripts/qdrant_setup.sh`](../../scripts/qdrant_setup.sh:1)
    - **Godot** via [`scripts/godot_setup.sh`](../../scripts/godot_setup.sh:1)
-   - **Apps** (Chrome, Dropbox, Discord, Obsidian, Anki, Calibre) via [`scripts/apps_setup.sh`](../../scripts/apps_setup.sh:1)
+   - **Apps** (Chrome, Dropbox, Discord, Obsidian, Anki, Calibre, TickTick) via [`scripts/apps_setup.sh`](../../scripts/apps_setup.sh:1)
    - **OneDrive** via [`scripts/onedrive_setup.sh`](../../scripts/onedrive_setup.sh:1) (multi-account support)
    - **EasyEffects** via [`scripts/easyeffects_setup.sh`](../../scripts/easyeffects_setup.sh:1) (audio presets)
    - **Packet Tracer** via [`scripts/packettracer_setup.sh`](../../scripts/packettracer_setup.sh:1) when the .deb is available

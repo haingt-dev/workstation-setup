@@ -13,7 +13,7 @@ Automated terminal and development environment setup for Nobara 42 / Fedora.
 - **VS Code**: Installation and extensions
 - **Qdrant**: Vector database with auto-start systemd service
 - **Godot Engine**: Game engine with VS Code integration
-- **Additional Apps**: Chrome, Dropbox, Discord, Obsidian, Anki, Calibre
+- **Additional Apps**: Chrome, Dropbox, Discord, Obsidian, Anki, Calibre, TickTick
 - **OneDrive**: Multi-account support via `abraunegg/onedrive` client
 - **Audio Processing**: EasyEffects with pre-tuned presets
 - **DNS**: Cloudflare Block Malware configuration
@@ -162,7 +162,7 @@ z   → zoxide                    # Smart directory jumping
 - **Qdrant**: Podman container with systemd service at http://localhost:6333
 - **Godot**: Downloads to ~/.local/bin, creates desktop entry
 - **OBS Studio**: Installed via Flatpak (com.obsproject.Studio)
-- **Apps**: Chrome, Dropbox (DNF), Discord, Obsidian, Anki (Flatpak)
+- **Apps**: Chrome, Dropbox (DNF), Discord, Obsidian, Anki, Calibre, TickTick (Flatpak)
 - **OneDrive**: Multi-account sync with systemd services
 - **EasyEffects**: Audio presets for speakers/headsets
 - **DNS**: Cloudflare Block Malware (1.1.1.2/1.0.0.2)
