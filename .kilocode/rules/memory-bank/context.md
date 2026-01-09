@@ -32,10 +32,12 @@
   - Rules backed up to `assets/.gemini/GEMINI.md`.
   - Added `scripts/antigravity_setup.sh` to deploy rules to `~/.gemini/GEMINI.md`.
   - Updated `setup.sh` with `--antigravity` flag (default in full mode).
+- Deployed Kilo Code specific global rules:
+  - Created `.kilocode/rules/00-antigravity.md` derived from `GEMINI.md`.
 - Synced Memory Bank (product, architecture, tech, context) with current state.
 
 
 ## Next Steps
 
-- Stabilize current setup and evolve configs incrementally as needed.
+- Refine individual setup scripts for better reliability.
 - Keep Memory Bank updated when new tools/scripts are added.
