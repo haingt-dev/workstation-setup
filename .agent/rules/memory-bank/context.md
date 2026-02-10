@@ -6,6 +6,12 @@
 
 ## Recent Changes
 
+- Updated `godot_setup.sh` to auto-detect Godot zip from `~/Downloads`:
+  - Removed hardcoded `GODOT_VERSION` and download-from-GitHub logic.
+  - Script now searches `~/Downloads` for `Godot_v*_linux.x86_64.zip` (uses most recently modified if multiple found).
+  - Extracts version from filename automatically.
+  - Removes old Godot installation before installing new one.
+  - Installed Godot v4.6-stable (upgraded from v4.5.1).
 - Removed VS Code support entirely:
   - Deleted `scripts/vscode_setup.sh`, `assets/vscode/extensions.txt`, and all VS Code flags (`--vscode`, `--skip-vscode`).
   - VS Code is no longer installed or configured by this project.

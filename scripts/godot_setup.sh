@@ -13,9 +13,9 @@ check_not_root
 verify_backup_dir
 
 # Configuration
-GODOT_VERSION="${GODOT_VERSION:-4.5.1}"
 GODOT_INSTALL_DIR="$HOME/.local/bin"
 GODOT_CONFIG_DIR="$HOME/.config/godot"
+DOWNLOADS_DIR="$HOME/Downloads"
 
 # =============================================================================
 # Handle Uninstall
@@ -29,6 +29,44 @@ if [[ "$1" == "--uninstall" ]]; then
 fi
 
 # =============================================================================
+# Auto-detect Godot zip in ~/Downloads
+# =============================================================================
+log_section "Searching for Godot zip in $DOWNLOADS_DIR..."
+
+# Find the most recently modified Godot zip
+GODOT_ZIP_PATH=$(find "$DOWNLOADS_DIR" -maxdepth 1 -name "Godot_v*_linux.x86_64.zip" -type f -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
+
+if [[ -z "$GODOT_ZIP_PATH" ]]; then
+    log_error "No Godot zip found in $DOWNLOADS_DIR"
+    echo "  Expected pattern: Godot_v*_linux.x86_64.zip"
+    echo ""
+    echo "  Download Godot from: https://godotengine.org/download/linux/"
+    echo "  Place the zip in $DOWNLOADS_DIR and re-run this script."
+    exit 1
+fi
+
+GODOT_ZIP=$(basename "$GODOT_ZIP_PATH")
+# Extract version from filename (e.g., "Godot_v4.6-stable_linux.x86_64.zip" -> "4.6-stable")
+GODOT_VERSION=$(echo "$GODOT_ZIP" | sed -n 's/^Godot_v\(.*\)_linux\.x86_64\.zip$/\1/p')
+
+if [[ -z "$GODOT_VERSION" ]]; then
+    log_error "Could not extract version from filename: $GODOT_ZIP"
+    exit 1
+fi
+
+log_success "Found: $GODOT_ZIP (version: $GODOT_VERSION)"
+
+# =============================================================================
+# Remove Old Godot Installation
+# =============================================================================
+if [[ -f "$GODOT_INSTALL_DIR/godot" ]]; then
+    log_section "Removing old Godot installation..."
+    OLD_VERSION=$("$GODOT_INSTALL_DIR/godot" --version 2>/dev/null || echo "unknown")
+    rm -f "$GODOT_INSTALL_DIR/godot"
+    log_success "Removed old Godot ($OLD_VERSION)"
+fi
+
+# =============================================================================
 # Create Directories
 # =============================================================================
 log_section "Installing Godot Engine ${GODOT_VERSION}..."
@@ -38,47 +76,23 @@ ensure_dir "$HOME/.local/share/applications"
 ensure_dir "$HOME/.local/share/icons"
 
 # =============================================================================
-# Download Godot
+# Ensure Dependencies
 # =============================================================================
 # Ensure dependencies are installed
 if ! check_command unzip; then
     log_info "unzip not found, installing..."
     dnf_install unzip
 fi
-if ! check_command curl; then
-    log_info "curl not found, installing..."
-    dnf_install curl
-fi
-
-log_section "Downloading Godot ${GODOT_VERSION}..."
-
-GODOT_ZIP="Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
-GODOT_URL="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/${GODOT_ZIP}"
-
-# Check if version exists
-if ! curl -sIf "$GODOT_URL" > /dev/null 2>&1; then
-    log_error "Godot version ${GODOT_VERSION} not found at:"
-    echo "  $GODOT_URL"
-    echo ""
-    echo "Available stable versions: 4.4.1, 4.3, 4.2.2, 4.1.4, 4.0.4"
-    echo ""
-    echo "To install a different version, set GODOT_VERSION:"
-    echo "  GODOT_VERSION=4.3 bash $0"
-    exit 1
-fi
-
-# Download to temp directory
-TEMP_DIR=$(mktemp -d)
-cd "$TEMP_DIR"
-
-curl -L -o "$GODOT_ZIP" "$GODOT_URL"
-log_success "Downloaded $GODOT_ZIP"
 
 # =============================================================================
 # Extract and Install
 # =============================================================================
-log_section "Extracting..."
-unzip -q "$GODOT_ZIP"
+log_section "Extracting $GODOT_ZIP..."
+
+TEMP_DIR=$(mktemp -d)
+cd "$TEMP_DIR"
+
+unzip -q "$GODOT_ZIP_PATH"
 GODOT_BINARY=$(find . -maxdepth 1 -name "Godot_v*" -type f | head -1)
 
 if [[ -z "$GODOT_BINARY" ]]; then

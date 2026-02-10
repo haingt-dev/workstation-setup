@@ -106,7 +106,9 @@ Additional scripts manage specific tools and applications:
   - Exposes Qdrant at `http://localhost:6333`.
 
 - [`scripts/godot_setup.sh`](../../scripts/godot_setup.sh:1)
-  - Downloads Godot to `~/.local/bin/godot` (version configurable by `GODOT_VERSION`).
+  - Auto-detects a Godot zip (`Godot_v*_linux.x86_64.zip`) from `~/Downloads` (uses most recently modified if multiple found).
+  - Removes any previously installed Godot before installing the new version.
+  - Installs Godot to `~/.local/bin/godot`.
   - Restores Godot editor settings from [`assets/godot/`](../../assets/godot:1).
   - Creates a desktop entry for Godot.
 
