@@ -10,9 +10,8 @@ Automated terminal and development environment setup for Nobara 42 / Fedora.
 - **Tmux**: Multiplexer with TPM plugins, session persistence, Catppuccin theme
 - **Power Tools**: zoxide, eza, bat, fzf, ripgrep, fd-find, lazygit, yazi
 - **Containers**: Podman & Podman Compose
-- **VS Code**: Installation and extensions
 - **Qdrant**: Vector database with auto-start systemd service
-- **Godot Engine**: Game engine with VS Code integration
+- **Godot Engine**: Game engine setup and configuration
 - **Additional Apps**: Chrome, Dropbox, Discord, Obsidian, Anki, Calibre, Super Productivity
 - **OneDrive**: Multi-account support via `abraunegg/onedrive` client
 - **Audio Processing**: EasyEffects with pre-tuned presets
@@ -48,7 +47,6 @@ Options:
   --full              Run full setup (same as default)
   --terminal          Run terminal setup only
   --skip-terminal     Skip terminal setup
-  --skip-vscode       Skip VS Code installation
   --skip-qdrant       Skip Qdrant setup
   --skip-godot        Skip Godot installation
   --skip-apps         Skip additional apps
@@ -64,7 +62,6 @@ Options:
   --help              Show help message
 
 Exclusive Mode (Run ONLY specific components):
-  ./setup.sh --vscode         # ONLY install VS Code
   ./setup.sh --terminal       # ONLY run terminal setup
   ./setup.sh --qdrant         # ONLY setup Qdrant
   ./setup.sh --obs            # ONLY setup OBS Studio
@@ -95,12 +92,10 @@ Examples:
 │   │   └── easyeffects/        # Audio presets
 │   ├── fonts/                  # CaskaydiaCove Nerd Font
 │   ├── godot/                  # Godot editor settings
-│   ├── vscode/                 # VS Code extensions list
 │   └── images/                 # Custom assets (fastfetch logo)
 └── scripts/
     ├── common.sh               # Shared utilities
     ├── terminal_setup.sh       # Terminal setup (single profile)
-    ├── vscode_setup.sh         # VS Code installation
     ├── qdrant_setup.sh         # Qdrant vector database
     ├── godot_setup.sh          # Godot Engine installation
     ├── obs_setup.sh            # OBS Studio installation
@@ -158,7 +153,6 @@ z   → zoxide                    # Smart directory jumping
 
 ### Other Components
 
-- **VS Code**: Installation via Microsoft repo, extensions from list
 - **Qdrant**: Podman container with systemd service at http://localhost:6333
 - **Godot**: Downloads to ~/.local/bin, creates desktop entry
 - **OBS Studio**: Installed via Flatpak (com.obsproject.Studio)

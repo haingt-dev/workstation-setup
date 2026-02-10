@@ -6,7 +6,6 @@
 # Usage:
 #   ./setup.sh              # Full installation (all components)
 #   ./setup.sh --terminal   # Terminal setup only
-#   ./setup.sh --vscode     # VS Code setup only
 #   ./setup.sh --skip-godot # Full installation EXCEPT Godot
 #   ./setup.sh --help
 #
@@ -30,7 +29,6 @@ source "$SCRIPTS_DIR/common.sh"
 
 # Standard components (Run by default)
 INSTALL_TERMINAL=true
-INSTALL_VSCODE=true
 INSTALL_QDRANT=true
 INSTALL_GODOT=true
 INSTALL_APPS=true
@@ -62,7 +60,6 @@ show_help() {
     echo "Component Flags (Triggers Exclusive Mode):"
     echo "  --full              Run full setup (same as default)"
     echo "  --terminal          Terminal setup (shell, dotfiles, fonts, power tools)"
-    echo "  --vscode            VS Code setup"
     echo "  --qdrant            Qdrant setup"
     echo "  --godot             Godot setup"
     echo "  --apps              Additional apps (Chrome, Dropbox, Flatpaks)"
@@ -78,7 +75,6 @@ show_help() {
     echo ""
     echo "Skip Flags (For Default Mode):"
     echo "  --skip-terminal     Skip terminal setup"
-    echo "  --skip-vscode       Skip VS Code"
     echo "  --skip-qdrant       Skip Qdrant"
     echo "  --skip-godot        Skip Godot"
     echo "  --skip-apps         Skip Apps"
@@ -92,7 +88,6 @@ show_help() {
     echo ""
     echo "Examples:"
     echo "  $0                  # Full installation"
-    echo "  $0 --vscode         # ONLY install VS Code"
     echo "  $0 --terminal       # ONLY run terminal setup"
     echo "  $0 --skip-godot     # Full setup EXCEPT Godot"
     echo ""
@@ -106,7 +101,7 @@ show_help() {
 EXCLUSIVE_MODE=false
 for arg in "$@"; do
     case $arg in
-        --full|--terminal|--vscode|--qdrant|--godot|--apps|--packettracer|--obs|--easyeffects|--dns|--onedrive|--vietnamese|--antigravity)
+        --full|--terminal|--qdrant|--godot|--apps|--packettracer|--obs|--easyeffects|--dns|--onedrive|--vietnamese|--antigravity)
 
             EXCLUSIVE_MODE=true
             break
@@ -118,7 +113,6 @@ if $EXCLUSIVE_MODE; then
     # In exclusive mode, disable all standard components by default.
     # Only explicitly requested components will be enabled in the loop below.
     INSTALL_TERMINAL=false
-    INSTALL_VSCODE=false
     INSTALL_QDRANT=false
     INSTALL_GODOT=false
     INSTALL_APPS=false
@@ -139,7 +133,6 @@ for arg in "$@"; do
         # Component Flags
         --full)
             INSTALL_TERMINAL=true
-            INSTALL_VSCODE=true
             INSTALL_QDRANT=true
             INSTALL_GODOT=true
             INSTALL_APPS=true
@@ -149,7 +142,6 @@ for arg in "$@"; do
 
             ;;
         --terminal)           INSTALL_TERMINAL=true ;;
-        --vscode)             INSTALL_VSCODE=true ;;
         --qdrant)             INSTALL_QDRANT=true ;;
         --godot)              INSTALL_GODOT=true ;;
         --apps)               INSTALL_APPS=true ;;
@@ -164,7 +156,6 @@ for arg in "$@"; do
 
         # Skip Flags
         --skip-terminal)      INSTALL_TERMINAL=false ;;
-        --skip-vscode)        INSTALL_VSCODE=false ;;
         --skip-qdrant)        INSTALL_QDRANT=false ;;
         --skip-godot)         INSTALL_GODOT=false ;;
         --skip-apps)          INSTALL_APPS=false ;;
@@ -213,15 +204,7 @@ elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping terminal setup"
 fi
 
-# 2. VS Code Setup
-if $INSTALL_VSCODE; then
-    log_section "Running VS Code Setup..."
-    bash "$SCRIPTS_DIR/vscode_setup.sh"
-elif ! $EXCLUSIVE_MODE; then
-    log_warn "Skipping VS Code setup"
-fi
-
-# 3. Qdrant Setup
+# 2. Qdrant Setup
 if $INSTALL_QDRANT; then
     log_section "Running Qdrant Setup..."
     bash "$SCRIPTS_DIR/qdrant_setup.sh"
@@ -229,7 +212,7 @@ elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping Qdrant setup"
 fi
 
-# 4. Godot Setup
+# 3. Godot Setup
 if $INSTALL_GODOT; then
     log_section "Running Godot Setup..."
     bash "$SCRIPTS_DIR/godot_setup.sh"
@@ -237,7 +220,7 @@ elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping Godot setup"
 fi
 
-# 5. Additional Apps Setup
+# 4. Additional Apps Setup
 if $INSTALL_APPS; then
     log_section "Running Apps Setup..."
     bash "$SCRIPTS_DIR/apps_setup.sh"
@@ -245,7 +228,7 @@ elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping additional apps setup"
 fi
 
-# 6. Packet Tracer Setup
+# 5. Packet Tracer Setup
 if $INSTALL_PACKETTRACER; then
     # Check if .deb file exists before attempting
     PT_DEB=$(find "$BACKUP_DIR" "$HOME" -maxdepth 1 -type f \( -name "Cisco*Packet*.deb" -o -name "Packet*Tracer*.deb" \) 2>/dev/null | head -1)
@@ -261,7 +244,7 @@ elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping Packet Tracer setup"
 fi
 
-# 7. OBS Studio Setup
+# 6. OBS Studio Setup
 if $INSTALL_OBS; then
     log_section "Running OBS Setup..."
     bash "$SCRIPTS_DIR/obs_setup.sh"
@@ -269,7 +252,7 @@ elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping OBS setup"
 fi
 
-# 8. EasyEffects Setup
+# 7. EasyEffects Setup
 if $INSTALL_EASYEFFECTS; then
     log_section "Running EasyEffects Setup..."
     bash "$SCRIPTS_DIR/easyeffects_setup.sh"
@@ -277,7 +260,7 @@ elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping EasyEffects setup"
 fi
 
-# 9. DNS Setup
+# 8. DNS Setup
 if $INSTALL_DNS; then
     log_section "Running DNS Setup..."
     bash "$SCRIPTS_DIR/dns_setup.sh"
@@ -285,19 +268,19 @@ elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping DNS setup"
 fi
 
-# 10. Vietnamese Input Method
+# 9. Vietnamese Input Method
 if $INSTALL_VIETNAMESE; then
     log_section "Running Vietnamese Input Setup..."
     bash "$SCRIPTS_DIR/input_setup.sh"
 fi
 
-# 11. OneDrive Setup
+# 10. OneDrive Setup
 if $INSTALL_ONEDRIVE; then
     log_section "Running OneDrive Setup..."
     bash "$SCRIPTS_DIR/onedrive_setup.sh"
 fi
 
-# 12. Antigravity Setup
+# 11. Antigravity Setup
 if $INSTALL_ANTIGRAVITY; then
     log_section "Running Antigravity Rules Setup..."
     bash "$SCRIPTS_DIR/antigravity_setup.sh"
