@@ -5,7 +5,7 @@
 - Provide a reproducible, automated way to configure a personalized
   terminal and development environment on Nobara 42 and Fedora-based systems.
 - Restore backed-up dotfiles, fonts, and GUI configuration for key tools
-  such as Kitty, tmux, Starship, Atuin, and VS Code.
+  such as Kitty, tmux, Starship, and Atuin.
 - Install and wire up supporting developer tools (containers, editors,
   vector DB, game engine, and productivity apps) that match the
   original workstation.
@@ -27,7 +27,7 @@
 - Terminal UX: Kitty configuration, Catppuccin themes, and tmux with TPM.
 - Developer productivity: power tools (zoxide, eza, bat, fzf, ripgrep,
   fd-find, lazygit, yazi).
-- Editor and tooling: VS Code (settings, extensions), Godot, Qdrant,
+- Editor and tooling: Godot, Qdrant,
   container runtime (Podman), and selected desktop applications.
 - Fonts: installation of Nerd Fonts and JetBrains Mono into the user
   font directory.

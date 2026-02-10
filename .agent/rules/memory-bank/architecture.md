@@ -22,24 +22,23 @@ At a high level, the system:
 - Global flags:
   - **Exclusive Mode Triggers**: Providing any component flag switches the script to **Exclusive Mode**, where only explicitly requested components run.
     - `--full`: Runs the full standard setup (explicitly enables all standard components).
-    - Component flags: `--terminal`, `--vscode`, `--qdrant`, `--godot`, `--apps`, `--packettracer`, `--easyeffects`, `--onedrive`, `--vietnamese`, `--antigravity`.
+    - Component flags: `--terminal`, `--qdrant`, `--godot`, `--apps`, `--packettracer`, `--easyeffects`, `--onedrive`, `--vietnamese`, `--antigravity`.
 
-  - **Skip Flags**: Used in default mode (no exclusive flags) to selectively disable components (e.g., `--skip-vscode`, `--skip-godot`).
+  - **Skip Flags**: Used in default mode (no exclusive flags) to selectively disable components (e.g., `--skip-godot`).
 - Performs pre-flight checks via utilities in [`scripts/common.sh`](../../scripts/common.sh:1):
   - Enforces **non-root** execution.
   - Verifies the assets directory exists.
 - Executes setup scripts in this typical order:
   1. [`scripts/terminal_setup.sh`](../../scripts/terminal_setup.sh:1) (unless `--skip-terminal`)
-  2. [`scripts/vscode_setup.sh`](../../scripts/vscode_setup.sh:1) (unless `--skip-vscode`)
-  3. [`scripts/qdrant_setup.sh`](../../scripts/qdrant_setup.sh:1) (unless `--skip-qdrant`)
-  4. [`scripts/godot_setup.sh`](../../scripts/godot_setup.sh:1) (unless `--skip-godot`)
-  5. [`scripts/apps_setup.sh`](../../scripts/apps_setup.sh:1) (unless `--skip-apps`)
-  6. [`scripts/easyeffects_setup.sh`](../../scripts/easyeffects_setup.sh:1) (unless `--skip-easyeffects`)
-  7. [`scripts/dns_setup.sh`](../../scripts/dns_setup.sh:1) (unless `--skip-dns`)
-  8. [`scripts/packettracer_setup.sh`](../../scripts/packettracer_setup.sh:1) (if not skipped and installer `.deb` exists)
-  9. [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1) (when `--vietnamese` is provided)
-  10. [`scripts/onedrive_setup.sh`](../../scripts/onedrive_setup.sh:1) (when `--onedrive` is provided)
-  11. [`scripts/antigravity_setup.sh`](../../scripts/antigravity_setup.sh:1) (unless `--skip-antigravity`)
+  2. [`scripts/qdrant_setup.sh`](../../scripts/qdrant_setup.sh:1) (unless `--skip-qdrant`)
+  3. [`scripts/godot_setup.sh`](../../scripts/godot_setup.sh:1) (unless `--skip-godot`)
+  4. [`scripts/apps_setup.sh`](../../scripts/apps_setup.sh:1) (unless `--skip-apps`)
+  5. [`scripts/easyeffects_setup.sh`](../../scripts/easyeffects_setup.sh:1) (unless `--skip-easyeffects`)
+  6. [`scripts/dns_setup.sh`](../../scripts/dns_setup.sh:1) (unless `--skip-dns`)
+  7. [`scripts/packettracer_setup.sh`](../../scripts/packettracer_setup.sh:1) (if not skipped and installer `.deb` exists)
+  8. [`scripts/input_setup.sh`](../../scripts/input_setup.sh:1) (when `--vietnamese` is provided)
+  9. [`scripts/onedrive_setup.sh`](../../scripts/onedrive_setup.sh:1) (when `--onedrive` is provided)
+  10. [`scripts/antigravity_setup.sh`](../../scripts/antigravity_setup.sh:1) (unless `--skip-antigravity`)
 - Provides summary output and reminders (e.g., log out/in to pick up default shell changes).
 
 
@@ -50,8 +49,7 @@ flowchart TD
   A[User runs ./setup.sh] --> B[Parse CLI flags]
   B --> C[Pre-flight checks via scripts/common.sh]
   C --> D[Run scripts/terminal_setup.sh]
-  D --> E[Optionally run scripts/vscode_setup.sh]
-  E --> F[Optionally run scripts/qdrant_setup.sh]
+  D --> F[Optionally run scripts/qdrant_setup.sh]
   F --> G[Optionally run scripts/godot_setup.sh]
   G --> H[Optionally run scripts/apps_setup.sh]
   H --> I[Optionally run scripts/onedrive_setup.sh]
@@ -101,11 +99,6 @@ All other scripts **source** this file and rely on its utilities for consistent 
 ### Tooling and Apps Setup (External Integrations)
 
 Additional scripts manage specific tools and applications:
-
-- [`scripts/vscode_setup.sh`](../../scripts/vscode_setup.sh:1)
-  - Installs VS Code (Microsoft repo).
-  - Installs extensions listed in [`assets/vscode/extensions.txt`](../../assets/vscode/extensions.txt:1) (if present).
-  - **Does NOT** restore VS Code settings or globalStorage to avoid storing secrets in version control.
 
 - [`scripts/qdrant_setup.sh`](../../scripts/qdrant_setup.sh:1)
   - Uses Podman to run a Qdrant vector DB container.
@@ -168,7 +161,6 @@ The [`assets/`](../../assets:1) directory serves as the **configuration source o
 - Tool-specific extras:
   - [`assets/images/jedi.png`](../../assets/images/jedi.png:1) for `fastfetch`.
   - Godot settings and themes under [`assets/godot/`](../../assets/godot:1).
-  - VS Code extensions list under [`assets/vscode/extensions.txt`](../../assets/vscode/extensions.txt:1).
   - EasyEffects audio presets and autoload rules under [`assets/.config/easyeffects`](../../assets/.config/easyeffects:1).
 
 Scripts treat these as **immutable inputs**, copying them into the user's home directory and overwriting existing files without backup.
@@ -184,7 +176,7 @@ Scripts treat these as **immutable inputs**, copying them into the user's home d
   - Bash scripts contain **procedural logic**.
   - [`assets/`](../../assets:1) contains **all user-specific configuration data**, making it easy to adjust the environment by editing assets rather than rewriting scripts.
 - **Feature modularity**:
-  - Each major feature (VS Code, Qdrant, Godot, apps, Packet Tracer) lives in its own script.
+  - Each major feature (Qdrant, Godot, apps, Packet Tracer) lives in its own script.
   - `setup.sh` composes these features via flags and skip options.
 - **Tmux plugins via TPM**:
   - Tmux Plugin Manager is cloned from GitHub into `~/.tmux/plugins/tpm`.

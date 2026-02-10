@@ -55,10 +55,6 @@
 
 ## Applications and Services
 
-- Editor:
-  - Visual Studio Code (VS Code), installed via [`scripts/vscode_setup.sh`](../../scripts/vscode_setup.sh:1)
-  - Extensions list under [`assets/vscode/extensions.txt`](../../assets/vscode/extensions.txt:1)
-  - Settings are NOT restored (to avoid storing secrets in version control)
 - Vector database:
   - Qdrant, provisioned via Podman and systemd user service by [`scripts/qdrant_setup.sh`](../../scripts/qdrant_setup.sh:1)
 - Game engine:

@@ -193,7 +193,11 @@ qf() {
 # Fastfetch (System Info on Terminal Start)
 # -----------------------------------------------------------------------------
 if command -v fastfetch &> /dev/null; then
-    fastfetch -c ~/.config/fastfetch/sample_2.jsonc
+    if [[ "$TERM" == "xterm-kitty" || "$TERM_PROGRAM" == "kitty" ]]; then
+        fastfetch -c ~/.config/fastfetch/kitty.jsonc
+    else
+        fastfetch -c ~/.config/fastfetch/generic.jsonc
+    fi
 fi
 
 # -----------------------------------------------------------------------------
@@ -234,3 +238,6 @@ bindkey '^[[B' history-search-forward
 bindkey '^[[H' beginning-of-line    # Home key
 bindkey '^[[F' end-of-line          # End key
 bindkey '^[[3~' delete-char         # Delete key
+# .NET SDK
+export DOTNET_ROOT=$HOME/.dotnet
+export PATH=$PATH:$HOME/.dotnet:$HOME/.dotnet/tools

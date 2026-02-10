@@ -24,13 +24,13 @@ This repository provides a **single, version-controlled source of truth** for th
 
 3. **Inconsistent tooling across machines**
 
-   - Problem: Workflows depend on a specific combination of tools (Zsh, Starship, Atuin, Kitty, tmux, power tools, VS Code, Qdrant, Godot, etc.), which may not be installed or configured identically.
+   - Problem: Workflows depend on a specific combination of tools (Zsh, Starship, Atuin, Kitty, tmux, power tools, Qdrant, Godot, etc.), which may not be installed or configured identically.
    - Solution: Centralize installation and configuration for all key tools so each machine can be brought to a consistent state.
 
 4. **Loss of editor and GUI app preferences**
 
-   - Problem: Editor settings (VS Code), Godot editor configuration, and other GUI preferences are easy to lose and hard to reconstruct from memory.
-   - Solution: Capture those settings under [`assets/vscode/`](../../assets/vscode:1) and [`assets/godot/`](../../assets/godot:1), then restore them via dedicated setup scripts.
+   - Problem: Godot editor configuration and other GUI preferences are easy to lose and hard to reconstruct from memory.
+   - Solution: Capture those settings under [`assets/godot/`](../../assets/godot:1), then restore them via dedicated setup scripts.
 
 ## How It Should Work
 
@@ -45,7 +45,6 @@ This repository provides a **single, version-controlled source of truth** for th
 
 3. [`setup.sh`](../../setup.sh:1) orchestrates:
    - **Terminal setup** via [`scripts/terminal_setup.sh`](../../scripts/terminal_setup.sh:1) (handles both core setup and optional enhancements)
-   - **VS Code** via [`scripts/vscode_setup.sh`](../../scripts/vscode_setup.sh:1)
    - **Qdrant** via [`scripts/qdrant_setup.sh`](../../scripts/qdrant_setup.sh:1)
    - **Godot** via [`scripts/godot_setup.sh`](../../scripts/godot_setup.sh:1)
    - **Apps** (Chrome, Dropbox, Discord, Obsidian, Anki, Calibre, Super Productivity) via [`scripts/apps_setup.sh`](../../scripts/apps_setup.sh:1)
@@ -59,7 +58,6 @@ This repository provides a **single, version-controlled source of truth** for th
    - Install required packages with `dnf` (and other mechanisms where needed).
    - Copy dotfiles, fonts, and configuration directories from [`assets/`](../../assets:1) (overwrites without backup).
    - Set Zsh as default shell, configure Kitty, tmux, Starship, Atuin, and power tools.
-   - Install VS Code and extensions (settings are NOT restored to avoid storing secrets).
    - Restore Godot editor configuration.
    - Install and configure supporting tools like Qdrant and selected desktop apps.
    - Restore audio processing presets via EasyEffects for reproducible speaker/headphone tuning.
@@ -73,11 +71,11 @@ This repository provides a **single, version-controlled source of truth** for th
 - **Default (Full)**: `./setup.sh` (runs all standard components).
 - **Explicit Full**: `./setup.sh --full` (same as default, useful for clarity).
 - **Exclusive Mode**: Run specific components only by passing their flags.
-  - Example: `./setup.sh --vscode` (installs ONLY VS Code).
   - Example: `./setup.sh --terminal` (runs ONLY terminal setup).
+  - Example: `./setup.sh --godot` (installs ONLY Godot).
 - **OneDrive setup**: `./setup.sh --onedrive` (interactive setup for one or more OneDrive accounts).
 - **Vietnamese support**: `./setup.sh --vietnamese` (installs ibus-bamboo input method).
-- **Selective skipping**: In default mode, skip specific parts via `--skip-vscode`, `--skip-qdrant`, `--skip-godot`, `--skip-apps`, `--skip-easyeffects`, `--skip-packettracer`, `--skip-antigravity`.
+- **Selective skipping**: In default mode, skip specific parts via `--skip-qdrant`, `--skip-godot`, `--skip-apps`, `--skip-easyeffects`, `--skip-packettracer`, `--skip-antigravity`.
 
 
 ## User Experience Goals
@@ -109,7 +107,7 @@ This repository provides a **single, version-controlled source of truth** for th
      - Available scripts and options.
      - What gets installed by each script.
      - Post-enhancement steps and key aliases/keybindings.
-   - Users can run individual scripts (e.g., only VS Code setup or only Qdrant) when desired.
+   - Users can run individual scripts (e.g., only Qdrant setup or only Godot) when desired.
 
 6. **Personal but portable**
 

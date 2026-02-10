@@ -105,9 +105,9 @@ if [[ -d "$BACKUP_DIR/godot" ]]; then
     cp -r "$BACKUP_DIR/godot/"* "$GODOT_CONFIG_DIR/"
     log_success "Configuration restored to $GODOT_CONFIG_DIR"
     
-    # Check VS Code integration
+    # Check external editor integration
     if grep -q 'text_editor/external/use_external_editor = true' "$GODOT_CONFIG_DIR/"editor_settings*.tres 2>/dev/null; then
-        log_success "VS Code integration preserved"
+        log_success "External editor integration preserved"
     fi
 else
     log_warn "No Godot config backup found in $BACKUP_DIR/godot"

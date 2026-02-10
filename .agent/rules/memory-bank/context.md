@@ -2,13 +2,13 @@
 
 ## Current Work Focus
 
-- Repo is stable with single-profile terminal setup, no backup pipeline, and VS Code not restoring settings.
+- Repo is stable with single-profile terminal setup and no backup pipeline.
 
 ## Recent Changes
 
-- Simplified VS Code setup:
-  - [`scripts/vscode_setup.sh`](../../scripts/vscode_setup.sh:1) only installs VS Code and extensions.
-  - Removed VS Code settings/globalStorage restore to avoid storing secrets.
+- Removed VS Code support entirely:
+  - Deleted `scripts/vscode_setup.sh`, `assets/vscode/extensions.txt`, and all VS Code flags (`--vscode`, `--skip-vscode`).
+  - VS Code is no longer installed or configured by this project.
 - Unified terminal setup into single profile:
   - [`scripts/terminal_setup.sh`](../../scripts/terminal_setup.sh:1) installs all packages + power tools in one pass.
   - Removed separate `core_setup.sh` and `enhance_terminal.sh` scripts.
@@ -32,12 +32,11 @@
   - Rules backed up to `assets/.gemini/GEMINI.md`.
   - Added `scripts/antigravity_setup.sh` to deploy rules to `~/.gemini/GEMINI.md`.
   - Updated `setup.sh` with `--antigravity` flag (default in full mode).
-- Deployed Kilo Code specific global rules:
-  - Created `.kilocode/rules/00-antigravity.md` derived from `GEMINI.md`.
 - Synced Memory Bank (product, architecture, tech, context) with current state.
+- Renamed `assets/.config/fastfetch/sample_2_vscode.jsonc` → `sample_2_fallback.jsonc` to remove VS Code naming; updated `.zshrc` references in both project and live machine.
 
 
 ## Next Steps
 
-- Refine individual setup scripts for better reliability.
+- Stabilize current setup and evolve configs incrementally as needed.
 - Keep Memory Bank updated when new tools/scripts are added.
