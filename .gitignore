@@ -4,3 +4,9 @@ assets/CiscoPacketTracer_Ubuntu_64bit.deb
 
 # VS Code project settings
 .vscode/
+
+# Claude sensitive files (contain API keys, session data)
+assets/.claude/config.json
+assets/.claude/projects/*/*.jsonl
+assets/.claude/history.jsonl
+assets/.claude/stats-cache.json
