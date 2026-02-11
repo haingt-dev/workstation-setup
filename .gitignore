@@ -10,3 +10,23 @@ assets/.claude/config.json
 assets/.claude/projects/*/*.jsonl
 assets/.claude/history.jsonl
 assets/.claude/stats-cache.json
+
+# Environment secrets (NEVER commit)
+.env
+.env.*
+!.env.example
+!.env.template
+
+# API keys and credentials
+config.json
+credentials.json
+credentials.*
+secrets.*
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Agent credentials
+.agent/credentials.*
+.agent/secrets.*
