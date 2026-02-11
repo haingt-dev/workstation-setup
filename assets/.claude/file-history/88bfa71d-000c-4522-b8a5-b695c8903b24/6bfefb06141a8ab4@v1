@@ -1,0 +1,60 @@
+# Agent Global Hub
+
+Canonical source of truth for shared agent configuration. Both Kilo Code and Antigravity read from here via symlinks.
+
+**Rule**: Edit files HERE. Symlinks propagate changes to both agents automatically.
+
+## Structure
+
+```
+~/.agent_global/
+├── rules/global_rules.md          → symlinked to Kilo + Antigravity
+├── workflows/
+│   ├── core-directives.md         → symlinked to Kilo + Antigravity
+│   ├── commit-protocol.md         → symlinked to Kilo + Antigravity
+│   ├── memory-bank-protocol.md    → symlinked to Kilo + Antigravity
+│   └── documentation-sync.md      → symlinked to Kilo + Antigravity
+├── skills/
+│   ├── mcp-builder/               → symlinked to ~/.kilocode/skills/
+│   └── skill-creator/             → symlinked to ~/.kilocode/skills/
+└── templates/memory-bank/         Bootstrap template for new projects
+```
+
+## Symlink Map
+
+| Canonical Source | Kilo Code Target | Antigravity Target |
+|-----------------|------------------|-------------------|
+| `rules/global_rules.md` | `~/.kilocode/rules/global_rules.md` | `~/.gemini/GEMINI.md` |
+| `workflows/*.md` (×4) | `~/.kilocode/workflows/*.md` | `~/.gemini/antigravity/global_workflows/*.md` |
+| `skills/*` (×2) | `~/.kilocode/skills/*` | N/A (not supported) |
+
+## Connected Projects
+
+| Project | Location | Memory Bank |
+|---------|----------|-------------|
+| Idea_Vault | `~/Dropbox/Apps/Obsidian/Idea_Vault` | `.agent/rules/memory-bank/` |
+| chimera-protocol | `~/Projects/chimera-protocol` | `.agent/rules/memory-bank/` |
+| media-server | `~/Projects/media-server` | `.agent/rules/memory-bank/` |
+| My_CVs | `~/Projects/My_CVs` | `.agent/rules/memory-bank/` |
+| systems-migration-main | `~/Projects/systems-migration-main` | `.agent/rules/memory-bank/` |
+| Wildtide | `~/Projects/Wildtide` | `.agent/rules/memory-bank/` |
+
+## MCP Servers (Global)
+
+| Server | Type | Purpose |
+|--------|------|---------|
+| brave-search | podman | Web search |
+| fetch | podman | URL content fetching |
+| context7 | streamable-http | Library documentation |
+
+MCP configs are agent-specific (different JSON schemas):
+- Kilo: `~/.config/Code/User/globalStorage/kilocode.kilo-code/settings/mcp_settings.json`
+- Antigravity: Configure via Antigravity UI
+
+## Bootstrap New Project
+
+```bash
+PROJECT=/path/to/new/project
+mkdir -p "$PROJECT/.agent/rules/memory-bank"
+cp ~/.agent_global/templates/memory-bank/*.md "$PROJECT/.agent/rules/memory-bank/"
+```

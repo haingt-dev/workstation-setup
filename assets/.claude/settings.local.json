@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ln:*)",
+      "Bash(chmod:*)",
+      "Bash(du:*)",
+      "Bash(echo:*)",
+      "Bash(~/.zshrc)",
+      "Bash(~/.agent_global/hooks/install-all-projects.sh:*)",
+      "Bash(~/.agent_global/sync-obsidian.sh:*)",
+      "Bash(command -v podman:*)",
+      "Bash(command -v docker:*)",
+      "Bash(command -v:*)",
+      "Bash(rsync:*)"
+    ]
+  }
+}

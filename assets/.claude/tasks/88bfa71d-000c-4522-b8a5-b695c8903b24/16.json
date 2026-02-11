@@ -1,0 +1,9 @@
+{
+  "id": "16",
+  "subject": "Create agent setup script in systems-migration",
+  "description": "Add agent_setup.sh script to restore agent_global on new system",
+  "activeForm": "Creating agent setup script",
+  "status": "in_progress",
+  "blocks": [],
+  "blockedBy": []
+}

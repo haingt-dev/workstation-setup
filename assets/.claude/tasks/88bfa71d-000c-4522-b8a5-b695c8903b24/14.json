@@ -1,0 +1,9 @@
+{
+  "id": "14",
+  "subject": "Backup agent_global structure to systems-migration",
+  "description": "Copy entire ~/.agent_global/ to systems-migration/assets/ for backup and migration purposes",
+  "activeForm": "Backing up agent system to systems-migration",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}
