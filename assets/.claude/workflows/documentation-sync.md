@@ -1,0 +1,1 @@
+/home/haint/.agent_global/workflows/documentation-sync.md

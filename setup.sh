@@ -29,6 +29,7 @@ source "$SCRIPTS_DIR/common.sh"
 
 # Standard components (Run by default)
 INSTALL_TERMINAL=true
+INSTALL_AGENT=true
 INSTALL_QDRANT=true
 INSTALL_GODOT=true
 INSTALL_APPS=true
@@ -60,6 +61,7 @@ show_help() {
     echo "Component Flags (Triggers Exclusive Mode):"
     echo "  --full              Run full setup (same as default)"
     echo "  --terminal          Terminal setup (shell, dotfiles, fonts, power tools)"
+    echo "  --agent             Agent system setup (Agent Global Hub, Claude integration) ⭐ NEW"
     echo "  --qdrant            Qdrant setup"
     echo "  --godot             Godot setup"
     echo "  --apps              Additional apps (Chrome, Dropbox, Flatpaks)"
@@ -75,6 +77,7 @@ show_help() {
     echo ""
     echo "Skip Flags (For Default Mode):"
     echo "  --skip-terminal     Skip terminal setup"
+    echo "  --skip-agent        Skip agent system setup"
     echo "  --skip-qdrant       Skip Qdrant"
     echo "  --skip-godot        Skip Godot"
     echo "  --skip-apps         Skip Apps"
@@ -101,7 +104,7 @@ show_help() {
 EXCLUSIVE_MODE=false
 for arg in "$@"; do
     case $arg in
-        --full|--terminal|--qdrant|--godot|--apps|--packettracer|--obs|--easyeffects|--dns|--onedrive|--vietnamese|--antigravity)
+        --full|--terminal|--agent|--qdrant|--godot|--apps|--packettracer|--obs|--easyeffects|--dns|--onedrive|--vietnamese|--antigravity)
 
             EXCLUSIVE_MODE=true
             break
@@ -113,6 +116,7 @@ if $EXCLUSIVE_MODE; then
     # In exclusive mode, disable all standard components by default.
     # Only explicitly requested components will be enabled in the loop below.
     INSTALL_TERMINAL=false
+    INSTALL_AGENT=false
     INSTALL_QDRANT=false
     INSTALL_GODOT=false
     INSTALL_APPS=false
@@ -133,6 +137,7 @@ for arg in "$@"; do
         # Component Flags
         --full)
             INSTALL_TERMINAL=true
+            INSTALL_AGENT=true
             INSTALL_QDRANT=true
             INSTALL_GODOT=true
             INSTALL_APPS=true
@@ -142,6 +147,7 @@ for arg in "$@"; do
 
             ;;
         --terminal)           INSTALL_TERMINAL=true ;;
+        --agent)              INSTALL_AGENT=true ;;
         --qdrant)             INSTALL_QDRANT=true ;;
         --godot)              INSTALL_GODOT=true ;;
         --apps)               INSTALL_APPS=true ;;
@@ -156,6 +162,7 @@ for arg in "$@"; do
 
         # Skip Flags
         --skip-terminal)      INSTALL_TERMINAL=false ;;
+        --skip-agent)         INSTALL_AGENT=false ;;
         --skip-qdrant)        INSTALL_QDRANT=false ;;
         --skip-godot)         INSTALL_GODOT=false ;;
         --skip-apps)          INSTALL_APPS=false ;;
@@ -204,7 +211,15 @@ elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping terminal setup"
 fi
 
-# 2. Qdrant Setup
+# 2. Agent System Setup
+if $INSTALL_AGENT; then
+    log_section "Running Agent System Setup..."
+    bash "$SCRIPTS_DIR/agent_setup.sh"
+elif ! $EXCLUSIVE_MODE; then
+    log_warn "Skipping agent system setup"
+fi
+
+# 3. Qdrant Setup
 if $INSTALL_QDRANT; then
     log_section "Running Qdrant Setup..."
     bash "$SCRIPTS_DIR/qdrant_setup.sh"
@@ -212,7 +227,7 @@ elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping Qdrant setup"
 fi
 
-# 3. Godot Setup
+# 4. Godot Setup
 if $INSTALL_GODOT; then
     log_section "Running Godot Setup..."
     bash "$SCRIPTS_DIR/godot_setup.sh"
@@ -220,7 +235,7 @@ elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping Godot setup"
 fi
 
-# 4. Additional Apps Setup
+# 5. Additional Apps Setup
 if $INSTALL_APPS; then
     log_section "Running Apps Setup..."
     bash "$SCRIPTS_DIR/apps_setup.sh"
@@ -228,7 +243,7 @@ elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping additional apps setup"
 fi
 
-# 5. Packet Tracer Setup
+# 6. Packet Tracer Setup
 if $INSTALL_PACKETTRACER; then
     # Check if .deb file exists before attempting
     PT_DEB=$(find "$BACKUP_DIR" "$HOME" -maxdepth 1 -type f \( -name "Cisco*Packet*.deb" -o -name "Packet*Tracer*.deb" \) 2>/dev/null | head -1)

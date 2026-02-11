@@ -4,14 +4,29 @@ Automated terminal and development environment setup for Nobara 42 / Fedora.
 
 ## Features
 
+### Terminal & Shell
 - **Shell Environment**: Zsh, Starship prompt, Atuin history, Fastfetch
 - **Terminal**: Kitty GPU-accelerated terminal with Catppuccin theme
 - **Fonts**: CaskaydiaCove Nerd Font
 - **Tmux**: Multiplexer with TPM plugins, session persistence, Catppuccin theme
 - **Power Tools**: zoxide, eza, bat, fzf, ripgrep, fd-find, lazygit, yazi
+
+### Agent System ⭐ NEW
+- **Agent Global Hub**: Unified configuration for Claude, Kilo Code, and Antigravity
+- **Memory Bank System**: Project context management with `.agent/rules/memory-bank/`
+- **Obsidian Integration**: Bi-directional sync between Obsidian vault and code projects
+- **Git Hooks**: Auto-reminder to update Memory Bank after significant commits
+- **Shell Aliases**: Quick commands for agent workflows (mbk, mbc, ag, cdc, etc.)
+- **MCP Servers**: Pre-configured for Claude (Obsidian, Filesystem, Brave Search, GitHub)
+- **Knowledge Base**: Cross-project patterns, troubleshooting, learnings, recipes
+- **Token Analytics**: Track and optimize token usage across projects
+
+### Development & Tools
 - **Containers**: Podman & Podman Compose
 - **Qdrant**: Vector database with auto-start systemd service
 - **Godot Engine**: Game engine setup and configuration
+
+### Applications
 - **Additional Apps**: Chrome, Dropbox, Discord, Obsidian, Anki, Calibre, Super Productivity
 - **OneDrive**: Multi-account support via `abraunegg/onedrive` client
 - **Audio Processing**: EasyEffects with pre-tuned presets
@@ -46,7 +61,9 @@ cd terminal-custom
 Options:
   --full              Run full setup (same as default)
   --terminal          Run terminal setup only
+  --agent             Run agent system setup only ⭐ NEW
   --skip-terminal     Skip terminal setup
+  --skip-agent        Skip agent system setup
   --skip-qdrant       Skip Qdrant setup
   --skip-godot        Skip Godot installation
   --skip-apps         Skip additional apps
@@ -57,19 +74,19 @@ Options:
   --onedrive          Setup OneDrive (multiple accounts)
   --vietnamese        Install Vietnamese input method
   --obs               Setup OBS Studio
-  --onedrive          Setup OneDrive (multiple accounts)
-  --vietnamese        Install Vietnamese input method
   --help              Show help message
 
 Exclusive Mode (Run ONLY specific components):
   ./setup.sh --terminal       # ONLY run terminal setup
+  ./setup.sh --agent          # ONLY setup agent system ⭐ NEW
   ./setup.sh --qdrant         # ONLY setup Qdrant
   ./setup.sh --obs            # ONLY setup OBS Studio
   ./setup.sh --dns            # ONLY setup DNS
 
 Examples:
-  ./setup.sh                  # Full installation
+  ./setup.sh                  # Full installation (terminal + agent + apps)
   ./setup.sh --terminal       # Terminal setup only
+  ./setup.sh --agent          # Agent system setup only
   ./setup.sh --skip-godot     # Full setup EXCEPT Godot
   ./setup.sh --obs            # OBS Studio setup only
 ```
@@ -104,10 +121,58 @@ Examples:
     ├── easyeffects_setup.sh    # EasyEffects audio presets
     ├── dns_setup.sh            # DNS configuration
     ├── packettracer_setup.sh   # Cisco Packet Tracer
-    └── input_setup.sh          # Vietnamese input method
+    ├── input_setup.sh          # Vietnamese input method
+    └── agent_setup.sh          # Agent Global Hub setup ⭐ NEW
 ```
 
 ## What Gets Installed
+
+### Agent System Setup (`agent_setup.sh`) ⭐ NEW
+
+Complete AI agent workflow integration for Claude, Kilo Code, and Antigravity:
+
+**Agent Global Hub** (`~/.agent_global/`):
+- Global rules and workflows (symlinked to all agents)
+- Memory Bank templates (enhanced with structured prompts)
+- Knowledge base (patterns, troubleshooting, learnings, recipes)
+- Git hooks (auto-reminder for Memory Bank updates)
+- Shell aliases (mbk, mbc, ag, cdc, token-*, etc.)
+- Bootstrap script for new projects
+- Obsidian sync tool (bi-directional)
+- Token usage tracker
+
+**Claude Integration** (`~/.claude/`):
+- Symlinks to Agent Global Hub rules/workflows
+- MCP server configuration (Obsidian, Filesystem, Brave Search, GitHub)
+- Auto memory strategy documentation
+- Project-specific configurations
+
+**Per-Project Structure**:
+- `CLAUDE.md` - Project context loader
+- `.agent/rules/memory-bank/` - Project Memory Bank
+  - `brief.md` - Goals and scope
+  - `product.md` - User needs
+  - `context.md` - Current state
+  - `architecture.md` - System structure
+  - `tech.md` - Stack and tooling
+- Git post-commit hook for Memory Bank reminders
+
+**Quick Commands**:
+```bash
+ag              # Go to Agent Global Hub
+mbk             # Edit Memory Bank
+mbc             # Quick edit context.md
+cdc Wildtide    # Switch to project
+mb-sync-status  # Check Obsidian sync
+token-today     # View token usage
+ag-help         # Show all commands
+```
+
+**Documentation**:
+- `~/.agent_global/README.md` - Complete system overview
+- `~/.agent_global/MEMORY_STRATEGY.md` - Token optimization strategy
+- `~/.agent_global/SETUP.md` - Setup guide
+- `~/.claude/MCP_SETUP.md` - MCP server setup
 
 ### Terminal Setup (`terminal_setup.sh`)
 

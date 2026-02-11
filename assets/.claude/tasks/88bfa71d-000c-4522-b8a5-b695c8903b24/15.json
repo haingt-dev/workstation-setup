@@ -1,0 +1,9 @@
+{
+  "id": "15",
+  "subject": "Update systems-migration README với agent integration",
+  "description": "Document agent system integration in systems-migration README.md",
+  "activeForm": "Documenting agent integration",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

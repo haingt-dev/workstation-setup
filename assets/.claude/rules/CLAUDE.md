@@ -1,0 +1,1 @@
+/home/haint/.agent_global/rules/global_rules.md

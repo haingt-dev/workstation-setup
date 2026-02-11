@@ -1,0 +1,27 @@
+# Project Context for Claude
+
+**CRITICAL**: Load Memory Bank from `.agent/rules/memory-bank/` before starting any task.
+
+## Memory Bank Location
+Read these files at the start of EVERY task to ground yourself in project context:
+- **Brief**: `.agent/rules/memory-bank/brief.md` — Project goals and scope
+- **Product**: `.agent/rules/memory-bank/product.md` — Product context and constraints
+- **Context**: `.agent/rules/memory-bank/context.md` — Current focus, active workstreams, recent changes
+- **Architecture**: `.agent/rules/memory-bank/architecture.md` — System architecture and structure
+- **Tech Stack**: `.agent/rules/memory-bank/tech.md` — Tech stack and tooling
+
+## Global Rules
+See `~/.claude/rules/CLAUDE.md` (symlinked to Agent Global Hub)
+
+## Workflows
+All workflows are symlinked from `~/.claude/workflows/`:
+- `core-directives.md` — Fundamental behavioral guidelines
+- `commit-protocol.md` — Git commit standards
+- `memory-bank-protocol.md` — Memory Bank maintenance protocol
+- `documentation-sync.md` — Documentation synchronization
+
+## Memory Bank Maintenance
+After completing major tasks or architectural changes, update the relevant Memory Bank files to keep context fresh for all agents (Claude, Kilo, Antigravity).
+
+## Priority Chain
+Claude → Antigravity → Kilo (use Claude for complex interactive work, Antigravity for UI-based tasks, Kilo for VS Code integration)
