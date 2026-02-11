@@ -6,6 +6,39 @@
 
 ## Recent Changes
 
+### 2026-02-11: Security Hardening 🔒 CRITICAL
+**What**: Comprehensive secret management and leak prevention
+**Why**: Prevent repeat of API key leak incident (blocked by GitHub secret scanning)
+**Impact**: All agents now enforce strict .env usage for secrets
+
+**Changes**:
+1. **Global Security Rules** (`~/.agent_global/rules/global_rules.md`):
+   - Mandatory .env pattern for ALL secrets
+   - Pre-commit secret detection checklist
+   - Agent workflow for handling sensitive files
+   - Never commit: API keys, tokens, credentials, config.json
+
+2. **Enhanced .gitignore Patterns**:
+   - systems-migration-main/.gitignore: +20 lines of secret patterns
+   - Wildtide/.gitignore: +15 lines of secret patterns
+   - Template: `~/.agent_global/templates/.gitignore-secrets`
+
+3. **Documentation**:
+   - Created: `~/.agent_global/knowledge/security-secrets-management.md`
+   - Created: `~/.agent_global/templates/.env.example`
+   - Documents the incident, .env pattern, recovery procedures
+
+4. **MCP Server Update**:
+   - Enabled Obsidian MCP: `@mauricio.wolff/mcp-obsidian`
+   - Updated: `~/.claude/mcp_settings.json` (disabled: false)
+   - Documentation: `~/.agent_global/knowledge/mcp-obsidian-options.md`
+
+**Testing**: All future commits are now protected by enhanced .gitignore patterns. Agents will check for secrets before staging files.
+
+**Commits**:
+- `045fd76` - feat(security): Add comprehensive secret protection patterns
+- `278476d` - feat(security): Add secret protection patterns to .gitignore (Wildtide)
+
 ### 2026-02-11: Agent Global Hub Integration ⭐ MAJOR
 - **Integrated complete Agent Global Hub system** into systems-migration-main:
   - Backed up entire `~/.agent_global/` structure to `assets/.agent_global/` (50+ files)
