@@ -13,7 +13,7 @@ alias ag-edit='cd ~/.agent_global && $EDITOR .'
 
 # Quick access to projects
 alias cdp='cd ~/Projects'
-alias cdv='cd ~/Dropbox/Apps/Obsidian/Idea_Vault'
+alias cdv='cd ~/Projects/Idea_Vault'
 
 # ============================================
 # PROJECT MANAGEMENT
@@ -24,9 +24,9 @@ alias bootstrap='~/.agent_global/bootstrap-project.sh'
 
 # Edit Memory Bank in current project
 mbk() {
-    if [ -d ".agent/rules/memory-bank" ]; then
+    if [ -d ".memory-bank" ]; then
         echo "📝 Opening Memory Bank..."
-        $EDITOR .agent/rules/memory-bank/
+        $EDITOR .memory-bank/
     else
         echo "❌ No Memory Bank found in current directory"
         echo "💡 Run 'bootstrap .' to create one"
@@ -35,8 +35,8 @@ mbk() {
 
 # Quick edit context.md (most frequently updated)
 mbc() {
-    if [ -f ".agent/rules/memory-bank/context.md" ]; then
-        $EDITOR .agent/rules/memory-bank/context.md
+    if [ -f ".memory-bank/context.md" ]; then
+        $EDITOR .memory-bank/context.md
     else
         echo "❌ No context.md found. Run 'mbk' to see all Memory Bank files"
     fi
@@ -44,10 +44,10 @@ mbc() {
 
 # View Memory Bank status
 mb-status() {
-    if [ -d ".agent/rules/memory-bank" ]; then
+    if [ -d ".memory-bank" ]; then
         echo "📊 Memory Bank Status"
         echo "===================="
-        for file in .agent/rules/memory-bank/*.md; do
+        for file in .memory-bank/*.md; do
             if [ -f "$file" ]; then
                 filename=$(basename "$file")
                 size=$(wc -l < "$file")
@@ -85,7 +85,7 @@ cdc() {
         echo "📂 Switched to: $PROJECT_PATH"
 
         # Show Memory Bank status if exists
-        if [ -d ".agent/rules/memory-bank" ]; then
+        if [ -d ".memory-bank" ]; then
             echo ""
             mb-status
         fi
@@ -99,49 +99,33 @@ cdc() {
 }
 
 # ============================================
-# GLOBAL RULES EDITING
+# RULES & SYNC
 # ============================================
 
-# Edit global rules (syncs to all agents)
-alias ag-rules='$EDITOR ~/.agent_global/rules/global_rules.md'
+# Edit rule templates (source of truth for shared rules)
+alias ag-rules='$EDITOR ~/.agent_global/templates/rules/'
 
-# Edit workflows
-alias ag-workflows='$EDITOR ~/.agent_global/workflows/'
+# Sync shared rules to all projects
+alias ag-sync-rules='~/.agent_global/ag-sync-rules.sh'
 
 # ============================================
 # MAINTENANCE
 # ============================================
 
-# Sync Memory Bank to/from Obsidian
-alias mb-sync='~/.agent_global/sync-obsidian.sh'
-alias mb-to-obsidian='~/.agent_global/sync-obsidian.sh $(basename "$PWD") --to-obsidian'
-alias mb-from-obsidian='~/.agent_global/sync-obsidian.sh $(basename "$PWD") --from-obsidian'
-alias mb-sync-status='~/.agent_global/sync-obsidian.sh $(basename "$PWD") --status'
-
-# Update all project CLAUDE.md files
-ag-update-claude() {
-    echo "🔄 Updating CLAUDE.md in all projects..."
+# Check agent setup across all projects
+ag-status() {
+    echo "🔄 Checking agent setup in all projects..."
     for project in ~/Projects/*/; do
-        if [ -f "$project/CLAUDE.md" ]; then
-            echo "  ✓ $(basename "$project")"
-        fi
+        name=$(basename "$project")
+        echo ""
+        echo "--- $name ---"
+        [ -f "$project/AGENTS.md" ] && echo "  ✓ AGENTS.md" || echo "  ✗ AGENTS.md"
+        [ -d "$project/.memory-bank" ] && echo "  ✓ .memory-bank/" || echo "  ✗ .memory-bank/"
+        [ -f "$project/.claude/CLAUDE.md" ] && echo "  ✓ .claude/" || echo "  ✗ .claude/"
+        [ -d "$project/.kilocode/rules" ] && echo "  ✓ .kilocode/" || echo "  ✗ .kilocode/"
+        [ -d "$project/.agents/rules" ] && echo "  ✓ .agents/" || echo "  ✗ .agents/"
     done
-    echo "Done!"
 }
-
-# ============================================
-# UTILITIES
-# ============================================
-
-# ============================================
-# TOKEN ANALYTICS
-# ============================================
-
-alias token-today='~/.agent_global/analytics/token-tracker.sh today'
-alias token-week='~/.agent_global/analytics/token-tracker.sh week'
-alias token-summary='~/.agent_global/analytics/token-tracker.sh summary'
-alias token-project='~/.agent_global/analytics/token-tracker.sh project'
-alias token-log='$EDITOR ~/.agent_global/analytics/token-usage.log'
 
 # ============================================
 # HELP
@@ -165,7 +149,6 @@ ag-help() {
   mbk             → Edit Memory Bank (current project)
   mbc             → Edit context.md (quick access)
   mb-status       → Show Memory Bank file status
-  mb-sync         → Sync Memory Bank to Obsidian
 
 🚀 PROJECT MANAGEMENT
   bootstrap <dir> → Bootstrap new project with Memory Bank
@@ -175,15 +158,8 @@ ag-help() {
   ag-priority     → Show agent priority chain
 
 ⚙️  CONFIGURATION
-  ag-rules        → Edit global rules
-  ag-workflows    → Edit workflows
-
-📊 ANALYTICS
-  token-today     → Show today's token usage
-  token-week      → Show weekly summary
-  token-summary   → Show overall summary
-  token-project   → Show project usage
-  token-log       → Edit usage log
+  ag-rules        → Edit shared rule templates
+  ag-sync-rules   → Sync rules to all projects
 
 📚 HELP
   ag-help         → Show this help

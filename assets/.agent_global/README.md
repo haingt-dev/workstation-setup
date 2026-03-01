@@ -1,139 +1,88 @@
 # Agent Global Hub
 
-Canonical source of truth for shared agent configuration. Claude, Kilo Code, and Antigravity all read from here via symlinks.
+Cross-project tools and templates for multi-agent development (Claude, Kilo Code, Antigravity).
 
-**Rule**: Edit files HERE. Symlinks propagate changes to all agents automatically.
+**Note**: All agent rules and configs are per-project. This hub only contains shared scripts and templates.
 
 ## Structure
 
 ```
-~/.agent_global/
-├── rules/
-│   └── global_rules.md            → symlinked to Claude + Kilo + Antigravity
-├── workflows/
-│   ├── core-directives.md         → symlinked to all agents
-│   ├── commit-protocol.md         → symlinked to all agents
-│   ├── memory-bank-protocol.md    → symlinked to all agents
-│   └── documentation-sync.md      → symlinked to all agents
-├── skills/
-│   ├── mcp-builder/               → symlinked to ~/.kilocode/skills/
-│   └── skill-creator/             → symlinked to ~/.kilocode/skills/
-├── templates/memory-bank/         → Enhanced templates (brief, product, context, arch, tech)
-├── hooks/
-│   ├── post-commit-mb-reminder    → Git hook to remind Memory Bank updates
-│   ├── install-mb-hook.sh         → Install hook to a project
-│   └── install-all-projects.sh    → Install hooks to all projects
-├── knowledge/
-│   ├── patterns/                  → Reusable architectural patterns
-│   ├── troubleshooting/           → Common problems & solutions
-│   ├── learnings/                 → Lessons learned
-│   └── recipes/                   → Step-by-step guides
-├── analytics/
-│   ├── token-tracker.sh           → Token usage tracking tool
-│   └── token-usage.log            → Usage log (CSV)
-├── bootstrap-project.sh           → Setup new projects
-├── sync-obsidian.sh               → Bi-directional Obsidian sync
-├── shell-aliases.sh               → Shell shortcuts (sourced in ~/.zshrc)
-├── README.md                      → This file
-├── SETUP.md                       → Setup guide
-└── MEMORY_STRATEGY.md             → Memory optimization strategy
+~/agent/  (symlinked as ~/.agent_global/)
+├── ag-sync-rules.sh        # Sync commit-protocol to all projects
+├── bootstrap-project.sh    # Bootstrap new project with full agent structure
+├── shell-aliases.sh        # Shell shortcuts (source in ~/.zshrc)
+├── hooks/                  # Git hooks (post-commit Memory Bank reminder)
+└── templates/
+    ├── rules/
+    │   └── commit-protocol.md  # Only shared rule (format guide)
+    ├── memory-bank/            # Templates for new project Memory Banks
+    ├── .env.example
+    └── .gitignore-secrets
 ```
 
-## Symlink Map
+## Per-Project Structure
 
-| Canonical Source | Claude Target | Kilo Code Target | Antigravity Target |
-|-----------------|---------------|------------------|-------------------|
-| `rules/global_rules.md` | `~/.claude/rules/CLAUDE.md` | `~/.kilocode/rules/global_rules.md` | `~/.gemini/GEMINI.md` |
-| `workflows/*.md` (×4) | `~/.claude/workflows/*.md` | `~/.kilocode/workflows/*.md` | `~/.gemini/antigravity/global_workflows/*.md` |
-| `skills/*` (×2) | N/A (use project CLAUDE.md) | `~/.kilocode/skills/*` | N/A (not supported) |
+Every project has this structure (created by `bootstrap`):
 
-## Connected Projects
+```
+project/
+├── AGENTS.md               # Shared context (all agents read this)
+├── .memory-bank/           # Project knowledge (brief, product, context, arch, tech)
+├── .claude/
+│   ├── CLAUDE.md           # Claude-specific config
+│   ├── settings.json       # Hooks (SessionStart, PreToolUse, Stop)
+│   ├── rules/*.md          # Claude rules (auto-loaded, currently: commit-protocol)
+│   └── skills/<name>/      # Skills (SKILL.md + supporting files)
+├── .kilocode/rules/*.md    # Kilo Code rules
+├── .agents/rules/*.md      # Antigravity rules
+└── .mcp.json               # Project-level MCP servers (where needed)
+```
 
-All projects have `CLAUDE.md` in the root directory for Claude Code integration.
+## Architecture
 
-| Project | Location | Memory Bank | Claude Integration |
-|---------|----------|-------------|--------------------|
-| Idea_Vault | `~/Dropbox/Apps/Obsidian/Idea_Vault` | `.agent/rules/memory-bank/` | ✅ `CLAUDE.md` |
-| chimera-protocol | `~/Projects/chimera-protocol` | `.agent/rules/memory-bank/` | ✅ `CLAUDE.md` |
-| media-server | `~/Projects/media-server` | `.agent/rules/memory-bank/` | ✅ `CLAUDE.md` |
-| My_CVs | `~/Projects/My_CVs` | `.agent/rules/memory-bank/` | ✅ `CLAUDE.md` |
-| systems-migration-main | `~/Projects/systems-migration-main` | `.agent/rules/memory-bank/` | ✅ `CLAUDE.md` |
-| Wildtide | `~/Projects/Wildtide` | `.agent/rules/memory-bank/` | ✅ `CLAUDE.md` |
+### Token Optimization
 
-## MCP Servers (Global)
+Rules are minimized to reduce per-turn token cost:
 
-| Server | Type | Purpose |
-|--------|------|---------|
-| brave-search | podman | Web search |
-| fetch | podman | URL content fetching |
-| context7 | streamable-http | Library documentation |
+| What | Where | Token cost |
+|------|-------|------------|
+| Enforcement (security, dangerous commands) | `settings.json` hooks | **0** (runs as shell) |
+| Core directives (no dirty state, reversibility) | `AGENTS.md` Values | Once per session |
+| Commit format | `rules/commit-protocol.md` | Once per session |
+| Memory Bank context | `SessionStart` hook output | Once per session |
+| Project-specific workflows | `skills/<name>/SKILL.md` | On invocation only |
 
-MCP configs are agent-specific (different JSON schemas):
-- Claude: `~/.claude/mcp_settings.json` (coming soon)
-- Kilo: `~/.config/Code/User/globalStorage/kilocode.kilo-code/settings/mcp_settings.json`
-- Antigravity: Configure via Antigravity UI
+### Skills (`.claude/skills/<name>/SKILL.md`)
 
-## Bootstrap New Project
+Skills use YAML frontmatter for invocation control:
 
-### Quick Method (Recommended)
+- **Auto-invocable** (default): Claude calls when relevant (e.g., `create-note`, `write-gdd`)
+- **Manual-only** (`disable-model-invocation: true`): User triggers with `/name` (e.g., `/test`, `/lint`)
+- Supporting files (templates, references) live alongside SKILL.md in the same directory
+
+### Hooks (`settings.json`)
+
+| Hook | Purpose |
+|------|---------|
+| `SessionStart` | Inject git status + Memory Bank context |
+| `PreToolUse` (Bash) | Block dangerous commands, scan for secrets in staged files |
+| `Stop` (project-specific) | Auto-format on save (e.g., gdformat for Godot) |
+
+## Quick Commands
+
 ```bash
-~/.agent_global/bootstrap-project.sh /path/to/new/project
+ag-help          # Show all commands
+bootstrap <dir>  # Setup new project
+ag-sync-rules    # Sync commit-protocol to all projects
+ag-status        # Check agent setup across all projects
+mbk / mbc        # Edit Memory Bank / context.md
+cdc <project>    # Switch to project directory
 ```
 
-This will automatically:
-- Create `.agent/rules/memory-bank/` directory
-- Copy memory bank templates (brief.md, product.md, context.md, architecture.md, tech.md)
-- Create `CLAUDE.md` with proper Memory Bank references
-- Display next steps
+## Updating Shared Rules
 
-### Manual Method
-```bash
-PROJECT=/path/to/new/project
-mkdir -p "$PROJECT/.agent/rules/memory-bank"
-cp ~/.agent_global/templates/memory-bank/*.md "$PROJECT/.agent/rules/memory-bank/"
-cp ~/Projects/Wildtide/CLAUDE.md "$PROJECT/"
-```
+1. Edit template: `ag-rules` (opens `~/.agent_global/templates/rules/`)
+2. Sync to all projects: `ag-sync-rules`
+3. Sync to one project: `ag-sync-rules ProjectName`
 
-See `SETUP.md` for detailed setup guide.
-
-## Agent Priority Chain
-
-**Priority**: Claude → Antigravity → Kilo
-
-### When to Use Each Agent
-
-**Claude** (Primary - Interactive CLI):
-- ✅ Complex analysis and planning tasks
-- ✅ Interactive coding sessions with deep context
-- ✅ Cross-project work requiring global knowledge
-- ✅ Tasks requiring large context windows
-- ✅ Token-optimized with auto memory + Memory Bank integration
-
-**Antigravity** (Secondary - UI-based):
-- ✅ UI-based workflows and visual feedback
-- ✅ Quick edits without deep context needs
-- ✅ Gemini-specific features and capabilities
-- ✅ Browser-based interaction preference
-
-**Kilo** (Tertiary - VS Code Integration):
-- ✅ VS Code integrated workflows
-- ✅ Simple refactoring within editor
-- ✅ Quick file operations
-- ✅ Editor-native experience
-
-### Token Optimization Strategy
-
-1. **Claude's Auto Memory** (`~/.claude/projects/*/memory/`):
-   - Session-specific insights only
-   - Learned patterns and preferences
-   - Does NOT duplicate Memory Bank content
-
-2. **Memory Bank** (`.agent/rules/memory-bank/`):
-   - Project context shared across all agents
-   - Single source of truth
-   - Updated after major changes
-
-3. **Global Rules** (`~/.agent_global/rules/`):
-   - Behavioral guidelines
-   - Shared protocols
-   - Synced via symlinks to all agents
+Only `commit-protocol.md` is synced. All other enforcement is handled by hooks, and guidance lives in `AGENTS.md`.

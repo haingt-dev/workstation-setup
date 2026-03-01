@@ -29,9 +29,9 @@ for project in ~/Projects/*/; do
 done
 
 # Install to Obsidian vault if it's a git repo
-if [ -d ~/Dropbox/Apps/Obsidian/Idea_Vault/.git ]; then
+if [ -d ~/Projects/Idea_Vault/.git ]; then
     echo "📦 Idea_Vault"
-    if ~/.agent_global/hooks/install-mb-hook.sh ~/Dropbox/Apps/Obsidian/Idea_Vault > /dev/null 2>&1; then
+    if ~/.agent_global/hooks/install-mb-hook.sh ~/Projects/Idea_Vault > /dev/null 2>&1; then
         echo "   ✅ Installed"
         INSTALLED=$((INSTALLED + 1))
     else
