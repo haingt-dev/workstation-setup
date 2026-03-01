@@ -282,6 +282,7 @@ install_power_tools() {
         fzf         # Fuzzy finder
         ripgrep     # Fast grep alternative (useful with fzf)
         fd-find     # Fast find alternative (useful with fzf)
+        gh          # GitHub CLI (used by agent skills)
     )
     log_info "Installing tools from DNF repositories..."
     for pkg in "${POWER_TOOLS[@]}"; do
