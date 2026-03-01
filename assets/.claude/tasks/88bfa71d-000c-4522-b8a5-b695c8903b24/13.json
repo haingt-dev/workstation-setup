@@ -1,9 +1,0 @@
-{
-  "id": "13",
-  "subject": "Merge agent aliases into systems-migration .zshrc",
-  "description": "Add agent_global shell aliases to systems-migration/assets/.zshrc for complete backup",
-  "activeForm": "Merging agent aliases into systems-migration",
-  "status": "completed",
-  "blocks": [],
-  "blockedBy": []
-}

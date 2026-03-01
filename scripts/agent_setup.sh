@@ -1,14 +1,15 @@
 #!/bin/bash
 # =============================================================================
-# agent_setup.sh - Restore Agent Global Hub configuration
+# agent_setup.sh - Restore Agent Hub (~/agent) configuration
 # =============================================================================
 #
 # Usage:
-#   ./agent_setup.sh    # Restore agent global configuration
+#   ./agent_setup.sh    # Restore agent hub configuration
 #
-# This script restores the Agent Global Hub including:
-#   - ~/.agent_global/ structure (rules, workflows, knowledge, hooks, etc.)
-#   - ~/.claude/ MCP settings and documentation
+# This script restores:
+#   - ~/agent/ directory (hub repo with plugins, hooks, templates, etc.)
+#   - ~/.agent_global symlink → ~/agent
+#   - ~/.claude/ settings (MCP, plugins, settings.local.json)
 #   - Shell aliases integration
 #   - Git hooks installation to all projects
 #
@@ -26,96 +27,83 @@ check_not_root
 verify_backup_dir
 
 # =============================================================================
-# Agent Global Hub Setup
+# Agent Hub Setup
 # =============================================================================
 
-setup_agent_global() {
-    log_section "Setting up Agent Global Hub..."
+setup_agent_hub() {
+    log_section "Setting up Agent Hub..."
 
-    # 1. Restore .agent_global directory
+    # 1. Restore ~/agent directory
     if [[ -d "$BACKUP_DIR/.agent_global" ]]; then
-        log_info "Restoring Agent Global Hub structure..."
+        log_info "Restoring Agent Hub to ~/agent/..."
 
-        # Remove existing if present
-        if [[ -d "$HOME/.agent_global" ]]; then
-            log_warn "Existing ~/.agent_global found, backing up..."
+        # Handle existing ~/agent
+        if [[ -d "$HOME/agent" && ! -L "$HOME/agent" ]]; then
+            log_warn "Existing ~/agent found, backing up..."
+            mv "$HOME/agent" "$HOME/agent.backup.$(date +%s)"
+        fi
+
+        # Handle existing symlink
+        if [[ -L "$HOME/.agent_global" ]]; then
+            rm "$HOME/.agent_global"
+        elif [[ -d "$HOME/.agent_global" ]]; then
+            log_warn "Existing ~/.agent_global directory found, backing up..."
             mv "$HOME/.agent_global" "$HOME/.agent_global.backup.$(date +%s)"
         fi
 
-        # Copy entire structure
-        cp -r "$BACKUP_DIR/.agent_global" "$HOME/"
+        # Copy backup to ~/agent
+        ensure_dir "$HOME/agent"
+        cp -r "$BACKUP_DIR/.agent_global/"* "$HOME/agent/"
+        cp -r "$BACKUP_DIR/.agent_global/".* "$HOME/agent/" 2>/dev/null || true
+
+        # Create symlink: ~/.agent_global → ~/agent
+        ln -sf "$HOME/agent" "$HOME/.agent_global"
 
         # Make scripts executable
-        chmod +x "$HOME/.agent_global/bootstrap-project.sh"
-        chmod +x "$HOME/.agent_global/sync-obsidian.sh"
-        chmod +x "$HOME/.agent_global/shell-aliases.sh"
-        chmod +x "$HOME/.agent_global/hooks/"*.sh
-        chmod +x "$HOME/.agent_global/hooks/post-commit-mb-reminder"
-        chmod +x "$HOME/.agent_global/analytics/token-tracker.sh"
+        find "$HOME/agent" -name '*.sh' -type f -exec chmod +x {} +
+        [[ -f "$HOME/agent/hooks/post-commit-mb-reminder" ]] && chmod +x "$HOME/agent/hooks/post-commit-mb-reminder"
 
-        log_success "Agent Global Hub restored to ~/.agent_global/"
+        log_success "Agent Hub restored to ~/agent/ (symlinked from ~/.agent_global)"
     else
         log_error ".agent_global not found in backup directory"
         return 1
     fi
 
-    # 2. Setup Claude symlinks
-    log_info "Setting up Claude integration..."
-
-    mkdir -p "$HOME/.claude/rules"
-    mkdir -p "$HOME/.claude/workflows"
-
-    # Create symlinks to Agent Global Hub
-    ln -sf "$HOME/.agent_global/rules/global_rules.md" "$HOME/.claude/rules/CLAUDE.md"
-    ln -sf "$HOME/.agent_global/workflows/core-directives.md" "$HOME/.claude/workflows/"
-    ln -sf "$HOME/.agent_global/workflows/commit-protocol.md" "$HOME/.claude/workflows/"
-    ln -sf "$HOME/.agent_global/workflows/memory-bank-protocol.md" "$HOME/.claude/workflows/"
-    ln -sf "$HOME/.agent_global/workflows/documentation-sync.md" "$HOME/.claude/workflows/"
-
-    log_success "Claude symlinks created"
-
-    # 3. Copy Claude MCP configuration
+    # 2. Restore Claude configuration
     if [[ -d "$BACKUP_DIR/.claude" ]]; then
-        log_info "Restoring Claude MCP configuration..."
+        log_info "Restoring Claude configuration..."
+        ensure_dir "$HOME/.claude"
 
-        # Copy MCP settings
-        if [[ -f "$BACKUP_DIR/.claude/mcp_settings.json" ]]; then
+        # Copy settings
+        [[ -f "$BACKUP_DIR/.claude/settings.local.json" ]] && \
+            cp "$BACKUP_DIR/.claude/settings.local.json" "$HOME/.claude/"
+        [[ -f "$BACKUP_DIR/.claude/mcp_settings.json" ]] && \
             cp "$BACKUP_DIR/.claude/mcp_settings.json" "$HOME/.claude/"
+
+        # Copy plugin registry
+        if [[ -d "$BACKUP_DIR/.claude/plugins" ]]; then
+            ensure_dir "$HOME/.claude/plugins"
+            [[ -f "$BACKUP_DIR/.claude/plugins/known_marketplaces.json" ]] && \
+                cp "$BACKUP_DIR/.claude/plugins/known_marketplaces.json" "$HOME/.claude/plugins/"
+            [[ -f "$BACKUP_DIR/.claude/plugins/installed_plugins.json" ]] && \
+                cp "$BACKUP_DIR/.claude/plugins/installed_plugins.json" "$HOME/.claude/plugins/"
         fi
 
-        # Copy MCP setup guide
-        if [[ -f "$BACKUP_DIR/.claude/MCP_SETUP.md" ]]; then
-            cp "$BACKUP_DIR/.claude/MCP_SETUP.md" "$HOME/.claude/"
-        fi
-
-        log_success "Claude MCP configuration restored"
+        log_success "Claude configuration restored"
     fi
 
-    # 4. Setup auto memory
-    log_info "Setting up Claude auto memory..."
-    mkdir -p "$HOME/.claude/projects/-home-haint/memory"
-
-    if [[ -f "$BACKUP_DIR/.claude/projects/-home-haint/memory/MEMORY.md" ]]; then
-        cp "$BACKUP_DIR/.claude/projects/-home-haint/memory/MEMORY.md" \
-           "$HOME/.claude/projects/-home-haint/memory/"
-        log_success "Claude auto memory restored"
-    else
-        log_warn "No auto memory backup found, will be created on first Claude run"
-    fi
-
-    # 5. Verify shell aliases integration
+    # 3. Verify shell aliases integration
     log_info "Verifying shell aliases integration..."
 
-    if grep -q "agent_global/shell-aliases.sh" "$HOME/.zshrc" 2>/dev/null; then
+    if grep -q "agent_global/shell-aliases.sh\|agent/shell-aliases.sh" "$HOME/.zshrc" 2>/dev/null; then
         log_success "Shell aliases already integrated in ~/.zshrc"
     else
         log_warn "Shell aliases not found in ~/.zshrc"
-        log_info "They should have been added by terminal_setup.sh"
-        log_info "If not present, add this line to ~/.zshrc:"
-        echo "    source ~/.agent_global/shell-aliases.sh"
+        log_info "Add this line to ~/.zshrc:"
+        echo "    source ~/agent/shell-aliases.sh"
     fi
 
-    log_success "Agent Global Hub setup complete!"
+    log_success "Agent Hub setup complete!"
 }
 
 # =============================================================================
@@ -132,21 +120,10 @@ configure_projects() {
     fi
 
     # Install git hooks to all projects
-    if [[ -f "$HOME/.agent_global/hooks/install-all-projects.sh" ]]; then
+    if [[ -f "$HOME/agent/hooks/install-all-projects.sh" ]]; then
         log_info "Installing Memory Bank git hooks to all projects..."
-        "$HOME/.agent_global/hooks/install-all-projects.sh"
+        "$HOME/agent/hooks/install-all-projects.sh"
         log_success "Git hooks installed"
-    fi
-
-    # Check for Obsidian vault
-    OBSIDIAN_VAULT="$HOME/Dropbox/Apps/Obsidian/Idea_Vault"
-    if [[ -d "$OBSIDIAN_VAULT" ]]; then
-        log_success "Obsidian vault found at $OBSIDIAN_VAULT"
-        log_info "You can setup Obsidian sync for projects using:"
-        echo "    ~/.agent_global/sync-obsidian.sh <project-name> --symlink"
-    else
-        log_warn "Obsidian vault not found at $OBSIDIAN_VAULT"
-        log_info "Sync features will not work until vault is available"
     fi
 
     log_success "Project configuration complete!"
@@ -161,28 +138,33 @@ verify_installation() {
 
     local ERRORS=0
 
-    # Check Agent Global Hub
-    if [[ ! -d "$HOME/.agent_global" ]]; then
-        log_error "~/.agent_global not found"
+    # Check Agent Hub directory
+    if [[ ! -d "$HOME/agent" ]]; then
+        log_error "~/agent not found"
         ((ERRORS++))
     fi
 
-    # Check Claude integration
-    if [[ ! -L "$HOME/.claude/rules/CLAUDE.md" ]]; then
-        log_error "Claude symlinks not created"
+    # Check symlink
+    if [[ ! -L "$HOME/.agent_global" ]]; then
+        log_error "~/.agent_global symlink not found"
         ((ERRORS++))
     fi
 
     # Check shell aliases script
-    if [[ ! -f "$HOME/.agent_global/shell-aliases.sh" ]]; then
+    if [[ ! -f "$HOME/agent/shell-aliases.sh" ]]; then
         log_error "Shell aliases script not found"
         ((ERRORS++))
     fi
 
     # Check key scripts are executable
-    if [[ ! -x "$HOME/.agent_global/bootstrap-project.sh" ]]; then
+    if [[ ! -x "$HOME/agent/bootstrap-project.sh" ]]; then
         log_error "bootstrap-project.sh not executable"
         ((ERRORS++))
+    fi
+
+    # Check Claude settings
+    if [[ ! -f "$HOME/.claude/settings.local.json" ]]; then
+        log_warn "~/.claude/settings.local.json not found (non-critical)"
     fi
 
     if [[ $ERRORS -eq 0 ]]; then
@@ -198,22 +180,21 @@ verify_installation() {
 # Execution
 # =============================================================================
 
-setup_agent_global
+setup_agent_hub
 configure_projects
 verify_installation
 
-log_success "Agent Global Hub setup complete!"
+log_success "Agent Hub setup complete!"
 
 echo ""
 echo -e "${CYAN}${BOLD}Next Steps:${NC}"
 echo "1. Restart terminal (or run: source ~/.zshrc)"
 echo "2. Test aliases: ag-help"
 echo "3. Bootstrap new projects: bootstrap /path/to/project"
-echo "4. Setup Obsidian sync for projects: sync-obsidian.sh <project> --symlink"
-echo "5. Install Node.js for MCP servers (see ~/.claude/MCP_SETUP.md)"
+echo "4. Init ~/agent as git repo if needed: cd ~/agent && git init"
 echo ""
 echo -e "${CYAN}${BOLD}Quick Commands:${NC}"
-echo "  ag            - Go to Agent Global Hub"
+echo "  ag            - Go to Agent Hub"
 echo "  mbk           - Edit Memory Bank"
 echo "  cdc <project> - Switch to project"
 echo "  ag-help       - Show all commands"

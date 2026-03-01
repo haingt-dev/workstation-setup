@@ -1,1 +1,0 @@
-/home/haint/.agent_global/workflows/memory-bank-protocol.md

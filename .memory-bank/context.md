@@ -2,9 +2,34 @@
 
 ## Current Work Focus
 
-- Repo is stable with single-profile terminal setup and no backup pipeline.
+- Repo is stable. Last backup sync: 2026-03-01.
 
 ## Recent Changes
+
+### 2026-03-01: Backup Sync — Agent Hub Migration
+**What**: Full backup sync reflecting `~/.agent_global` → `~/agent` restructure
+**Why**: Agent Global Hub was completely restructured as a git repo at `~/agent/` (symlinked from `~/.agent_global`). Old `assets/.agent_global/` (analytics/, knowledge/, rules/, workflows/) was obsolete.
+
+**Changes**:
+1. **`assets/.agent_global/`** — Full replace via rsync (excl .git):
+   - Removed: analytics/, knowledge/, rules/, workflows/, skills/, sync-obsidian.sh, mcp_settings.json, SETUP.md, MEMORY_STRATEGY.md
+   - Added: .claude-plugin/, plugins/ (haint-core, godot-dev), templates/ (agents, rules), ag-sync-rules.sh
+   - Updated: bootstrap-project.sh, shell-aliases.sh, hooks/
+
+2. **`scripts/agent_setup.sh`** — Complete rewrite:
+   - Now copies backup → `~/agent/` (not `~/.agent_global/`)
+   - Creates symlink `~/.agent_global` → `~/agent`
+   - Removed obsolete symlink creation for `~/.claude/rules/`, `~/.claude/workflows/`
+   - Restores Claude settings (settings.local.json, mcp_settings.json, plugin registry)
+   - Updated verification checks for new structure
+
+3. **`assets/.claude/`** — Cleaned up:
+   - Removed obsolete: config.json, projects/, rules/, workflows/, session-env/, file-history/, ide/, plans/, tasks/, todos/, shell-snapshots/, stats-cache.json
+   - Kept: settings.local.json, mcp_settings.json, plugins/ (known_marketplaces.json, installed_plugins.json), config.json.template, MCP_SETUP.md
+
+4. **Dotfiles & configs synced**: .zshrc, fastfetch (new assets/ dir), easyeffects (new autoload/output profiles)
+
+5. **`.gitignore`** — Updated patterns for new structure
 
 ### 2026-02-11: Security Hardening 🔒 CRITICAL
 **What**: Comprehensive secret management and leak prevention
@@ -105,12 +130,8 @@
 ## Next Steps
 
 ### Immediate
-- ✅ Push to remote repository (backup agent system)
-- Install Node.js for MCP servers (unlock Obsidian MCP)
-- Enable Obsidian MCP server in Claude
+- Test agent restore on clean machine/VM (validate agent_setup.sh rewrite)
 
 ### Future
-- Test agent system restore on clean machine/VM
-- Setup Obsidian sync for other projects (chimera-protocol, media-server)
+- Automate periodic backup sync
 - Add more patterns to knowledge base as discovered
-- Consider adding more MCP servers (Brave Search, GitHub)

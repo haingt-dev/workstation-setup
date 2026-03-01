@@ -38,8 +38,7 @@ INSTALL_OBS=true
 INSTALL_EASYEFFECTS=true
 INSTALL_DNS=true
 INSTALL_ANTIGRAVITY=true
-
-
+INSTALL_VSCODE=true
 
 # Optional components (Do not run by default)
 INSTALL_ONEDRIVE=false
@@ -73,6 +72,7 @@ show_help() {
     echo "  --vietnamese        Vietnamese input setup (ibus-bamboo)"
 
     echo "  --antigravity       Install Antigravity Global Rules"
+    echo "  --vscode            Visual Studio Code setup"
 
     echo ""
     echo "Skip Flags (For Default Mode):"
@@ -87,6 +87,7 @@ show_help() {
     echo "  --skip-dns          Skip DNS setup"
 
     echo "  --skip-antigravity  Skip Antigravity Rules"
+    echo "  --skip-vscode       Skip VS Code setup"
 
     echo ""
     echo "Examples:"
@@ -104,7 +105,7 @@ show_help() {
 EXCLUSIVE_MODE=false
 for arg in "$@"; do
     case $arg in
-        --full|--terminal|--agent|--qdrant|--godot|--apps|--packettracer|--obs|--easyeffects|--dns|--onedrive|--vietnamese|--antigravity)
+        --full|--terminal|--agent|--qdrant|--godot|--apps|--packettracer|--obs|--easyeffects|--dns|--onedrive|--vietnamese|--antigravity|--vscode)
 
             EXCLUSIVE_MODE=true
             break
@@ -128,6 +129,7 @@ if $EXCLUSIVE_MODE; then
     INSTALL_VIETNAMESE=false
 
     INSTALL_ANTIGRAVITY=false
+    INSTALL_VSCODE=false
 
 fi
 
@@ -144,6 +146,7 @@ for arg in "$@"; do
             INSTALL_PACKETTRACER=true
             INSTALL_EASYEFFECTS=true
             INSTALL_ANTIGRAVITY=true
+            INSTALL_VSCODE=true
 
             ;;
         --terminal)           INSTALL_TERMINAL=true ;;
@@ -158,7 +161,7 @@ for arg in "$@"; do
         --onedrive)           INSTALL_ONEDRIVE=true ;;
         --vietnamese)         INSTALL_VIETNAMESE=true ;;
         --antigravity)        INSTALL_ANTIGRAVITY=true ;;
-
+        --vscode)             INSTALL_VSCODE=true ;;
 
         # Skip Flags
         --skip-terminal)      INSTALL_TERMINAL=false ;;
@@ -171,7 +174,7 @@ for arg in "$@"; do
         --skip-easyeffects)   INSTALL_EASYEFFECTS=false ;;
         --skip-dns)           INSTALL_DNS=false ;;
         --skip-antigravity)   INSTALL_ANTIGRAVITY=false ;;
-
+        --skip-vscode)        INSTALL_VSCODE=false ;;
 
         # Other
         --help|-h)            show_help ;;
@@ -301,6 +304,13 @@ if $INSTALL_ANTIGRAVITY; then
     bash "$SCRIPTS_DIR/antigravity_setup.sh"
 fi
 
+# 12. VS Code Setup
+if $INSTALL_VSCODE; then
+    log_section "Running VS Code Setup..."
+    bash "$SCRIPTS_DIR/vscode_setup.sh"
+elif ! $EXCLUSIVE_MODE; then
+    log_warn "Skipping VS Code setup"
+fi
 
 # =============================================================================
 # Complete

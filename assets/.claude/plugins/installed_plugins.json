@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "plugins": {
+    "haint-core@haint-marketplace": [
+      {
+        "scope": "user",
+        "installPath": "/home/haint/.claude/plugins/cache/haint-marketplace/haint-core/1.2.0",
+        "version": "1.2.0",
+        "installedAt": "2026-03-01T15:30:56.163Z",
+        "lastUpdated": "2026-03-01T15:51:55.139Z",
+        "gitCommitSha": "f5ba554c26d89cc2198c7deea0238cabc88a833d"
+      }
+    ],
+    "godot-dev@haint-marketplace": [
+      {
+        "scope": "project",
+        "projectPath": "/home/haint/Projects/Wildtide",
+        "installPath": "/home/haint/.claude/plugins/cache/haint-marketplace/godot-dev/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-03-01T15:31:20.419Z",
+        "lastUpdated": "2026-03-01T15:31:20.419Z",
+        "gitCommitSha": "f5ba554c26d89cc2198c7deea0238cabc88a833d"
+      },
+      {
+        "scope": "project",
+        "projectPath": "/home/haint/Projects/chimera-protocol",
+        "installPath": "/home/haint/.claude/plugins/cache/haint-marketplace/godot-dev/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-03-01T15:31:22.633Z",
+        "lastUpdated": "2026-03-01T15:31:22.633Z",
+        "gitCommitSha": "f5ba554c26d89cc2198c7deea0238cabc88a833d"
+      }
+    ]
+  }
+}

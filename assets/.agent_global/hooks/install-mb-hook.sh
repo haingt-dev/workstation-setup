@@ -17,7 +17,7 @@ if [ ! -d "$PROJECT_PATH/.git" ]; then
 fi
 
 # Check if Memory Bank exists
-if [ ! -d "$PROJECT_PATH/.agent/rules/memory-bank" ]; then
+if [ ! -d "$PROJECT_PATH/.memory-bank" ]; then
     echo "⚠️  Warning: No Memory Bank found in this project"
     echo "   The hook will still be installed, but won't be very useful"
     echo "   Run: bootstrap $(realpath "$PROJECT_PATH")"

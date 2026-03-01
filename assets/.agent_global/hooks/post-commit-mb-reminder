@@ -79,7 +79,7 @@ if [ "$SIGNIFICANCE" -ge 4 ]; then
     esac
 
     # Show quick command
-    if [ -d ".agent/rules/memory-bank" ]; then
+    if [ -d ".memory-bank" ]; then
         echo ""
         echo "  Quick edit: mbc  (or run 'mbk' for full Memory Bank)"
     fi

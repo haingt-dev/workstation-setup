@@ -7,9 +7,16 @@ assets/CiscoPacketTracer_Ubuntu_64bit.deb
 
 # Claude sensitive files (contain API keys, session data)
 assets/.claude/config.json
-assets/.claude/projects/*/*.jsonl
+assets/.claude/projects/
 assets/.claude/history.jsonl
 assets/.claude/stats-cache.json
+assets/.claude/plugins/marketplaces/
+assets/.claude/plugins/cache/
+assets/.claude/plugins/blocklist.json
+assets/.claude/plugins/install-counts-cache.json
+
+# Agent Hub — exclude .git if accidentally copied
+assets/.agent_global/.git/
 
 # Environment secrets (NEVER commit)
 .env
