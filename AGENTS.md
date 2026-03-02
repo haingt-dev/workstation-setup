@@ -1,6 +1,6 @@
 # Systems Migration — Project Context
 
-> Soul & identity: see global ~/.claude/CLAUDE.md
+> Soul & identity: see ~/.claude/CLAUDE.md or ~/.gemini/GEMINI.md
 
 ## Project Values
 - Be precise about system operations — always specify which distro/version a command targets
@@ -25,7 +25,7 @@ Auto-loaded at session start (brief, context, tech). Full files in `.memory-bank
 - `architecture.md` — System architecture
 - `tech.md` — Tech stack and tooling
 
-After major tasks or architectural changes, update relevant Memory Bank files (use `/update-mb`).
+After major tasks or architectural changes, update relevant Memory Bank files.
 
 ## Security
 **CRITICAL**: NEVER commit, push, or expose secrets, API keys, tokens, or credentials to version control.
