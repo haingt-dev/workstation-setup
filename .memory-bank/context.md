@@ -2,9 +2,37 @@
 
 ## Current Work Focus
 
-- Repo is stable. Last backup sync: 2026-03-01.
+- Repo is stable. Last backup sync: 2026-03-04.
 
 ## Recent Changes
+
+### 2026-03-04: Apps + Terminal Dashboard Overhaul
+
+**What**: Replaced Super Productivity with Todoist, added Wayland tray support, major terminal dashboard rework, full config sync.
+
+**Apps changes**:
+1. **Super Productivity → Todoist** (Flatpak `com.todoist.Todoist`) with DBus permissions for notifications
+2. **kwin-minimize2tray** — Wayland-native KWin Script for minimize-to-tray (built from source with Qt6/KF6 deps)
+   - kdocker was tried first but is X11-only, incompatible with Wayland
+3. Updated `scripts/apps_setup.sh`, README.md, product.md, tech.md
+
+**Terminal dashboard overhaul**:
+1. **Auto tmux 3-pane layout** on Kitty launch (`.zshrc`):
+   - Top-left: fastfetch (tmux profile) → btop
+   - Bottom-left: lazygit-pane (auto cwd sync)
+   - Right: interactive shell (focused)
+2. **lazygit-pane** (`~/.local/bin/lazygit-pane`) — wrapper that reads `/tmp/tmux-main-cwd`, restarts on quit, polls when not in git repo
+3. **Zsh chpwd hook** writes `$PWD` to `/tmp/tmux-main-cwd` for lazygit sync
+4. **Tmux additions**: fzf session/window switcher popups, yazi popup, `prefix+g` lazygit resync, `allow-passthrough on`, `extended-keys always` (CSI-u format)
+5. **Kitty startup session** (`startup.conf`) — launches maximized, `ctrl+enter` mapped to CSI-u sequence
+6. **Fastfetch tmux.jsonc** — text-only profile for tmux pane (no image logo)
+7. **Continuum-restore off** — .zshrc handles layout, continuum conflicts with it
+
+**Config sync**: Live → assets/ for .zshrc, kitty.conf, startup.conf (new), tmux.conf, lazygit-pane (new), tmux.jsonc (new)
+
+**Known issue**: Extended keys (Ctrl+Enter) configured in tmux but not functional in practice. Alt+Enter used for newline.
+
+**Cleanup**: Removed obsolete commit-protocol.md (3 copies), settings.local.json. Added .memory-bank/stories/ structure.
 
 ### 2026-03-01: Backup Sync — Agent Hub Migration
 **What**: Full backup sync reflecting `~/.agent_global` → `~/agent` restructure

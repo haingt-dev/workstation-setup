@@ -47,7 +47,7 @@ This repository provides a **single, version-controlled source of truth** for th
    - **Terminal setup** via [`scripts/terminal_setup.sh`](../../scripts/terminal_setup.sh:1) (handles both core setup and optional enhancements)
    - **Qdrant** via [`scripts/qdrant_setup.sh`](../../scripts/qdrant_setup.sh:1)
    - **Godot** via [`scripts/godot_setup.sh`](../../scripts/godot_setup.sh:1)
-   - **Apps** (Chrome, Dropbox, Discord, Obsidian, Anki, Calibre, Super Productivity) via [`scripts/apps_setup.sh`](../../scripts/apps_setup.sh:1)
+   - **Apps** (Chrome, Dropbox, Discord, Obsidian, Anki, Calibre, Todoist) via [`scripts/apps_setup.sh`](../../scripts/apps_setup.sh:1)
    - **OneDrive** via [`scripts/onedrive_setup.sh`](../../scripts/onedrive_setup.sh:1) (multi-account support)
    - **EasyEffects** via [`scripts/easyeffects_setup.sh`](../../scripts/easyeffects_setup.sh:1) (audio presets)
    - **Packet Tracer** via [`scripts/packettracer_setup.sh`](../../scripts/packettracer_setup.sh:1) when the .deb is available
