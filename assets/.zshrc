@@ -190,11 +190,21 @@ qf() {
 }
 
 # -----------------------------------------------------------------------------
+# Sync cwd for lazygit pane (works in both Kitty and tmux)
+# -----------------------------------------------------------------------------
+if [[ "$TERM" == "xterm-kitty" || -n "$TMUX" ]]; then
+    _sync_cwd_lazygit() { echo "$PWD" > /tmp/kitty-main-cwd; }
+    autoload -Uz add-zsh-hook
+    add-zsh-hook chpwd _sync_cwd_lazygit
+    _sync_cwd_lazygit
+fi
+
+# -----------------------------------------------------------------------------
 # Fastfetch (System Info on Terminal Start)
 # -----------------------------------------------------------------------------
-if command -v fastfetch &> /dev/null; then
-    if [[ "$TERM" == "xterm-kitty" || "$TERM_PROGRAM" == "kitty" ]]; then
-        fastfetch -c ~/.config/fastfetch/kitty.jsonc
+if command -v fastfetch &>/dev/null; then
+    if [[ "$TERM" == "xterm-kitty" || "$TERM_PROGRAM" == "kitty" || -n "$TMUX" ]]; then
+        : # Dashboard pane handles fastfetch
     else
         fastfetch -c ~/.config/fastfetch/generic.jsonc
     fi
@@ -243,4 +253,4 @@ export DOTNET_ROOT=$HOME/.dotnet
 export PATH=$PATH:$HOME/.dotnet:$HOME/.dotnet/tools
 
 # Agent Global Hub Aliases
-source ~/.agent_global/shell-aliases.sh
+source ~/agent/shell-aliases.sh

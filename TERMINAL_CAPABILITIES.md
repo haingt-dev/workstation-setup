@@ -1,89 +1,197 @@
-# 🚀 New Terminal Capabilities Guide
+# Terminal Capabilities Guide
 
-You have successfully enhanced your terminal! This guide outlines the new "power tools," shortcuts, and features now available to you. Your environment is designed to be faster, prettier, and more efficient.
-
----
-
-## ⚡ Power Tools (CLI Enhancements)
-
-These modern replacements for classic Unix commands are installed and aliased automatically.
-
-| Tool | Replaces | Description | New Command / Alias |
-| :--- | :--- | :--- | :--- |
-| **Zoxide** | `cd` | **Smarter navigation.** Remembers directories you visit. Jump to them by typing a partial name. | `z <partial_name>` (e.g., `z pro` might jump to `~/Projects`) |
-| **Eza** | `ls` | **Modern file listing.** Adds colors, icons, and git status integration. | `ls` (standard), `ll` (detailed), `lt` (tree view) |
-| **Bat** | `cat` | **Better file viewing.** Adds syntax highlighting, line numbers, and git integration. | `cat <file>` (aliased to bat), `catp` (with paging) |
-| **Lazygit** | `git` CLI | **Terminal UI for Git.** Manage repositories, commits, and diffs with a visual interface. | `lg` |
-| **Yazi** | `rm`/`cp` | **Terminal File Manager.** Blazing fast file navigation with image previews. | `y` (changes directory on exit) |
-| **FZF** | `find` | **Fuzzy Finder.** Search for files, history, and directories instantly. | `Ctrl+T` (files), `Ctrl+R` (history), `Alt+C` (cd) |
-| **Ripgrep** | `grep` | **Faster Search.** Searches text within files much faster than grep. | `rg <pattern>` |
+Kitty + tmux + Zsh development environment with auto-dashboard layout, Catppuccin theming, and power tools.
 
 ---
 
-## 🐚 Shell Enhancements (Zsh)
+## Dashboard Layout
 
-Your shell is now powered by **Starship** (prompt) and **Zsh** with auto-suggestions and syntax highlighting.
+Kitty launches maximized and auto-creates a tmux session `main` with a 3-pane dashboard:
 
-### ⌨️ Key Shortcuts
-- **Auto-suggestion**: Type a command, and if you see a grey suggestion, press `Right Arrow` or `End` to accept it.
-- **History Search**: Type part of a command and use `Up/Down Arrow` to cycle through matching history.
+```
+┌─────────────────────┬───────────────────────┐
+│  fastfetch → btop   │                       │
+│  (system monitor)   │    Shell (focused)     │
+├─────────────────────┤                       │
+│  lazygit-pane       │                       │
+│  (auto cwd sync)    │                       │
+└─────────────────────┴───────────────────────┘
+```
 
-### 🛠️ Useful Aliases
-- **Navigation**: `..` (up 1 level), `...` (up 2 levels), `....` (up 3 levels).
-- **Safety**: `rm`, `cp`, and `mv` now ask for confirmation (`-i`).
-- **Git**:
-    - `gs` → `git status`
-    - `ga` → `git add`
-    - `gc` → `git commit`
-    - `gp` → `git push`
-    - `gl` → `git pull`
-    - `gd` → `git diff`
-    - `glog` → `git log --oneline --graph`
+- **Top-left** (pane 1.1): fastfetch system info, then transitions to btop
+- **Bottom-left** (pane 1.2): lazygit-pane — auto-restarts and follows shell's cwd
+- **Right** (pane 1.3): Interactive shell (default focus)
+
+### lazygit-pane
+
+Wrapper script at `~/.local/bin/lazygit-pane`:
+- Reads target directory from `/tmp/tmux-main-cwd` (written by zsh `chpwd` hook)
+- When lazygit quits (`q`), re-reads the file and restarts in the new directory
+- If not in a git repo, displays a waiting message and polls for directory change
+- Trigger manual resync: `prefix + g` (sends `q` to lazygit pane, causing restart)
+
+### Fastfetch Profiles
+
+Three configs under `~/.config/fastfetch/`:
+
+| Config | Usage | Logo |
+|:---|:---|:---|
+| `kitty.jsonc` | Direct kitty launch (no tmux) | Image (jedi.png via kitty protocol) |
+| `tmux.jsonc` | Dashboard pane (inside tmux) | Text (Jedi builtin) |
+| `generic.jsonc` | Other terminals | Text (Jedi builtin) |
 
 ---
 
-## 🧩 Terminal Multiplexer (Tmux)
+## Tmux
 
-Tmux allows you to manage multiple windows and panes within a single terminal window.
-**Prefix Key:** `Ctrl + a` (Changed from default `Ctrl + b`)
+**Prefix**: `Ctrl+a` (not default `Ctrl+b`)
 
-### 🪟 Window & Pane Management
+### Pane & Window Management
+
 | Action | Shortcut |
-| :--- | :--- |
-| **Split Vertical** | `Ctrl+a` then `|` |
-| **Split Horizontal** | `Ctrl+a` then `-` |
-| **New Window** | `Ctrl+a` then `c` |
-| **Close Pane** | `Ctrl+a` then `x` |
-| **Navigate Panes** | `Ctrl+a` then `h` `j` `k` `l` (Vim keys) |
-| **Resize Panes** | `Ctrl+a` then `H` `J` `K` `L` (Hold Shift) |
-| **Next/Prev Window** | `Ctrl+a` then `Ctrl+l` / `Ctrl+h` |
-| **Zoom Pane** | `Ctrl+a` then `z` |
+|:---|:---|
+| Split vertical | `prefix + \|` |
+| Split horizontal | `prefix + -` |
+| Navigate panes | `prefix + h/j/k/l` |
+| Resize panes | `prefix + H/J/K/L` (hold shift) |
+| Zoom pane | `prefix + z` |
+| Kill pane | `prefix + x` |
+| Kill window | `prefix + X` |
+| New window | `prefix + c` |
+| Next/prev window | `prefix + Ctrl+l / Ctrl+h` |
+| Swap window left/right | `prefix + < / >` |
+| Last window | `prefix + Space` |
+| Sync panes (toggle) | `prefix + S` |
 
-### 🔌 Plugins (TPM)
-- **Install Plugins**: `Ctrl+a` then `I` (Capital i) - *Run this first to install themes!*
-- **Save Session**: `Ctrl+a` then `Ctrl+s`
-- **Restore Session**: `Ctrl+a` then `Ctrl+r`
+### Session & Navigation Popups
+
+| Action | Shortcut |
+|:---|:---|
+| Switch session (fzf popup) | `prefix + s` |
+| Switch window (fzf popup) | `prefix + w` |
+| Yazi file manager (popup) | `prefix + y` |
+| Resync lazygit pane | `prefix + g` |
+| New session | `prefix + N` |
+
+### Copy Mode (Vi-style)
+
+| Action | Shortcut |
+|:---|:---|
+| Enter copy mode | `prefix + [` |
+| Begin selection | `v` |
+| Rectangle selection | `Ctrl+v` |
+| Yank (copy) | `y` |
+| Paste | `prefix + ]` |
+| Cancel | `Escape` |
+
+### Plugins (TPM)
+
+- `tmux-sensible` — sensible defaults
+- `catppuccin/tmux` v2.1.0 — Mocha theme
+- `tmux-resurrect` — save/restore sessions
+- `tmux-continuum` — auto-save every 15min (auto-restore **off** — .zshrc handles layout)
+- `tmux-yank` — system clipboard integration
+
+Install plugins: `prefix + I` | Save: `prefix + Ctrl+s` | Restore: `prefix + Ctrl+r`
+
+### Technical Settings
+
+- `allow-passthrough on` — enables kitty graphics protocol in tmux (fastfetch image logo)
+- `extended-keys always` + `csi-u` format — configured for extended key support
+- Note: Ctrl+Enter forwarding is configured but **not functional in practice**. Use Alt+Enter for newline in applications that need it.
 
 ---
 
-## 🐱 Terminal Emulator (Kitty)
+## Kitty
 
-Kitty is your GPU-accelerated terminal emulator. It handles the actual window rendering.
+GPU-accelerated terminal emulator with Catppuccin Mocha theme.
 
-### ⌨️ Shortcuts (Use `Ctrl+Shift` as modifier)
-- **New Window**: `Ctrl+Shift+Enter` (Opens in current directory)
-- **New Tab**: `Ctrl+Shift+t`
-- **Close Tab/Window**: `Ctrl+Shift+q` / `Ctrl+Shift+w`
-- **Next/Prev Tab**: `Ctrl+Shift+Right` / `Ctrl+Shift+Left`
-- **Font Size**: `Ctrl+Shift+Equal` (+) / `Ctrl+Shift+Minus` (-)
-- **Scrollback**: `Ctrl+Shift+h` (Show scrollback buffer)
+### Key Settings
+
+- Font: CaskaydiaCove Nerd Font 14pt with ligatures
+- Background: 85% opacity with 32px blur
+- Cursor: Block with trail effect
+- Startup: Maximized via `startup.conf`, launches zsh
+- Remote control: socket-only (`unix:/tmp/kitty`)
+
+### Keyboard Shortcuts
+
+Modifier: `Ctrl+Shift` (referred to as `kitty_mod`)
+
+| Action | Shortcut |
+|:---|:---|
+| Copy / Paste | `kitty_mod + c / v` |
+| New window (cwd) | `kitty_mod + Enter` |
+| New tab (cwd) | `kitty_mod + t` |
+| Close window / tab | `kitty_mod + w / q` |
+| Next/prev tab | `kitty_mod + Right / Left` |
+| Font size +/- | `kitty_mod + = / -` |
+| Reset font | `kitty_mod + Backspace` |
+| Fullscreen | `kitty_mod + F11` |
+| Scrollback buffer | `kitty_mod + h` |
+| URL hints | `kitty_mod + e` |
+| Path/line/word hints | `kitty_mod + p` then `f/l/w` |
+| Opacity +/- | `kitty_mod + a` then `m/l` |
+| Unicode input | `kitty_mod + u` |
+| Open line in nvim | `Ctrl+Shift + g` |
+| Ctrl+Enter (CSI-u) | `Ctrl+Enter` → sends `\x1b[13;5u` |
 
 ---
 
-## 📝 Quick Start Checklist
+## Power Tools (CLI)
 
-1.  **Restart Terminal**: Ensure all changes are loaded.
-2.  **Install Tmux Plugins**: Open tmux (`tmux`), press `Ctrl+a` then `I`.
-3.  **Try Zoxide**: Type `z <folder>` instead of `cd`.
-4.  **Try Lazygit**: Go to a git repo and type `lg`.
-5.  **Explore**: Use `ll` to see your new file listing icons.
+| Tool | Replaces | Alias | Description |
+|:---|:---|:---|:---|
+| zoxide | `cd` | `z <name>` | Smart directory jumping, learns from usage |
+| eza | `ls` | `ls`, `ll`, `la`, `lt` | Icons, git status, tree view |
+| bat | `cat` | `cat`, `catp` (paging) | Syntax highlighting, Catppuccin theme |
+| fzf | `find` | `Ctrl+T/R`, `Alt+C` | Fuzzy finder with Catppuccin theme, fd backend |
+| ripgrep | `grep` | `rg` | Fast regex search |
+| fd-find | `find` | `fd` | Fast file finder |
+| lazygit | git CLI | `lg` | Terminal UI for git |
+| yazi | file managers | `y` | Terminal file manager (cd on exit) |
+
+---
+
+## Shell (Zsh)
+
+### Plugins
+- `zsh-autosuggestions` — grey inline suggestions (accept with Right Arrow)
+- `zsh-syntax-highlighting` — command validation colors
+- `zsh-autocomplete` — real-time completion menu
+- Starship prompt (Gruvbox theme)
+- Atuin shell history (sync/search)
+
+### Key Aliases
+
+| Alias | Command |
+|:---|:---|
+| `gs` | `git status` |
+| `ga` | `git add` |
+| `gc` | `git commit` |
+| `gp` | `git push` |
+| `gl` | `git pull` |
+| `gd` | `git diff` |
+| `glog` | `git log --oneline --graph --decorate` |
+| `..` / `...` / `....` | Navigate up 1/2/3 levels |
+| `mkcd <dir>` | Create directory and cd into it |
+| `extract <file>` | Auto-extract any archive format |
+
+### FZF Shortcuts
+- `Ctrl+T` — fuzzy file search (fd backend)
+- `Ctrl+R` — fuzzy history search
+- `Alt+C` — fuzzy directory navigation
+
+### Tmux cwd Sync
+When inside tmux, a `chpwd` hook writes `$PWD` to `/tmp/tmux-main-cwd` on every directory change. The lazygit-pane reads this file to stay in sync.
+
+---
+
+## Theme
+
+Catppuccin Mocha across the stack:
+- **Kitty**: `catppuccin-mocha.conf` include
+- **Tmux**: `catppuccin/tmux` plugin, Mocha flavor
+- **FZF**: Custom color scheme via `FZF_DEFAULT_OPTS`
+- **Bat**: `BAT_THEME="Catppuccin-mocha"`
+- **Starship**: Gruvbox Dark theme (intentional contrast with Catppuccin terminal)

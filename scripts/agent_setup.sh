@@ -8,7 +8,6 @@
 #
 # This script restores:
 #   - ~/agent/ directory (hub repo with plugins, hooks, templates, etc.)
-#   - ~/.agent_global symlink → ~/agent
 #   - ~/.claude/ settings (MCP, plugins, settings.local.json)
 #   - Shell aliases integration
 #   - Git hooks installation to all projects
@@ -43,12 +42,10 @@ setup_agent_hub() {
             mv "$HOME/agent" "$HOME/agent.backup.$(date +%s)"
         fi
 
-        # Handle existing symlink
+        # Clean up legacy symlink if present
         if [[ -L "$HOME/.agent_global" ]]; then
             rm "$HOME/.agent_global"
-        elif [[ -d "$HOME/.agent_global" ]]; then
-            log_warn "Existing ~/.agent_global directory found, backing up..."
-            mv "$HOME/.agent_global" "$HOME/.agent_global.backup.$(date +%s)"
+            log_info "Removed legacy ~/.agent_global symlink"
         fi
 
         # Copy backup to ~/agent
@@ -56,14 +53,11 @@ setup_agent_hub() {
         cp -r "$BACKUP_DIR/.agent_global/"* "$HOME/agent/"
         cp -r "$BACKUP_DIR/.agent_global/".* "$HOME/agent/" 2>/dev/null || true
 
-        # Create symlink: ~/.agent_global → ~/agent
-        ln -sf "$HOME/agent" "$HOME/.agent_global"
-
         # Make scripts executable
         find "$HOME/agent" -name '*.sh' -type f -exec chmod +x {} +
         [[ -f "$HOME/agent/hooks/post-commit-mb-reminder" ]] && chmod +x "$HOME/agent/hooks/post-commit-mb-reminder"
 
-        log_success "Agent Hub restored to ~/agent/ (symlinked from ~/.agent_global)"
+        log_success "Agent Hub restored to ~/agent/"
     else
         log_error ".agent_global not found in backup directory"
         return 1
@@ -95,7 +89,7 @@ setup_agent_hub() {
     # 3. Verify shell aliases integration
     log_info "Verifying shell aliases integration..."
 
-    if grep -q "agent_global/shell-aliases.sh\|agent/shell-aliases.sh" "$HOME/.zshrc" 2>/dev/null; then
+    if grep -q "agent/shell-aliases.sh" "$HOME/.zshrc" 2>/dev/null; then
         log_success "Shell aliases already integrated in ~/.zshrc"
     else
         log_warn "Shell aliases not found in ~/.zshrc"
@@ -144,10 +138,9 @@ verify_installation() {
         ((ERRORS++))
     fi
 
-    # Check symlink
-    if [[ ! -L "$HOME/.agent_global" ]]; then
-        log_error "~/.agent_global symlink not found"
-        ((ERRORS++))
+    # Check no legacy symlink
+    if [[ -L "$HOME/.agent_global" ]]; then
+        log_warn "Legacy ~/.agent_global symlink still exists"
     fi
 
     # Check shell aliases script

@@ -4,7 +4,7 @@
 
 set -e
 
-TEMPLATES_DIR="$HOME/.agent_global/templates/rules"
+TEMPLATES_DIR="$HOME/agent/templates/rules"
 PROJECTS_DIR="$HOME/Projects"
 RULES=("commit-protocol.md" "soul.md")
 

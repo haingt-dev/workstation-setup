@@ -27,7 +27,7 @@ Automated terminal and development environment setup for Nobara 42 / Fedora.
 - **Godot Engine**: Game engine setup and configuration
 
 ### Applications
-- **Additional Apps**: Chrome, Dropbox, Discord, Obsidian, Anki, Calibre, Super Productivity
+- **Additional Apps**: Chrome, Dropbox, Discord, Obsidian, Anki, Calibre, Todoist
 - **OneDrive**: Multi-account support via `abraunegg/onedrive` client
 - **Audio Processing**: EasyEffects with pre-tuned presets
 - **DNS**: Cloudflare Block Malware configuration
@@ -131,7 +131,7 @@ Examples:
 
 Complete AI agent workflow integration for Claude, Kilo Code, and Antigravity:
 
-**Agent Global Hub** (`~/.agent_global/`):
+**Agent Global Hub** (`~/agent/`):
 - Global rules and workflows (symlinked to all agents)
 - Memory Bank templates (enhanced with structured prompts)
 - Knowledge base (patterns, troubleshooting, learnings, recipes)
@@ -169,9 +169,9 @@ ag-help         # Show all commands
 ```
 
 **Documentation**:
-- `~/.agent_global/README.md` - Complete system overview
-- `~/.agent_global/MEMORY_STRATEGY.md` - Token optimization strategy
-- `~/.agent_global/SETUP.md` - Setup guide
+- `~/agent/README.md` - Complete system overview
+- `~/agent/MEMORY_STRATEGY.md` - Token optimization strategy
+- `~/agent/SETUP.md` - Setup guide
 - `~/.claude/MCP_SETUP.md` - MCP server setup
 
 ### Terminal Setup (`terminal_setup.sh`)
@@ -221,7 +221,7 @@ z   → zoxide                    # Smart directory jumping
 - **Qdrant**: Podman container with systemd service at http://localhost:6333
 - **Godot**: Downloads to ~/.local/bin, creates desktop entry
 - **OBS Studio**: Installed via Flatpak (com.obsproject.Studio)
-- **Apps**: Chrome, Dropbox (DNF), Discord, Obsidian, Anki, Calibre, Super Productivity (Flatpak)
+- **Apps**: Chrome, Dropbox (DNF), Discord, Obsidian, Anki, Calibre, Todoist (Flatpak)
 - **OneDrive**: Multi-account sync with systemd services
 - **EasyEffects**: Audio presets for speakers/headsets
 - **DNS**: Cloudflare Block Malware (1.1.1.2/1.0.0.2)

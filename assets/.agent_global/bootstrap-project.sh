@@ -13,7 +13,7 @@ set -e
 
 PROJECT_PATH="${1:-.}"
 PROJECT_NAME="${2:-$(basename "$PROJECT_PATH")}"
-TEMPLATES="$HOME/.agent_global/templates"
+TEMPLATES="$HOME/agent/templates"
 
 echo "🚀 Bootstrapping project: $PROJECT_NAME"
 echo "📁 Location: $PROJECT_PATH"

@@ -7,7 +7,7 @@ Cross-project tools and templates for multi-agent development (Claude, Kilo Code
 ## Structure
 
 ```
-~/agent/  (symlinked as ~/.agent_global/)
+~/agent/
 ├── ag-sync-rules.sh        # Sync commit-protocol to all projects
 ├── bootstrap-project.sh    # Bootstrap new project with full agent structure
 ├── shell-aliases.sh        # Shell shortcuts (source in ~/.zshrc)
@@ -81,7 +81,7 @@ cdc <project>    # Switch to project directory
 
 ## Updating Shared Rules
 
-1. Edit template: `ag-rules` (opens `~/.agent_global/templates/rules/`)
+1. Edit template: `ag-rules` (opens `~/agent/templates/rules/`)
 2. Sync to all projects: `ag-sync-rules`
 3. Sync to one project: `ag-sync-rules ProjectName`
 

@@ -1,15 +1,15 @@
 #!/bin/bash
 # Agent Global Hub - Shell Aliases
 # Source this file in your ~/.zshrc or ~/.bashrc:
-# source ~/.agent_global/shell-aliases.sh
+# source ~/agent/shell-aliases.sh
 
 # ============================================
 # AGENT GLOBAL HUB NAVIGATION
 # ============================================
 
 # Quick access to Agent Global Hub
-alias ag='cd ~/.agent_global && ls -la'
-alias ag-edit='cd ~/.agent_global && $EDITOR .'
+alias ag='cd ~/agent && ls -la'
+alias ag-edit='cd ~/agent && $EDITOR .'
 
 # Quick access to projects
 alias cdp='cd ~/Projects'
@@ -20,7 +20,7 @@ alias cdv='cd ~/Projects/Idea_Vault'
 # ============================================
 
 # Bootstrap new project
-alias bootstrap='~/.agent_global/bootstrap-project.sh'
+alias bootstrap='~/agent/bootstrap-project.sh'
 
 # Edit Memory Bank in current project
 mbk() {
@@ -103,10 +103,10 @@ cdc() {
 # ============================================
 
 # Edit rule templates (source of truth for shared rules)
-alias ag-rules='$EDITOR ~/.agent_global/templates/rules/'
+alias ag-rules='$EDITOR ~/agent/templates/rules/'
 
 # Sync shared rules to all projects
-alias ag-sync-rules='~/.agent_global/ag-sync-rules.sh'
+alias ag-sync-rules='~/agent/ag-sync-rules.sh'
 
 # ============================================
 # MAINTENANCE
