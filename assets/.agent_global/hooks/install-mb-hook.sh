@@ -50,11 +50,11 @@ if [ -f "$HOOK_FILE" ]; then
     # Append our hook to existing one
     echo "" >> "$HOOK_FILE"
     echo "# Memory Bank Update Reminder" >> "$HOOK_FILE"
-    cat "$HOME/.agent_global/hooks/post-commit-mb-reminder" >> "$HOOK_FILE"
+    cat "$HOME/agent/hooks/post-commit-mb-reminder" >> "$HOOK_FILE"
     echo "✅ Memory Bank reminder appended to existing hook"
 else
     # Create new hook
-    cp "$HOME/.agent_global/hooks/post-commit-mb-reminder" "$HOOK_FILE"
+    cp "$HOME/agent/hooks/post-commit-mb-reminder" "$HOOK_FILE"
     chmod +x "$HOOK_FILE"
     echo "✅ Memory Bank reminder hook installed"
 fi

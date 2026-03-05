@@ -3,7 +3,7 @@
 # Reminds developer to update Memory Bank after significant commits
 #
 # Installation:
-#   ~/.agent_global/hooks/install-mb-hook.sh <project-path>
+#   ~/agent/hooks/install-mb-hook.sh <project-path>
 
 # Skip if in rebase/merge/cherry-pick
 if [ -d "$(git rev-parse --git-dir)/rebase-merge" ] || \

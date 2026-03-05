@@ -15,7 +15,7 @@ for project in ~/Projects/*/; do
         PROJECT_NAME=$(basename "$project")
         echo "📦 $PROJECT_NAME"
 
-        if ~/.agent_global/hooks/install-mb-hook.sh "$project" > /dev/null 2>&1; then
+        if ~/agent/hooks/install-mb-hook.sh "$project" > /dev/null 2>&1; then
             echo "   ✅ Installed"
             INSTALLED=$((INSTALLED + 1))
         else
@@ -31,7 +31,7 @@ done
 # Install to Obsidian vault if it's a git repo
 if [ -d ~/Projects/Idea_Vault/.git ]; then
     echo "📦 Idea_Vault"
-    if ~/.agent_global/hooks/install-mb-hook.sh ~/Projects/Idea_Vault > /dev/null 2>&1; then
+    if ~/agent/hooks/install-mb-hook.sh ~/Projects/Idea_Vault > /dev/null 2>&1; then
         echo "   ✅ Installed"
         INSTALLED=$((INSTALLED + 1))
     else

@@ -1,7 +1,6 @@
 ---
 name: validate
 description: Dry-run prerequisite check for system setup (read-only, no changes)
-disable-model-invocation: true
 argument-hint: "[component name]"
 ---
 
@@ -19,7 +18,7 @@ If `$ARGUMENTS` provided, check only that component (e.g., `terminal`, `godot`, 
 2. **Check prerequisites per component** (read `setup.sh` and `scripts/common.sh` first):
 
    - **Terminal**: zsh, git, curl installed?
-   - **Agent**: claude CLI, `~/.agent_global/` exists?
+   - **Agent**: claude CLI, `~/agent/` exists?
    - **Godot**: godot binary or flatpak, gdformat/gdlint?
    - **Apps**: dnf, flatpak available?
    - **DNS**: current `cat /etc/resolv.conf`
