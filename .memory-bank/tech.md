@@ -52,6 +52,18 @@
   - `fd-find` (fast find)
   - `lazygit` (terminal git UI, via COPR `atim/lazygit`)
   - `yazi` (terminal file manager via prebuilt GitHub binary)
+- Terminal dashboard (auto-created by `.zshrc` on Kitty launch):
+  - Tmux session `main` with 3-pane layout: fastfetch→btop | lazygit-pane | shell
+  - `lazygit-pane` wrapper (`~/.local/bin/lazygit-pane`): reads `/tmp/tmux-main-cwd`, auto-restarts on quit, polls when not in git repo
+  - Zsh `chpwd` hook syncs `$PWD` → `/tmp/tmux-main-cwd` for lazygit cwd tracking
+  - Kitty startup session (`startup.conf`): launches maximized
+  - Tmux `allow-passthrough on` for kitty graphics protocol (fastfetch image logo)
+  - Tmux `extended-keys always` + CSI-u format configured (Ctrl+Enter not yet functional)
+  - Tmux fzf popups: `prefix+s` (session), `prefix+w` (window), `prefix+y` (yazi)
+- Fastfetch profiles under `~/.config/fastfetch/`:
+  - `kitty.jsonc` — image logo (kitty protocol), used outside tmux
+  - `tmux.jsonc` — text-only logo, used in dashboard pane
+  - `generic.jsonc` — text-only fallback for other terminals
 
 ## Applications and Services
 
@@ -61,7 +73,10 @@
   - Godot Engine, installed by [`scripts/godot_setup.sh`](../../scripts/godot_setup.sh:1) to `~/.local/bin/godot`
 - Desktop applications (installed by [`scripts/apps_setup.sh`](../../scripts/apps_setup.sh:1)):
   - Google Chrome and Dropbox (DNF)
-  - Discord, Obsidian, Anki, Calibre, Super Productivity (Flatpak)
+  - Discord, Obsidian, Anki, Calibre, Todoist (Flatpak)
+  - Todoist has DBus overrides for `org.kde.StatusNotifierWatcher` and `org.freedesktop.Notifications`
+- KDE/Wayland utilities:
+  - `kwin-minimize2tray` — Wayland-native KWin Script for minimize-to-tray, built from source ([GitHub](https://github.com/luisbocanegra/kwin-minimize2tray)) with Qt6/KF6 build deps. Installed by [`scripts/apps_setup.sh`](../../scripts/apps_setup.sh:1).
 - Cloud Storage:
   - OneDrive (`abraunegg/onedrive`), configured via [`scripts/onedrive_setup.sh`](../../scripts/onedrive_setup.sh:1) with multi-account support using named systemd services.
 - Networking tool:
