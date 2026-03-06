@@ -200,17 +200,6 @@ if [[ "$TERM" == "xterm-kitty" || -n "$TMUX" ]]; then
 fi
 
 # -----------------------------------------------------------------------------
-# Fastfetch (System Info on Terminal Start)
-# -----------------------------------------------------------------------------
-if command -v fastfetch &>/dev/null; then
-    if [[ "$TERM" == "xterm-kitty" || "$TERM_PROGRAM" == "kitty" || -n "$TMUX" ]]; then
-        : # Dashboard pane handles fastfetch
-    else
-        fastfetch -c ~/.config/fastfetch/generic.jsonc
-    fi
-fi
-
-# -----------------------------------------------------------------------------
 # Zsh Options
 # -----------------------------------------------------------------------------
 setopt AUTO_CD              # cd by typing directory name
