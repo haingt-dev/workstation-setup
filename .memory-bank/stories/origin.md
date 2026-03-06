@@ -1,12 +1,12 @@
 ---
-title: "Origin: systems-migration-main"
+title: "Origin: workstation-setup"
 date: 2026-03-03
 tags: [origin]
-project: "systems-migration-main"
+project: "workstation-setup"
 status: draft
 ---
 
-# Origin: systems-migration-main
+# Origin: workstation-setup
 
 ## What
 [Project này là gì? Một dòng mô tả core purpose.]

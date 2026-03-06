@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# common.sh - Shared utilities for terminal-custom setup scripts
+# common.sh - Shared utilities for workstation-setup scripts
 # =============================================================================
 
 # Resolve paths

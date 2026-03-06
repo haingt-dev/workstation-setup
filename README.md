@@ -1,6 +1,6 @@
-# Terminal Custom Setup
+# Workstation Setup
 
-Automated terminal and development environment setup for Nobara 42 / Fedora.
+Automated workstation setup for Nobara 42 / Fedora — terminal, dev tools, apps, and agent system.
 
 ## Features
 
@@ -36,8 +36,8 @@ Automated terminal and development environment setup for Nobara 42 / Fedora.
 
 ```bash
 # Clone the repository
-git clone <repo-url> terminal-custom
-cd terminal-custom
+git clone <repo-url> workstation-setup
+cd workstation-setup
 
 # Full installation
 ./setup.sh
