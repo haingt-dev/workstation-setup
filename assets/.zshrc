@@ -252,5 +252,5 @@ bindkey '^[[3~' delete-char         # Delete key
 export DOTNET_ROOT=$HOME/.dotnet
 export PATH=$PATH:$HOME/.dotnet:$HOME/.dotnet/tools
 
-# Agent Global Hub Aliases
-source ~/agent/shell-aliases.sh
+# Agent Hub Aliases
+source ~/Projects/agent/shell-aliases.sh
