@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# setup.sh - Master orchestrator for terminal-custom setup
+# setup.sh - Master orchestrator for workstation-setup
 # =============================================================================
 #
 # Usage:
