@@ -11,15 +11,12 @@ Automated terminal and development environment setup for Nobara 42 / Fedora.
 - **Tmux**: Multiplexer with TPM plugins, session persistence, Catppuccin theme
 - **Power Tools**: zoxide, eza, bat, fzf, ripgrep, fd-find, lazygit, yazi
 
-### Agent System ⭐ NEW
-- **Agent Global Hub**: Unified configuration for Claude, Kilo Code, and Antigravity
-- **Memory Bank System**: Project context management with `.agent/rules/memory-bank/`
-- **Obsidian Integration**: Bi-directional sync between Obsidian vault and code projects
+### Agent System
+- **Agent Hub**: Unified configuration for Claude, Kilo Code, and Antigravity ([separate repo](https://github.com/hailazy/agent))
+- **Memory Bank System**: Project context management with `.memory-bank/`
 - **Git Hooks**: Auto-reminder to update Memory Bank after significant commits
 - **Shell Aliases**: Quick commands for agent workflows (mbk, mbc, ag, cdc, etc.)
-- **MCP Servers**: Pre-configured for Claude (Obsidian, Filesystem, Brave Search, GitHub)
-- **Knowledge Base**: Cross-project patterns, troubleshooting, learnings, recipes
-- **Token Analytics**: Track and optimize token usage across projects
+- **Claude Plugins**: haint-core (hooks, skills), godot-dev (GDScript patterns)
 
 ### Development & Tools
 - **Containers**: Podman & Podman Compose
@@ -122,56 +119,46 @@ Examples:
     ├── dns_setup.sh            # DNS configuration
     ├── packettracer_setup.sh   # Cisco Packet Tracer
     ├── input_setup.sh          # Vietnamese input method
-    └── agent_setup.sh          # Agent Global Hub setup ⭐ NEW
+    └── agent_setup.sh          # Agent Hub setup (clones from GitHub)
 ```
 
 ## What Gets Installed
 
-### Agent System Setup (`agent_setup.sh`) ⭐ NEW
+### Agent System Setup (`agent_setup.sh`)
 
-Complete AI agent workflow integration for Claude, Kilo Code, and Antigravity:
+AI agent workflow integration for Claude, Kilo Code, and Antigravity:
 
-**Agent Global Hub** (`~/agent/`):
-- Global rules and workflows (symlinked to all agents)
-- Memory Bank templates (enhanced with structured prompts)
-- Knowledge base (patterns, troubleshooting, learnings, recipes)
+**Agent Hub** (`~/Projects/agent/` — [separate git repo](https://github.com/hailazy/agent)):
+- Cloned from GitHub by `agent_setup.sh` (not backed up in this repo)
+- Memory Bank templates and project bootstrapping
 - Git hooks (auto-reminder for Memory Bank updates)
-- Shell aliases (mbk, mbc, ag, cdc, token-*, etc.)
-- Bootstrap script for new projects
-- Obsidian sync tool (bi-directional)
-- Token usage tracker
+- Shell aliases (mbk, mbc, ag, cdc, etc.)
+- Claude plugins (haint-core, godot-dev)
 
 **Claude Integration** (`~/.claude/`):
-- Symlinks to Agent Global Hub rules/workflows
-- MCP server configuration (Obsidian, Filesystem, Brave Search, GitHub)
-- Auto memory strategy documentation
-- Project-specific configurations
+- MCP server configuration
+- Plugin registry (marketplace + installed plugins)
 
-**Per-Project Structure**:
-- `CLAUDE.md` - Project context loader
-- `.agent/rules/memory-bank/` - Project Memory Bank
-  - `brief.md` - Goals and scope
-  - `product.md` - User needs
-  - `context.md` - Current state
-  - `architecture.md` - System structure
-  - `tech.md` - Stack and tooling
+**Per-Project Structure** (created by `bootstrap`):
+- `AGENTS.md` - Shared project context (all agents)
+- `.memory-bank/` - Project knowledge (brief, product, context, task, architecture, tech)
+- `.claude/` - Claude Code config + skills
+- `.kilocode/rules/` - Kilo Code rules
+- `.antigravity/rules.md` - Antigravity workspace rules
 - Git post-commit hook for Memory Bank reminders
 
 **Quick Commands**:
 ```bash
-ag              # Go to Agent Global Hub
+ag              # Go to Agent Hub
 mbk             # Edit Memory Bank
 mbc             # Quick edit context.md
-cdc Wildtide    # Switch to project
-mb-sync-status  # Check Obsidian sync
-token-today     # View token usage
+mbt             # Quick edit task.md
+cdc <project>   # Switch to project
 ag-help         # Show all commands
 ```
 
 **Documentation**:
-- `~/agent/README.md` - Complete system overview
-- `~/agent/MEMORY_STRATEGY.md` - Token optimization strategy
-- `~/agent/SETUP.md` - Setup guide
+- `~/Projects/agent/README.md` - Agent Hub overview
 - `~/.claude/MCP_SETUP.md` - MCP server setup
 
 ### Terminal Setup (`terminal_setup.sh`)
