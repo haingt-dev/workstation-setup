@@ -2,9 +2,23 @@
 
 ## Current Work Focus
 
-- Repo is stable. Last backup sync: 2026-03-04.
+- Repo is stable. Last sync: 2026-03-06.
 
 ## Recent Changes
+
+### 2026-03-06: Agent Hub Consolidation — Remove Duplicate
+
+**What**: Agent hub repo lives at `~/Projects/agent/` (GitHub). Stale flat copy at `~/agent/` was created by old backup-restore flow. Consolidated to single location.
+
+**Changes**:
+1. **Rescued** `hooks/` and `ag-sync-rules.sh` from stale `~/agent/` into `~/Projects/agent/` repo
+2. **Deleted** `assets/.agent_global/` entirely — agent has its own git repo, no backup copy needed
+3. **Rewrote** `scripts/agent_setup.sh` — now clones from GitHub instead of copying from backup
+4. **Updated** all `~/agent/` references → `~/Projects/agent/` across: .zshrc, README.md, validate skill, agent repo scripts
+5. **Deleted** stale `~/agent/` directory
+6. **Cleaned up** legacy `~/.agent_global` symlink handling in agent_setup.sh
+
+**Why**: Two copies drifting apart (stale copy had old skills, missing stories). Single source of truth at `~/Projects/agent/`.
 
 ### 2026-03-04: Apps + Terminal Dashboard Overhaul
 
