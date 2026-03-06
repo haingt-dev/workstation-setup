@@ -85,6 +85,13 @@
 - Audio processing:
   - EasyEffects, installed via [`scripts/easyeffects_setup.sh`](../../scripts/easyeffects_setup.sh:1), with presets/configuration under [`assets/.config/easyeffects`](../../assets/.config/easyeffects:1), used to keep speaker/headphone audio tuning reproducible
 
+## Agent Hub
+
+- Separate git repo at `~/Projects/agent/` ([GitHub](https://github.com/hailazy/agent))
+- Not backed up in this repo — `agent_setup.sh` clones from GitHub
+- Contains: plugins (haint-core, godot-dev), templates, hooks, shell aliases, bootstrap script
+- Shell aliases sourced from `~/Projects/agent/shell-aliases.sh` in `.zshrc`
+
 ## Configuration and Assets
 
 - Dotfiles:
