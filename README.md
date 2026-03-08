@@ -12,7 +12,7 @@ Automated workstation setup for Nobara 42 / Fedora — terminal, dev tools, apps
 - **Power Tools**: zoxide, eza, bat, fzf, ripgrep, fd-find, lazygit, yazi
 
 ### Agent System
-- **Agent Hub**: Unified configuration for Claude, Kilo Code, and Antigravity ([separate repo](https://github.com/hailazy/agent))
+- **Agent Hub**: Unified configuration for Claude Code ([separate repo](https://github.com/hailazy/agent))
 - **Memory Bank System**: Project context management with `.memory-bank/`
 - **Git Hooks**: Auto-reminder to update Memory Bank after significant commits
 - **Shell Aliases**: Quick commands for agent workflows (mbk, mbc, ag, cdc, etc.)
@@ -126,7 +126,7 @@ Examples:
 
 ### Agent System Setup (`agent_setup.sh`)
 
-AI agent workflow integration for Claude, Kilo Code, and Antigravity:
+AI agent workflow integration for Claude Code:
 
 **Agent Hub** (`~/Projects/agent/` — [separate git repo](https://github.com/hailazy/agent)):
 - Cloned from GitHub by `agent_setup.sh` (not backed up in this repo)
@@ -143,8 +143,6 @@ AI agent workflow integration for Claude, Kilo Code, and Antigravity:
 - `AGENTS.md` - Shared project context (all agents)
 - `.memory-bank/` - Project knowledge (brief, product, context, task, architecture, tech)
 - `.claude/` - Claude Code config + skills
-- `.kilocode/rules/` - Kilo Code rules
-- `.antigravity/rules.md` - Antigravity workspace rules
 - Git post-commit hook for Memory Bank reminders
 
 **Quick Commands**:
