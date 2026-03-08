@@ -22,13 +22,11 @@
 
 ### 2026-03-04: Apps + Terminal Dashboard Overhaul
 
-**What**: Replaced Super Productivity with Todoist, added Wayland tray support, major terminal dashboard rework, full config sync.
+**What**: Replaced Super Productivity with Todoist, major terminal dashboard rework, full config sync.
 
 **Apps changes**:
 1. **Super Productivity → Todoist** (Flatpak `com.todoist.Todoist`) with DBus permissions for notifications
-2. **kwin-minimize2tray** — Wayland-native KWin Script for minimize-to-tray (built from source with Qt6/KF6 deps)
-   - kdocker was tried first but is X11-only, incompatible with Wayland
-3. Updated `scripts/apps_setup.sh`, README.md, product.md, tech.md
+2. Updated `scripts/apps_setup.sh`, README.md, product.md, tech.md
 
 **Terminal dashboard overhaul**:
 1. **Auto tmux 3-pane layout** on Kitty launch (`.zshrc`):

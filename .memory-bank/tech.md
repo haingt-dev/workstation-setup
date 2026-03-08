@@ -75,8 +75,6 @@
   - Google Chrome and Dropbox (DNF)
   - Discord, Obsidian, Anki, Calibre, Todoist (Flatpak)
   - Todoist has DBus overrides for `org.kde.StatusNotifierWatcher` and `org.freedesktop.Notifications`
-- KDE/Wayland utilities:
-  - `kwin-minimize2tray` — Wayland-native KWin Script for minimize-to-tray, built from source ([GitHub](https://github.com/luisbocanegra/kwin-minimize2tray)) with Qt6/KF6 build deps. Installed by [`scripts/apps_setup.sh`](../../scripts/apps_setup.sh:1).
 - Cloud Storage:
   - OneDrive (`abraunegg/onedrive`), configured via [`scripts/onedrive_setup.sh`](../../scripts/onedrive_setup.sh:1) with multi-account support using named systemd services.
 - Networking tool:
