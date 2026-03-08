@@ -116,20 +116,6 @@ flatpak override --user com.todoist.Todoist \
     --talk-name=org.freedesktop.Notifications
 log_success "Todoist installed"
 
-# kwin-minimize2tray - minimize any window to tray (Wayland native KWin Script)
-if [[ ! -d "$HOME/.local/share/kwin/scripts/com.github.luisbocanegra.minimize2tray" ]]; then
-    log_info "Installing kwin-minimize2tray..."
-    dnf_install cmake gcc-c++ qt6-qtbase-devel qt6-qtdeclarative-devel extra-cmake-modules \
-        kf6-kpackage-devel kf6-kcoreaddons-devel kf6-kstatusnotifieritem-devel kf6-kservice-devel
-    MINIMIZE2TRAY_DIR=$(mktemp -d)
-    git clone https://github.com/luisbocanegra/kwin-minimize2tray.git "$MINIMIZE2TRAY_DIR"
-    cd "$MINIMIZE2TRAY_DIR" && ./install.sh
-    rm -rf "$MINIMIZE2TRAY_DIR"
-    log_success "kwin-minimize2tray installed (enable in System Settings → KWin Scripts)"
-else
-    log_success "kwin-minimize2tray already installed"
-fi
-
 # =============================================================================
 # Summary
 # =============================================================================
@@ -145,4 +131,3 @@ echo "  - Discord (Flatpak)"
 echo "  - Obsidian (Flatpak)"
 echo "  - Anki (Flatpak)"
 echo "  - Todoist (Flatpak)"
-echo "  - kwin-minimize2tray (KWin Script)"
