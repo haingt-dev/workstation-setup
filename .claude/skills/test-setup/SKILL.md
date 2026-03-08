@@ -2,6 +2,7 @@
 name: test-setup
 description: Trace setup.sh execution without running it — dry-run analysis
 argument-hint: "[--terminal|--godot|component]"
+allowed-tools: Read
 ---
 
 Trace setup.sh execution without running it — dry-run analysis.

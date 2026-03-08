@@ -37,7 +37,6 @@ INSTALL_PACKETTRACER=true
 INSTALL_OBS=true
 INSTALL_EASYEFFECTS=true
 INSTALL_DNS=true
-INSTALL_ANTIGRAVITY=true
 INSTALL_VSCODE=true
 
 # Optional components (Do not run by default)
@@ -71,7 +70,6 @@ show_help() {
     echo "  --onedrive          OneDrive setup (supports multiple accounts)"
     echo "  --vietnamese        Vietnamese input setup (ibus-bamboo)"
 
-    echo "  --antigravity       Install Antigravity Global Rules"
     echo "  --vscode            Visual Studio Code setup"
 
     echo ""
@@ -86,7 +84,6 @@ show_help() {
     echo "  --skip-easyeffects  Skip EasyEffects"
     echo "  --skip-dns          Skip DNS setup"
 
-    echo "  --skip-antigravity  Skip Antigravity Rules"
     echo "  --skip-vscode       Skip VS Code setup"
 
     echo ""
@@ -105,7 +102,7 @@ show_help() {
 EXCLUSIVE_MODE=false
 for arg in "$@"; do
     case $arg in
-        --full|--terminal|--agent|--qdrant|--godot|--apps|--packettracer|--obs|--easyeffects|--dns|--onedrive|--vietnamese|--antigravity|--vscode)
+        --full|--terminal|--agent|--qdrant|--godot|--apps|--packettracer|--obs|--easyeffects|--dns|--onedrive|--vietnamese|--vscode)
 
             EXCLUSIVE_MODE=true
             break
@@ -128,7 +125,6 @@ if $EXCLUSIVE_MODE; then
     INSTALL_ONEDRIVE=false
     INSTALL_VIETNAMESE=false
 
-    INSTALL_ANTIGRAVITY=false
     INSTALL_VSCODE=false
 
 fi
@@ -145,7 +141,6 @@ for arg in "$@"; do
             INSTALL_APPS=true
             INSTALL_PACKETTRACER=true
             INSTALL_EASYEFFECTS=true
-            INSTALL_ANTIGRAVITY=true
             INSTALL_VSCODE=true
 
             ;;
@@ -160,7 +155,6 @@ for arg in "$@"; do
         --dns)                INSTALL_DNS=true ;;
         --onedrive)           INSTALL_ONEDRIVE=true ;;
         --vietnamese)         INSTALL_VIETNAMESE=true ;;
-        --antigravity)        INSTALL_ANTIGRAVITY=true ;;
         --vscode)             INSTALL_VSCODE=true ;;
 
         # Skip Flags
@@ -173,7 +167,6 @@ for arg in "$@"; do
         --skip-obs)           INSTALL_OBS=false ;;
         --skip-easyeffects)   INSTALL_EASYEFFECTS=false ;;
         --skip-dns)           INSTALL_DNS=false ;;
-        --skip-antigravity)   INSTALL_ANTIGRAVITY=false ;;
         --skip-vscode)        INSTALL_VSCODE=false ;;
 
         # Other
@@ -298,13 +291,7 @@ if $INSTALL_ONEDRIVE; then
     bash "$SCRIPTS_DIR/onedrive_setup.sh"
 fi
 
-# 11. Antigravity Setup
-if $INSTALL_ANTIGRAVITY; then
-    log_section "Running Antigravity Rules Setup..."
-    bash "$SCRIPTS_DIR/antigravity_setup.sh"
-fi
-
-# 12. VS Code Setup
+# 11. VS Code Setup
 if $INSTALL_VSCODE; then
     log_section "Running VS Code Setup..."
     bash "$SCRIPTS_DIR/vscode_setup.sh"
@@ -344,6 +331,3 @@ if $INSTALL_TERMINAL; then
     log_info "Install tmux plugins: Press Ctrl+a then I inside tmux"
 fi
 
-if $INSTALL_ANTIGRAVITY; then
-    log_info "Antigravity Rules deployed to ~/.gemini/GEMINI.md"
-fi
