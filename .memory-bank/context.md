@@ -2,9 +2,27 @@
 
 ## Current Work Focus
 
-- Repo is stable. Last sync: 2026-03-06.
+- Repo is stable. Last sync: 2026-03-15.
 
 ## Recent Changes
+
+### 2026-03-15: Remove lazygit-pane + Fix Overlay Shortcut
+
+**What**: Simplified terminal layout by removing the dedicated lazygit pane. Lazygit is still accessible via `Ctrl+Shift+G` overlay.
+
+**Changes**:
+1. **`startup.conf`** — bottom-left pane changed from `lazygit-pane` wrapper → plain `shell2` (bare zsh)
+2. **`.zshrc`** — removed chpwd hook block that wrote `$PWD` to `/tmp/kitty-main-cwd`
+3. **`tmux.conf`** — removed `bind g` (lazygit resync binding)
+4. **`assets/.local/bin/lazygit-pane`** — deleted
+5. **`kitty.conf`** — fixed `overlay-main` → `overlay` for all three overlay shortcuts (`ctrl+shift+g/y/o`); `overlay-main` was causing lazygit to replace the pane permanently instead of floating over it
+
+**Layout after**:
+- Top-left: fastfetch → btop (dashboard)
+- Bottom-left: shell2 (second working shell)
+- Right: primary shell / claude session
+
+**Why**: lazygit-pane was rarely used, and the CWD sync machinery (chpwd hook → `/tmp/kitty-main-cwd` → polling loop) was unnecessary complexity. Lazygit is still one keypress away via `Ctrl+Shift+G` overlay.
 
 ### 2026-03-06: Agent Hub Consolidation — Remove Duplicate
 
