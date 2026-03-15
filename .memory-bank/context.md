@@ -6,6 +6,17 @@
 
 ## Recent Changes
 
+### 2026-03-15: Fix terminal_setup.sh — startup.conf + background.jpg + Claude Code CLI
+
+**What**: Fresh installs were missing the 3-pane Kitty layout and background image. Also added Claude Code CLI install to bootstrap.
+
+**Changes**:
+1. **`terminal_setup.sh`** — added `startup.conf` and `background.jpg` to kitty copy block
+2. **`terminal_setup.sh`** — added section 5: Node.js + `npm install -g @anthropic-ai/claude-code`
+3. **`assets/.config/kitty/startup.conf`** + live — renamed `Shell2` comment → `Shell`, changed `--cwd ~` → `--cwd ~/Projects`
+
+**Why**: `startup.conf` and `background.jpg` existed in `assets/` but were never installed, causing blank single-pane Kitty on fresh install. Claude Code CLI is now a core tool that should be part of the base terminal setup.
+
 ### 2026-03-15: Remove lazygit-pane + Fix Overlay Shortcut
 
 **What**: Simplified terminal layout by removing the dedicated lazygit pane. Lazygit is still accessible via `Ctrl+Shift+G` overlay.
