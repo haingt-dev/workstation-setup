@@ -190,16 +190,6 @@ qf() {
 }
 
 # -----------------------------------------------------------------------------
-# Sync cwd for lazygit pane (works in both Kitty and tmux)
-# -----------------------------------------------------------------------------
-if [[ "$TERM" == "xterm-kitty" || -n "$TMUX" ]]; then
-    _sync_cwd_lazygit() { echo "$PWD" > /tmp/kitty-main-cwd; }
-    autoload -Uz add-zsh-hook
-    add-zsh-hook chpwd _sync_cwd_lazygit
-    _sync_cwd_lazygit
-fi
-
-# -----------------------------------------------------------------------------
 # Zsh Options
 # -----------------------------------------------------------------------------
 setopt AUTO_CD              # cd by typing directory name
