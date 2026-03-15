@@ -147,7 +147,17 @@ run_core_setup() {
         log_success "Atuin installed via official script"
     fi
 
-    # 5. Install Zsh Plugins
+    # 5. Install Node.js + Claude Code CLI
+    log_section "Installing Claude Code CLI..."
+    dnf_install nodejs
+    if command -v npm &>/dev/null; then
+        npm install -g @anthropic-ai/claude-code
+        log_success "Claude Code CLI installed"
+    else
+        log_warn "npm not found, skipping Claude Code CLI"
+    fi
+
+    # 6. Install Zsh Plugins
     log_section "Installing Zsh plugins..."
     dnf_install zsh-autosuggestions zsh-syntax-highlighting
     log_success "zsh-autosuggestions and zsh-syntax-highlighting installed"
@@ -229,9 +239,10 @@ run_core_setup() {
     # kitty config
     if [[ -d "$BACKUP_DIR/.config/kitty" ]]; then
         ensure_dir ~/.config/kitty
-        # Copy only essential files (kitty.conf and theme)
         cp -f "$BACKUP_DIR/.config/kitty/kitty.conf" ~/.config/kitty/ 2>/dev/null || true
         cp -f "$BACKUP_DIR/.config/kitty/catppuccin-mocha.conf" ~/.config/kitty/ 2>/dev/null || true
+        cp -f "$BACKUP_DIR/.config/kitty/startup.conf" ~/.config/kitty/ 2>/dev/null || true
+        cp -f "$BACKUP_DIR/.config/kitty/background.jpg" ~/.config/kitty/ 2>/dev/null || true
         log_success "kitty config installed"
     fi
 
