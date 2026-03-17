@@ -26,7 +26,7 @@ check_not_root
 verify_backup_dir
 
 AGENT_DIR="$HOME/Projects/agent"
-AGENT_REPO="git@github.com:hailazy/agent.git"
+AGENT_REPO="git@github.com:haingt-dev/agent.git"
 
 # =============================================================================
 # Agent Hub Setup
