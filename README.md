@@ -12,7 +12,7 @@ Automated workstation setup for Nobara 42 / Fedora — terminal, dev tools, apps
 - **Power Tools**: zoxide, eza, bat, fzf, ripgrep, fd-find, lazygit, yazi
 
 ### Agent System
-- **Agent Hub**: Unified configuration for Claude Code ([separate repo](https://github.com/hailazy/agent))
+- **Agent Hub**: Unified configuration for Claude Code ([separate repo](https://github.com/haingt-dev/agent))
 - **Memory Bank System**: Project context management with `.memory-bank/`
 - **Git Hooks**: Auto-reminder to update Memory Bank after significant commits
 - **Shell Aliases**: Quick commands for agent workflows (mbk, mbc, ag, cdc, etc.)
@@ -128,7 +128,7 @@ Examples:
 
 AI agent workflow integration for Claude Code:
 
-**Agent Hub** (`~/Projects/agent/` — [separate git repo](https://github.com/hailazy/agent)):
+**Agent Hub** (`~/Projects/agent/` — [separate git repo](https://github.com/haingt-dev/agent)):
 - Cloned from GitHub by `agent_setup.sh` (not backed up in this repo)
 - Memory Bank templates and project bootstrapping
 - Git hooks (auto-reminder for Memory Bank updates)
