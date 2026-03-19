@@ -29,7 +29,6 @@ Automated workstation setup for Nobara 42 / Fedora — terminal, dev tools, apps
 - **Audio Processing**: EasyEffects with pre-tuned presets
 - **DNS**: Cloudflare Block Malware configuration
 - **OBS Studio**: Recording and streaming software (Flatpak)
-- **Cisco Packet Tracer**: Network simulation tool
 - **Vietnamese Input**: ibus-bamboo for Vietnamese typing
 
 ## Quick Start
@@ -64,7 +63,6 @@ Options:
   --skip-qdrant       Skip Qdrant setup
   --skip-godot        Skip Godot installation
   --skip-apps         Skip additional apps
-  --skip-packettracer Skip Cisco Packet Tracer
   --skip-obs          Skip OBS Studio
   --skip-easyeffects  Skip EasyEffects audio setup
   --skip-dns          Skip DNS setup
@@ -117,7 +115,6 @@ Examples:
     ├── onedrive_setup.sh       # OneDrive multi-account setup
     ├── easyeffects_setup.sh    # EasyEffects audio presets
     ├── dns_setup.sh            # DNS configuration
-    ├── packettracer_setup.sh   # Cisco Packet Tracer
     ├── input_setup.sh          # Vietnamese input method
     └── agent_setup.sh          # Agent Hub setup (clones from GitHub)
 ```
@@ -210,7 +207,6 @@ z   → zoxide                    # Smart directory jumping
 - **OneDrive**: Multi-account sync with systemd services
 - **EasyEffects**: Audio presets for speakers/headsets
 - **DNS**: Cloudflare Block Malware (1.1.1.2/1.0.0.2)
-- **Packet Tracer**: Cisco network simulation
 - **Vietnamese Input**: ibus-bamboo (auto-configured as default input source)
 
 ## Post-Setup Steps

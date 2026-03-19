@@ -33,7 +33,6 @@ INSTALL_AGENT=true
 INSTALL_QDRANT=true
 INSTALL_GODOT=true
 INSTALL_APPS=true
-INSTALL_PACKETTRACER=true
 INSTALL_OBS=true
 INSTALL_EASYEFFECTS=true
 INSTALL_DNS=true
@@ -63,12 +62,11 @@ show_help() {
     echo "  --qdrant            Qdrant setup"
     echo "  --godot             Godot setup"
     echo "  --apps              Additional apps (Chrome, Dropbox, Flatpaks)"
-    echo "  --packettracer      Cisco Packet Tracer setup"
     echo "  --obs               OBS Studio setup"
     echo "  --easyeffects       EasyEffects audio setup"
     echo "  --dns               DNS setup (Cloudflare Block Malware)"
     echo "  --onedrive          OneDrive setup (supports multiple accounts)"
-    echo "  --vietnamese        Vietnamese input setup (ibus-bamboo)"
+    echo "  --vietnamese        Vietnamese input setup (fcitx5-unikey)"
 
     echo "  --vscode            Visual Studio Code setup"
 
@@ -79,7 +77,6 @@ show_help() {
     echo "  --skip-qdrant       Skip Qdrant"
     echo "  --skip-godot        Skip Godot"
     echo "  --skip-apps         Skip Apps"
-    echo "  --skip-packettracer Skip Packet Tracer"
     echo "  --skip-obs          Skip OBS Studio"
     echo "  --skip-easyeffects  Skip EasyEffects"
     echo "  --skip-dns          Skip DNS setup"
@@ -102,7 +99,7 @@ show_help() {
 EXCLUSIVE_MODE=false
 for arg in "$@"; do
     case $arg in
-        --full|--terminal|--agent|--qdrant|--godot|--apps|--packettracer|--obs|--easyeffects|--dns|--onedrive|--vietnamese|--vscode)
+        --full|--terminal|--agent|--qdrant|--godot|--apps|--obs|--easyeffects|--dns|--onedrive|--vietnamese|--vscode)
 
             EXCLUSIVE_MODE=true
             break
@@ -118,7 +115,6 @@ if $EXCLUSIVE_MODE; then
     INSTALL_QDRANT=false
     INSTALL_GODOT=false
     INSTALL_APPS=false
-    INSTALL_PACKETTRACER=false
     INSTALL_OBS=false
     INSTALL_EASYEFFECTS=false
     INSTALL_DNS=false
@@ -139,7 +135,6 @@ for arg in "$@"; do
             INSTALL_QDRANT=true
             INSTALL_GODOT=true
             INSTALL_APPS=true
-            INSTALL_PACKETTRACER=true
             INSTALL_EASYEFFECTS=true
             INSTALL_VSCODE=true
 
@@ -149,7 +144,6 @@ for arg in "$@"; do
         --qdrant)             INSTALL_QDRANT=true ;;
         --godot)              INSTALL_GODOT=true ;;
         --apps)               INSTALL_APPS=true ;;
-        --packettracer)       INSTALL_PACKETTRACER=true ;;
         --obs)                INSTALL_OBS=true ;;
         --easyeffects)        INSTALL_EASYEFFECTS=true ;;
         --dns)                INSTALL_DNS=true ;;
@@ -163,7 +157,6 @@ for arg in "$@"; do
         --skip-qdrant)        INSTALL_QDRANT=false ;;
         --skip-godot)         INSTALL_GODOT=false ;;
         --skip-apps)          INSTALL_APPS=false ;;
-        --skip-packettracer)  INSTALL_PACKETTRACER=false ;;
         --skip-obs)           INSTALL_OBS=false ;;
         --skip-easyeffects)   INSTALL_EASYEFFECTS=false ;;
         --skip-dns)           INSTALL_DNS=false ;;
@@ -237,22 +230,6 @@ if $INSTALL_APPS; then
     bash "$SCRIPTS_DIR/apps_setup.sh"
 elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping additional apps setup"
-fi
-
-# 6. Packet Tracer Setup
-if $INSTALL_PACKETTRACER; then
-    # Check if .deb file exists before attempting
-    PT_DEB=$(find "$BACKUP_DIR" "$HOME" -maxdepth 1 -type f \( -name "Cisco*Packet*.deb" -o -name "Packet*Tracer*.deb" \) 2>/dev/null | head -1)
-    if [[ -n "$PT_DEB" ]]; then
-        log_section "Running Packet Tracer Setup..."
-        bash "$SCRIPTS_DIR/packettracer_setup.sh"
-    else
-        log_warn "Skipping Packet Tracer setup (installer not found)"
-        log_info "To install later, place the .deb file in $BACKUP_DIR and run:"
-        echo "    ./setup.sh --packettracer"
-    fi
-elif ! $EXCLUSIVE_MODE; then
-    log_warn "Skipping Packet Tracer setup"
 fi
 
 # 6. OBS Studio Setup
