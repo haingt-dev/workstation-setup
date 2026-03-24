@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# input_setup.sh - Vietnamese input method support (ibus-bamboo)
+# input_setup.sh - Vietnamese input method support (fcitx5-unikey)
 # =============================================================================
 
 set -e
@@ -11,130 +11,163 @@ source "$SCRIPT_DIR/common.sh"
 
 check_not_root
 
-log_section "Installing Vietnamese Input Method (ibus-bamboo)"
+PROFILE_FILE="$HOME/.profile"
 
 # =============================================================================
-# Install ibus-bamboo
+# Migration: Clean up previous ibus installation
 # =============================================================================
-log_info "Installing ibus and ibus-bamboo..."
 
-# Remove potentially corrupt repo file from previous runs to prevent dnf errors
-sudo rm -f /etc/yum.repos.d/ibus-bamboo.repo
-
-# Add OpenBuildService repo for ibus-bamboo if not already added
-FEDORA_VERSION=$(rpm -E %fedora)
-REPO_URL=""
-FOUND_VERSION=""
-
-# Function to check if a repo URL exists
-check_repo_url() {
-    local url="$1"
-    if curl --output /dev/null --silent --head --fail "$url"; then
-        return 0
-    else
-        return 1
-    fi
-}
-
-# Try to find a valid repository in order of preference:
-# 1. Exact match for current Fedora version
-# 2. Fedora Rawhide (often works for bleeding edge)
-# 3. Fedora 42 (known stable recent)
-# 4. Fedora 41 (fallback)
-
-# 1. Check exact version
-URL_CANDIDATE="https://download.opensuse.org/repositories/home:/lamlng/Fedora_${FEDORA_VERSION}/home:lamlng.repo"
-if check_repo_url "$URL_CANDIDATE"; then
-    REPO_URL="$URL_CANDIDATE"
-    FOUND_VERSION="$FEDORA_VERSION"
-    log_info "Found repository for Fedora ${FEDORA_VERSION}."
-else
-    log_warn "Repository for Fedora ${FEDORA_VERSION} not found. Checking alternatives..."
-    
-    # 2. Check Rawhide
-    URL_CANDIDATE="https://download.opensuse.org/repositories/home:/lamlng/Fedora_Rawhide/home:lamlng.repo"
-    if check_repo_url "$URL_CANDIDATE"; then
-        REPO_URL="$URL_CANDIDATE"
-        FOUND_VERSION="Rawhide"
-        log_info "Found repository for Fedora Rawhide."
-    else
-        # 3. Check Fedora 42
-        URL_CANDIDATE="https://download.opensuse.org/repositories/home:/lamlng/Fedora_42/home:lamlng.repo"
-        if check_repo_url "$URL_CANDIDATE"; then
-            REPO_URL="$URL_CANDIDATE"
-            FOUND_VERSION="42"
-            log_info "Found repository for Fedora 42."
-        else
-            # 4. Check Fedora 41
-            URL_CANDIDATE="https://download.opensuse.org/repositories/home:/lamlng/Fedora_41/home:lamlng.repo"
-            if check_repo_url "$URL_CANDIDATE"; then
-                REPO_URL="$URL_CANDIDATE"
-                FOUND_VERSION="41"
-                log_info "Found repository for Fedora 41."
-            else
-                log_error "Could not find a valid ibus-bamboo repository for Fedora ${FEDORA_VERSION}, Rawhide, 42, or 41."
-                exit 1
-            fi
-        fi
-    fi
+# Remove ibus-bamboo OBS repo if present
+if [ -f /etc/yum.repos.d/ibus-bamboo.repo ]; then
+    log_info "Removing old ibus-bamboo repository..."
+    sudo rm -f /etc/yum.repos.d/ibus-bamboo.repo
+    log_success "Removed ibus-bamboo.repo"
 fi
 
-if [ ! -f /etc/yum.repos.d/ibus-bamboo.repo ]; then
-    log_info "Downloading ibus-bamboo repository for Fedora ${FOUND_VERSION}..."
-    # Use -f to fail silently on server errors (404) so we don't save HTML to the repo file
-    if ! sudo curl -f -o /etc/yum.repos.d/ibus-bamboo.repo "$REPO_URL"; then
-        log_error "Failed to download repository from $REPO_URL"
-        exit 1
-    fi
-
-    # Verify the downloaded file is a valid repo file (not HTML)
-    if ! grep -q "\[home_lamlng\]" /etc/yum.repos.d/ibus-bamboo.repo; then
-        log_error "Downloaded file is not a valid repository file (likely HTML error page)."
-        log_info "Removing invalid file..."
-        sudo rm -f /etc/yum.repos.d/ibus-bamboo.repo
-        exit 1
-    fi
+# Remove ibus-bamboo package if installed
+if rpm -q ibus-bamboo &>/dev/null; then
+    log_info "Removing ibus-bamboo package..."
+    sudo dnf remove -y ibus-bamboo
+    log_success "Removed ibus-bamboo"
 fi
 
-dnf_install ibus ibus-bamboo
+# Remove old ibus env vars from .profile
+if grep -q "GTK_IM_MODULE=ibus" "$PROFILE_FILE" 2>/dev/null; then
+    log_info "Removing old ibus environment variables from ~/.profile..."
+    sed -i '/# IBus input method configuration/d' "$PROFILE_FILE"
+    sed -i '/GTK_IM_MODULE=ibus/d' "$PROFILE_FILE"
+    sed -i '/QT_IM_MODULE=ibus/d' "$PROFILE_FILE"
+    sed -i '/XMODIFIERS=@im=ibus/d' "$PROFILE_FILE"
+    log_success "Removed ibus environment variables from ~/.profile"
+fi
 
-log_success "ibus-bamboo installed"
+# =============================================================================
+# Install fcitx5 with Unikey
+# =============================================================================
+log_section "Installing Vietnamese Input Method (fcitx5-unikey)"
+
+dnf_install fcitx5 fcitx5-unikey fcitx5-gtk fcitx5-qt fcitx5-configtool kcm-fcitx5
+
+log_success "fcitx5 packages installed"
 
 # =============================================================================
 # Configure environment variables
 # =============================================================================
 log_section "Configuring input method environment..."
 
-# Add IBus environment variables to .profile if not already present
-PROFILE_FILE="$HOME/.profile"
-if ! grep -q "GTK_IM_MODULE=ibus" "$PROFILE_FILE" 2>/dev/null; then
+if ! grep -q "GTK_IM_MODULE=fcitx" "$PROFILE_FILE" 2>/dev/null; then
     cat >> "$PROFILE_FILE" << 'EOF'
 
-# IBus input method configuration
-export GTK_IM_MODULE=ibus
-export QT_IM_MODULE=ibus
-export XMODIFIERS=@im=ibus
+# fcitx5 input method configuration
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS=@im=fcitx
 EOF
-    log_success "Added IBus environment variables to ~/.profile"
+    log_success "Added fcitx5 environment variables to ~/.profile"
 else
-    log_info "IBus environment variables already configured in ~/.profile"
+    log_info "fcitx5 environment variables already configured in ~/.profile"
 fi
 
 # =============================================================================
-# Configure input sources
+# Configure default input method profile
 # =============================================================================
-log_section "Configuring input sources..."
+log_section "Configuring fcitx5 default profile..."
 
-# Preload IBus engines
-env DCONF_PROFILE=ibus dconf write /desktop/ibus/general/preload-engines "['BambooUs', 'Bamboo']"
+FCITX5_CONFIG_DIR="$HOME/.config/fcitx5"
+mkdir -p "$FCITX5_CONFIG_DIR"
 
-# Add English and Vietnamese (Bamboo) to input sources
-gsettings set org.gnome.desktop.input-sources sources "[('xkb', 'us'), ('ibus', 'Bamboo')]"
+cat > "$FCITX5_CONFIG_DIR/profile" << 'EOF'
+[Groups/0]
+Name=Default
+Default Layout=us
+DefaultIM=unikey
 
-# Set Vietnamese as default (index 1)
-gsettings set org.gnome.desktop.input-sources current 1
+[Groups/0/Items/0]
+Name=keyboard-us
+Layout=
 
-log_success "Input sources configured with Vietnamese (Bamboo) as default"
+[Groups/0/Items/1]
+Name=unikey
+Layout=
+
+[GroupOrder]
+0=Default
+EOF
+
+log_success "fcitx5 profile configured with Unikey (Vietnamese)"
+
+# =============================================================================
+# Configure trigger key (Super+Space to avoid Ctrl+Space conflict with Kitty)
+# =============================================================================
+log_section "Configuring fcitx5 trigger key..."
+
+cat > "$FCITX5_CONFIG_DIR/config" << 'EOF'
+[Hotkey/TriggerKeys]
+0=Super+space
+
+[Hotkey/EnumerateWithTriggerKeys]
+0=True
+
+[Hotkey/EnumerateForwardKeys]
+0=Super+space
+
+[Hotkey/EnumerateBackwardKeys]
+0=Shift+Super+space
+EOF
+
+log_success "fcitx5 trigger key set to Super+Space"
+
+# =============================================================================
+# Disable imsettings (conflicts with fcitx5 on Wayland)
+# =============================================================================
+if rpm -q imsettings &>/dev/null; then
+    log_info "Disabling imsettings (conflicts with fcitx5 on Wayland)..."
+    imsettings-switch none 2>/dev/null || true
+    log_success "imsettings disabled"
+fi
+
+# =============================================================================
+# KDE Wayland: Set fcitx5 as virtual keyboard in KWin
+# =============================================================================
+if command -v kwriteconfig6 &>/dev/null; then
+    log_section "Configuring KDE for fcitx5..."
+
+    # Set fcitx5 as Wayland virtual keyboard
+    if [[ "$XDG_SESSION_TYPE" == "wayland" ]]; then
+        kwriteconfig6 --file kwinrc --group Wayland --key VirtualKeyboard fcitx5
+        log_success "Set fcitx5 as KDE Wayland virtual keyboard"
+    fi
+
+    # Remove KDE keyboard layout switcher shortcut (conflicts with fcitx5 Super+Space)
+    kwriteconfig6 --file kglobalshortcutsrc --group "KDE Keyboard Layout Switcher" \
+        --key "Switch to Next Keyboard Layout" "none,Meta+Alt+K,Switch to Next Keyboard Layout"
+    kwriteconfig6 --file kglobalshortcutsrc --group "org.kde.keyboard_layout_switcher" \
+        --key "Switch to Next Keyboard Layout" "none,Meta+Alt+K,Switch to Next Keyboard Layout"
+    log_success "Cleared KDE Meta+Space shortcut conflict"
+fi
+
+# =============================================================================
+# XDG autostart (fallback for X11 / non-KDE)
+# =============================================================================
+AUTOSTART_DIR="$HOME/.config/autostart"
+AUTOSTART_FILE="$AUTOSTART_DIR/fcitx5-autostart.desktop"
+
+if [ ! -f "$AUTOSTART_FILE" ]; then
+    mkdir -p "$AUTOSTART_DIR"
+    cat > "$AUTOSTART_FILE" << 'EOF'
+[Desktop Entry]
+Type=Application
+Name=Fcitx 5
+Comment=Start fcitx5 input method framework
+Exec=fcitx5
+Icon=fcitx
+Categories=System;Utility;
+X-GNOME-Autostart-enabled=true
+EOF
+    log_success "Created fcitx5 XDG autostart entry"
+else
+    log_info "fcitx5 autostart entry already exists"
+fi
 
 # =============================================================================
 # Summary
@@ -143,8 +176,9 @@ log_section "Vietnamese Input Method Setup Complete!"
 echo ""
 echo "To complete setup:"
 echo "  1. Log out and log back in (or reboot)"
-echo "  2. The input sources are already configured with Vietnamese (Bamboo) as default"
+echo "  2. fcitx5 will start automatically with Unikey enabled"
 echo ""
-echo "Keyboard shortcut to switch input: Super+Space (default)"
+echo "Keyboard shortcut to switch input: Super+Space"
 echo ""
-log_info "Typing method: Telex by default. Configure via ibus-bamboo settings."
+log_info "Typing method: Telex by default. Configure via fcitx5-configtool."
+log_info "KDE Wayland: Virtual keyboard set to Fcitx 5 (System Settings > Virtual Keyboard)"
