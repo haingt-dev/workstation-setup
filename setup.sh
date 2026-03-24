@@ -37,6 +37,7 @@ INSTALL_OBS=true
 INSTALL_EASYEFFECTS=true
 INSTALL_DNS=true
 INSTALL_VSCODE=true
+INSTALL_REMOTE=true
 
 # Optional components (Do not run by default)
 INSTALL_ONEDRIVE=false
@@ -69,6 +70,7 @@ show_help() {
     echo "  --vietnamese        Vietnamese input setup (fcitx5-unikey)"
 
     echo "  --vscode            Visual Studio Code setup"
+    echo "  --remote            Remote access setup (Tailscale, Mosh, SSH, WoL)"
 
     echo ""
     echo "Skip Flags (For Default Mode):"
@@ -99,7 +101,7 @@ show_help() {
 EXCLUSIVE_MODE=false
 for arg in "$@"; do
     case $arg in
-        --full|--terminal|--agent|--qdrant|--godot|--apps|--obs|--easyeffects|--dns|--onedrive|--vietnamese|--vscode)
+        --full|--terminal|--agent|--qdrant|--godot|--apps|--obs|--easyeffects|--dns|--onedrive|--vietnamese|--vscode|--remote)
 
             EXCLUSIVE_MODE=true
             break
@@ -122,6 +124,7 @@ if $EXCLUSIVE_MODE; then
     INSTALL_VIETNAMESE=false
 
     INSTALL_VSCODE=false
+    INSTALL_REMOTE=false
 
 fi
 
@@ -137,6 +140,7 @@ for arg in "$@"; do
             INSTALL_APPS=true
             INSTALL_EASYEFFECTS=true
             INSTALL_VSCODE=true
+            INSTALL_REMOTE=true
 
             ;;
         --terminal)           INSTALL_TERMINAL=true ;;
@@ -150,6 +154,7 @@ for arg in "$@"; do
         --onedrive)           INSTALL_ONEDRIVE=true ;;
         --vietnamese)         INSTALL_VIETNAMESE=true ;;
         --vscode)             INSTALL_VSCODE=true ;;
+        --remote)             INSTALL_REMOTE=true ;;
 
         # Skip Flags
         --skip-terminal)      INSTALL_TERMINAL=false ;;
@@ -161,6 +166,7 @@ for arg in "$@"; do
         --skip-easyeffects)   INSTALL_EASYEFFECTS=false ;;
         --skip-dns)           INSTALL_DNS=false ;;
         --skip-vscode)        INSTALL_VSCODE=false ;;
+        --skip-remote)        INSTALL_REMOTE=false ;;
 
         # Other
         --help|-h)            show_help ;;
@@ -274,6 +280,14 @@ if $INSTALL_VSCODE; then
     bash "$SCRIPTS_DIR/vscode_setup.sh"
 elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping VS Code setup"
+fi
+
+# 12. Remote Access Setup
+if $INSTALL_REMOTE; then
+    log_section "Running Remote Access Setup..."
+    bash "$SCRIPTS_DIR/remote_access_setup.sh"
+elif ! $EXCLUSIVE_MODE; then
+    log_warn "Skipping remote access setup"
 fi
 
 # =============================================================================

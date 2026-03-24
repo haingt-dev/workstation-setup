@@ -69,6 +69,8 @@ Options:
   --onedrive          Setup OneDrive (multiple accounts)
   --vietnamese        Install Vietnamese input method
   --obs               Setup OBS Studio
+  --remote            Remote access (Tailscale, SSH, WoL)
+  --skip-remote       Skip remote access setup
   --help              Show help message
 
 Exclusive Mode (Run ONLY specific components):
@@ -116,7 +118,8 @@ Examples:
     ├── easyeffects_setup.sh    # EasyEffects audio presets
     ├── dns_setup.sh            # DNS configuration
     ├── input_setup.sh          # Vietnamese input method
-    └── agent_setup.sh          # Agent Hub setup (clones from GitHub)
+    ├── agent_setup.sh          # Agent Hub setup (clones from GitHub)
+    └── remote_access_setup.sh  # Remote access (Tailscale, SSH, WoL)
 ```
 
 ## What Gets Installed
@@ -196,6 +199,39 @@ cat → bat                       # Syntax highlighted cat
 lg  → lazygit                   # Git TUI
 y   → yazi                      # File manager (cd on exit)
 z   → zoxide                    # Smart directory jumping
+```
+
+### Remote Access Setup (`remote_access_setup.sh`)
+
+iPad Pro M2 as mobile workstation — remote into home PC from anywhere:
+
+**Services**:
+- OpenSSH server (enabled, port 22)
+- Tailscale (mesh VPN — no port forwarding needed)
+- Wake-on-LAN (ethtool on Realtek 2.5G, persistent via NetworkManager)
+- tmux for session persistence (survives SSH disconnects)
+
+**Hardware**: ASUS TUF B650M-E WIFI, Ethernet `eno1`
+
+**BIOS Setup** (manual, one-time):
+- Delete → Advanced → APM Configuration
+- `Restore AC Power Loss` = Power On (for smart plug remote boot)
+- `Power On By PCI-E` = Enabled (for Wake-on-LAN)
+
+**iPad Apps**:
+- Tailscale (free) — same account, auto-connects
+- Termius (free) — SSH client + tmux for session persistence
+- Working Copy ($25) — Obsidian Git sync + offline code
+
+**Usage**:
+```bash
+# From iPad (Termius)
+ssh haint@100.86.91.49     # Tailscale IP — works from anywhere
+tmux new -s work           # Start persistent session
+# If disconnected → reconnect SSH → tmux attach -t work
+
+# Shutdown PC remotely when done
+sudo shutdown -h now
 ```
 
 ### Other Components
