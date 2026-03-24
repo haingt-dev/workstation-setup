@@ -106,7 +106,7 @@ run_core_setup() {
 
     # 1. System Update
     log_section "Updating system..."
-    sudo dnf update -y
+    run_sudo dnf update -y
     log_success "System updated"
 
     # 2. Install Core Packages
@@ -133,7 +133,10 @@ run_core_setup() {
         log_success "Starship installed via dnf"
     else
         log_warn "Starship not in repos, installing via official script..."
-        curl -sS https://starship.rs/install.sh | sh -s -- -y
+        STARSHIP_SCRIPT=$(mktemp)
+        curl -sS https://starship.rs/install.sh -o "$STARSHIP_SCRIPT"
+        sh "$STARSHIP_SCRIPT" -y
+        rm -f "$STARSHIP_SCRIPT"
         log_success "Starship installed via official script"
     fi
 
@@ -143,7 +146,10 @@ run_core_setup() {
         log_success "Atuin installed via dnf"
     else
         log_warn "Atuin not in repos, installing via official script..."
-        curl --proto '=https' --tlsv1.2 -sSf https://setup.atuin.sh | bash
+        ATUIN_SCRIPT=$(mktemp)
+        curl --proto '=https' --tlsv1.2 -sSf https://setup.atuin.sh -o "$ATUIN_SCRIPT"
+        bash "$ATUIN_SCRIPT"
+        rm -f "$ATUIN_SCRIPT"
         log_success "Atuin installed via official script"
     fi
 
@@ -192,49 +198,29 @@ run_core_setup() {
     fi
 
     # .bashrc
-    if [[ -f "$BACKUP_DIR/.bashrc" ]]; then
-        cp -f "$BACKUP_DIR/.bashrc" ~/
-        log_success ".bashrc installed"
-    fi
+    restore_file ".bashrc" ~/.bashrc
 
     # .gitconfig
-    if [[ -f "$BACKUP_DIR/.gitconfig" ]]; then
-        cp -f "$BACKUP_DIR/.gitconfig" ~/
-        log_success ".gitconfig installed"
-    fi
+    restore_file ".gitconfig" ~/.gitconfig
 
     # 7. Restore .config directories (overwrite without backup)
     log_section "Restoring .config directories..."
     ensure_dir ~/.config
 
     # starship config
-    if [[ -f "$BACKUP_DIR/.config/starship/starship.toml" ]]; then
-        ensure_dir ~/.config/starship
-        cp -f "$BACKUP_DIR/.config/starship/starship.toml" ~/.config/starship/
-        log_success "starship.toml installed"
-    fi
+    restore_file ".config/starship/starship.toml" ~/.config/starship/starship.toml
 
     # atuin config
-    if [[ -d "$BACKUP_DIR/.config/atuin" ]]; then
-        copy_dir "$BACKUP_DIR/.config/atuin" ~/.config/atuin
-    fi
+    restore_dir ".config/atuin" ~/.config/atuin
 
     # fastfetch config
-    if [[ -d "$BACKUP_DIR/.config/fastfetch" ]]; then
-        copy_dir "$BACKUP_DIR/.config/fastfetch" ~/.config/fastfetch
-    fi
+    restore_dir ".config/fastfetch" ~/.config/fastfetch
 
     # fastfetch custom logo
-    if [[ -f "$BACKUP_DIR/images/jedi.png" ]]; then
-        ensure_dir ~/.config/fastfetch/assets
-        cp -f "$BACKUP_DIR/images/jedi.png" ~/.config/fastfetch/assets/
-        log_success "fastfetch custom logo installed"
-    fi
+    restore_file "images/jedi.png" ~/.config/fastfetch/assets/jedi.png
 
     # fish config (if present)
-    if [[ -d "$BACKUP_DIR/.config/fish" ]]; then
-        copy_dir "$BACKUP_DIR/.config/fish" ~/.config/fish
-    fi
+    restore_dir ".config/fish" ~/.config/fish
 
     # kitty config
     if [[ -d "$BACKUP_DIR/.config/kitty" ]]; then
@@ -250,11 +236,7 @@ run_core_setup() {
     configure_gnome_kitty_shortcut
 
     # tmux config
-    if [[ -f "$BACKUP_DIR/.config/tmux/tmux.conf" ]]; then
-        ensure_dir ~/.config/tmux
-        cp -f "$BACKUP_DIR/.config/tmux/tmux.conf" ~/.config/tmux/
-        log_success "tmux.conf installed"
-    fi
+    restore_file ".config/tmux/tmux.conf" ~/.config/tmux/tmux.conf
 
     # 8. Install Fonts
     log_section "Installing fonts..."
@@ -314,9 +296,9 @@ install_power_tools() {
     if check_command lazygit; then
         log_success "Lazygit already installed"
     else
-        if ! sudo dnf copr list | grep -q "atim/lazygit"; then
+        if ! run_sudo dnf copr list | grep -q "atim/lazygit"; then
             log_info "Adding Lazygit COPR repository..."
-            sudo dnf copr enable atim/lazygit -y
+            run_sudo dnf copr enable atim/lazygit -y
         fi
         dnf_install lazygit
         log_success "Lazygit installed"
@@ -366,14 +348,10 @@ install_power_tools() {
     log_section "Installing tool configurations..."
 
     # Copy yazi config
-    if [[ -d "$BACKUP_DIR/.config/yazi" ]]; then
-        copy_dir "$BACKUP_DIR/.config/yazi" ~/.config/yazi
-    fi
+    restore_dir ".config/yazi" ~/.config/yazi
 
     # Copy bat config
-    if [[ -d "$BACKUP_DIR/.config/bat" ]]; then
-        copy_dir "$BACKUP_DIR/.config/bat" ~/.config/bat
-    fi
+    restore_dir ".config/bat" ~/.config/bat
 
     # 6. Post-installation Setup
     log_section "Post-installation setup..."

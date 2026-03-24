@@ -38,12 +38,7 @@ log_success "OBS Studio installed"
 # =============================================================================
 log_section "Restoring OBS configuration..."
 
-if [[ -d "$BACKUP_DIR/obs-studio" ]]; then
-    ensure_dir "$OBS_CONFIG_DIR"
-    cp -r "$BACKUP_DIR/obs-studio/"* "$OBS_CONFIG_DIR/"
-    log_success "Configuration restored to $OBS_CONFIG_DIR"
-else
-    log_warn "No OBS config backup found in $BACKUP_DIR/obs-studio"
+if ! restore_dir "obs-studio" "$OBS_CONFIG_DIR"; then
     log_info "Skipping configuration restore"
 fi
 

@@ -20,10 +20,10 @@ if ! rpm -q code &>/dev/null; then
     log_info "Adding Microsoft VS Code repository..."
 
     # Import Microsoft GPG key
-    sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
+    run_sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
 
     # Add the repository
-    echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" | sudo tee /etc/yum.repos.d/vscode.repo > /dev/null
+    echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" | run_sudo tee /etc/yum.repos.d/vscode.repo > /dev/null
 
     # Install VS Code
     dnf_install code

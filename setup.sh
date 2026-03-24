@@ -101,8 +101,7 @@ show_help() {
 EXCLUSIVE_MODE=false
 for arg in "$@"; do
     case $arg in
-        --full|--terminal|--agent|--qdrant|--godot|--apps|--obs|--easyeffects|--dns|--onedrive|--vietnamese|--vscode|--remote)
-
+        --terminal|--agent|--qdrant|--godot|--apps|--obs|--easyeffects|--dns|--onedrive|--vietnamese|--vscode|--remote)
             EXCLUSIVE_MODE=true
             break
             ;;
@@ -138,7 +137,11 @@ for arg in "$@"; do
             INSTALL_QDRANT=true
             INSTALL_GODOT=true
             INSTALL_APPS=true
+            INSTALL_OBS=true
             INSTALL_EASYEFFECTS=true
+            INSTALL_DNS=true
+            INSTALL_ONEDRIVE=true
+            INSTALL_VIETNAMESE=true
             INSTALL_VSCODE=true
             INSTALL_REMOTE=true
 
@@ -266,12 +269,16 @@ fi
 if $INSTALL_VIETNAMESE; then
     log_section "Running Vietnamese Input Setup..."
     bash "$SCRIPTS_DIR/input_setup.sh"
+elif ! $EXCLUSIVE_MODE; then
+    log_warn "Skipping Vietnamese input setup"
 fi
 
 # 10. OneDrive Setup
 if $INSTALL_ONEDRIVE; then
     log_section "Running OneDrive Setup..."
     bash "$SCRIPTS_DIR/onedrive_setup.sh"
+elif ! $EXCLUSIVE_MODE; then
+    log_warn "Skipping OneDrive setup"
 fi
 
 # 11. VS Code Setup
@@ -298,8 +305,12 @@ echo -e "${GREEN}${BOLD}╔═════════════════�
 echo -e "${GREEN}${BOLD}║                    Setup Complete!                           ║${NC}"
 echo -e "${GREEN}${BOLD}╚══════════════════════════════════════════════════════════════╝${NC}"
 echo ""
-echo "Please log out and log back in for the shell change to take effect."
-echo "Then open a new terminal to enjoy your restored setup!"
+if $INSTALL_TERMINAL; then
+    echo "Please log out and log back in for the shell change to take effect."
+    echo "Then open a new terminal to enjoy your restored setup!"
+else
+    echo "Setup finished. Check component-specific notes above."
+fi
 echo ""
 
 if $INSTALL_QDRANT; then

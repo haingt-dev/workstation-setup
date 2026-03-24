@@ -29,7 +29,7 @@ Automated workstation setup for Nobara 42 / Fedora — terminal, dev tools, apps
 - **Audio Processing**: EasyEffects with pre-tuned presets
 - **DNS**: Cloudflare Block Malware configuration
 - **OBS Studio**: Recording and streaming software (Flatpak)
-- **Vietnamese Input**: ibus-bamboo for Vietnamese typing
+- **Vietnamese Input**: fcitx5-unikey for Vietnamese typing
 
 ## Quick Start
 
@@ -93,6 +93,7 @@ Examples:
 ```
 .
 ├── setup.sh                    # Master orchestrator script
+├── TERMINAL_CAPABILITIES.md    # Terminal features & shortcuts guide
 ├── assets/                     # Configuration data (source of truth)
 │   ├── .zshrc                  # Zsh configuration
 │   ├── .bashrc                 # Bash configuration
@@ -243,7 +244,7 @@ sudo shutdown -h now
 - **OneDrive**: Multi-account sync with systemd services
 - **EasyEffects**: Audio presets for speakers/headsets
 - **DNS**: Cloudflare Block Malware (1.1.1.2/1.0.0.2)
-- **Vietnamese Input**: ibus-bamboo (auto-configured as default input source)
+- **Vietnamese Input**: fcitx5-unikey (auto-configured with Super+Space trigger)
 
 ## Post-Setup Steps
 

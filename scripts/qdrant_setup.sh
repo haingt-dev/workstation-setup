@@ -82,7 +82,11 @@ log_success "Systemd user daemon reloaded"
 
 # Enable and start Qdrant service
 systemctl --user enable --now qdrant
-log_success "Qdrant service enabled and started"
+if systemctl --user is-active --quiet qdrant; then
+    log_success "Qdrant service enabled and running"
+else
+    log_warn "Qdrant service enabled but not yet active — check: systemctl --user status qdrant"
+fi
 
 # Enable lingering so service starts on boot without login
 loginctl enable-linger "$USER"

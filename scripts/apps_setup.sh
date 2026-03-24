@@ -45,7 +45,7 @@ fi
 
 if ! dnf repolist 2>/dev/null | grep -q google-chrome; then
     dnf_install fedora-workstation-repositories
-    sudo dnf config-manager setopt google-chrome.enabled=1
+    run_sudo dnf config-manager setopt google-chrome.enabled=1
 fi
 dnf_install google-chrome-stable
 log_success "Google Chrome installed"
@@ -121,7 +121,7 @@ OBSIDIAN_APPIMAGE="$OBSIDIAN_DIR/Obsidian.AppImage"
 mkdir -p "$OBSIDIAN_DIR"
 
 # Fetch latest AppImage URL (x86_64, not arm64)
-OBSIDIAN_URL=$(curl -sL https://api.github.com/repos/obsidianmd/obsidian-releases/releases/latest \
+OBSIDIAN_URL=$(curl -sfL https://api.github.com/repos/obsidianmd/obsidian-releases/releases/latest \
     | grep -oP '"browser_download_url": "\K[^"]*\.AppImage(?=")' \
     | grep -v arm64)
 

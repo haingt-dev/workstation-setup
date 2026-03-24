@@ -20,6 +20,8 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
+check_not_root
+
 log_section "Remote Access Setup"
 
 # =============================================================================
@@ -33,7 +35,7 @@ else
     log_success "openssh-server already installed"
 fi
 
-sudo systemctl enable --now sshd
+run_sudo systemctl enable --now sshd
 log_success "SSH server enabled and started"
 
 # =============================================================================
@@ -43,21 +45,25 @@ log_info "Setting up Tailscale..."
 
 if ! check_command tailscale; then
     # Official Tailscale install for Fedora/Nobara
-    sudo dnf config-manager addrepo --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo
+    run_sudo dnf config-manager addrepo --from-repofile=https://pkgs.tailscale.com/stable/fedora/tailscale.repo
     dnf_install tailscale
     log_success "Tailscale installed"
 else
     log_success "Tailscale already installed"
 fi
 
-sudo systemctl enable --now tailscaled
-log_success "Tailscale daemon enabled and started"
+run_sudo systemctl enable --now tailscaled
+if systemctl is-active --quiet tailscaled; then
+    log_success "Tailscale daemon enabled and running"
+else
+    log_warn "Tailscale daemon enabled but not yet active — check: systemctl status tailscaled"
+fi
 
 # Add tailscale0 to trusted firewall zone (allow all tailnet traffic)
 if check_command firewall-cmd; then
-    if ! sudo firewall-cmd --zone=trusted --list-interfaces 2>/dev/null | grep -q tailscale0; then
-        sudo firewall-cmd --zone=trusted --add-interface=tailscale0 --permanent
-        sudo firewall-cmd --reload
+    if ! run_sudo firewall-cmd --zone=trusted --list-interfaces 2>/dev/null | grep -q tailscale0; then
+        run_sudo firewall-cmd --zone=trusted --add-interface=tailscale0 --permanent
+        run_sudo firewall-cmd --reload
         log_success "Firewall: tailscale0 added to trusted zone"
     else
         log_success "Firewall: tailscale0 already in trusted zone"
@@ -91,7 +97,7 @@ ETH_IFACE=$(ip -o link show | awk -F': ' '{print $2}' | grep -E '^en' | head -1)
 
 if [[ -n "$ETH_IFACE" ]]; then
     # Enable WoL on the interface
-    sudo ethtool -s "$ETH_IFACE" wol g 2>/dev/null && \
+    run_sudo ethtool -s "$ETH_IFACE" wol g 2>/dev/null && \
         log_success "WoL enabled on $ETH_IFACE (magic packet)" || \
         log_warn "Could not enable WoL on $ETH_IFACE (check BIOS: Power On By PCI-E = Enabled)"
 

@@ -3,8 +3,13 @@
 # dns_setup.sh - Configure DNS to Cloudflare Block Malware
 # =============================================================================
 
+set -e
+
 # Source common utilities
-source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/common.sh"
+
+check_not_root
 
 # =============================================================================
 # Main Logic

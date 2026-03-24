@@ -20,14 +20,14 @@ PROFILE_FILE="$HOME/.profile"
 # Remove ibus-bamboo OBS repo if present
 if [ -f /etc/yum.repos.d/ibus-bamboo.repo ]; then
     log_info "Removing old ibus-bamboo repository..."
-    sudo rm -f /etc/yum.repos.d/ibus-bamboo.repo
+    run_sudo rm -f /etc/yum.repos.d/ibus-bamboo.repo
     log_success "Removed ibus-bamboo.repo"
 fi
 
 # Remove ibus-bamboo package if installed
 if rpm -q ibus-bamboo &>/dev/null; then
     log_info "Removing ibus-bamboo package..."
-    sudo dnf remove -y ibus-bamboo
+    run_sudo dnf remove -y ibus-bamboo
     log_success "Removed ibus-bamboo"
 fi
 

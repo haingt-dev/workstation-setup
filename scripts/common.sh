@@ -105,6 +105,42 @@ copy_dir() {
     log_success "Copied directory: $src -> $dest"
 }
 
+# Restore a file from backup dir. Usage: restore_file "relative/path" "dest"
+# Returns 0 on success, 1 if backup not found (with warning).
+restore_file() {
+    local rel_path="$1"
+    local dest="$2"
+    local src="$BACKUP_DIR/$rel_path"
+
+    if [[ -f "$src" ]]; then
+        ensure_dir "$(dirname "$dest")"
+        cp -f "$src" "$dest"
+        log_success "Restored: $rel_path"
+        return 0
+    else
+        log_warn "Backup not found: $rel_path"
+        return 1
+    fi
+}
+
+# Restore a directory from backup dir. Usage: restore_dir "relative/path" "dest"
+# Returns 0 on success, 1 if backup not found (with warning).
+restore_dir() {
+    local rel_path="$1"
+    local dest="$2"
+    local src="$BACKUP_DIR/$rel_path"
+
+    if [[ -d "$src" ]]; then
+        ensure_dir "$dest"
+        cp -r "$src"/* "$dest"/ 2>/dev/null || true
+        log_success "Restored: $rel_path"
+        return 0
+    else
+        log_warn "Backup not found: $rel_path"
+        return 1
+    fi
+}
+
 # =============================================================================
 # Export for sourcing
 # =============================================================================
