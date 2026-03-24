@@ -98,11 +98,6 @@ log_info "Installing Discord..."
 flatpak install -y flathub com.discordapp.Discord
 log_success "Discord installed"
 
-# Obsidian
-log_info "Installing Obsidian..."
-flatpak install -y flathub md.obsidian.Obsidian
-log_success "Obsidian installed"
-
 # Anki
 log_info "Installing Anki..."
 flatpak install -y flathub net.ankiweb.Anki
@@ -117,6 +112,53 @@ flatpak override --user com.todoist.Todoist \
 log_success "Todoist installed"
 
 # =============================================================================
+# Obsidian (AppImage)
+# =============================================================================
+log_section "Installing Obsidian (AppImage)..."
+
+OBSIDIAN_DIR="$HOME/Applications"
+OBSIDIAN_APPIMAGE="$OBSIDIAN_DIR/Obsidian.AppImage"
+mkdir -p "$OBSIDIAN_DIR"
+
+# Fetch latest AppImage URL (x86_64, not arm64)
+OBSIDIAN_URL=$(curl -sL https://api.github.com/repos/obsidianmd/obsidian-releases/releases/latest \
+    | grep -oP '"browser_download_url": "\K[^"]*\.AppImage(?=")' \
+    | grep -v arm64)
+
+if [ -z "$OBSIDIAN_URL" ]; then
+    log_error "Failed to fetch Obsidian download URL"
+else
+    log_info "Downloading from: $OBSIDIAN_URL"
+    curl -L "$OBSIDIAN_URL" -o "$OBSIDIAN_APPIMAGE"
+    chmod +x "$OBSIDIAN_APPIMAGE"
+
+    # Extract icon from AppImage (the root obsidian.png is a symlink, extract the real file)
+    EXTRACT_DIR=$(mktemp -d)
+    (cd "$EXTRACT_DIR" && "$OBSIDIAN_APPIMAGE" --appimage-extract "usr/share/icons/hicolor/512x512/apps/obsidian.png" 2>/dev/null) || true
+    ICON_FILE="$EXTRACT_DIR/squashfs-root/usr/share/icons/hicolor/512x512/apps/obsidian.png"
+    if [ -f "$ICON_FILE" ]; then
+        mkdir -p "$HOME/.local/share/icons"
+        cp "$ICON_FILE" "$HOME/.local/share/icons/obsidian.png"
+    fi
+    rm -rf "$EXTRACT_DIR"
+
+    # Create desktop entry
+    mkdir -p "$HOME/.local/share/applications"
+    cat > "$HOME/.local/share/applications/obsidian.desktop" << DESKTOP_EOF
+[Desktop Entry]
+Name=Obsidian
+Exec=$OBSIDIAN_APPIMAGE %u
+Icon=obsidian
+Type=Application
+Categories=Office;
+MimeType=x-scheme-handler/obsidian;
+Comment=Knowledge base
+DESKTOP_EOF
+
+    log_success "Obsidian AppImage installed to $OBSIDIAN_APPIMAGE"
+fi
+
+# =============================================================================
 # Summary
 # =============================================================================
 log_section "Additional Applications Installation Complete!"
@@ -128,6 +170,6 @@ echo "  - Dropbox (DNF)"
 echo "  - Calibre (DNF)"
 echo "  - VLC (DNF)"
 echo "  - Discord (Flatpak)"
-echo "  - Obsidian (Flatpak)"
+echo "  - Obsidian (AppImage)"
 echo "  - Anki (Flatpak)"
 echo "  - Todoist (Flatpak)"
