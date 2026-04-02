@@ -1,6 +1,7 @@
 ---
 name: validate
-description: Dry-run prerequisite check for system setup (read-only, no changes)
+description: "Dry-run prerequisite check for system setup"
+disable-model-invocation: false
 argument-hint: "[component name]"
 allowed-tools: Read, Bash
 ---

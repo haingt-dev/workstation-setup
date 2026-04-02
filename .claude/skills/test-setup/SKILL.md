@@ -1,6 +1,7 @@
 ---
 name: test-setup
-description: Trace setup.sh execution without running it — dry-run analysis
+description: "Dry-run trace of setup.sh execution"
+disable-model-invocation: false
 argument-hint: "[--terminal|--godot|component]"
 allowed-tools: Read
 ---
