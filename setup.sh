@@ -62,7 +62,7 @@ show_help() {
     echo "  --agent             Agent system setup (Agent Global Hub, Claude integration) ⭐ NEW"
     echo "  --qdrant            Qdrant setup"
     echo "  --godot             Godot setup"
-    echo "  --apps              Additional apps (Chrome, Dropbox, Flatpaks)"
+    echo "  --apps              Additional apps (Chrome, Flatpaks)"
     echo "  --obs               OBS Studio setup"
     echo "  --easyeffects       EasyEffects audio setup"
     echo "  --dns               DNS setup (Cloudflare Block Malware)"

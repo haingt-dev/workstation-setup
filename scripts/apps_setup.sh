@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# apps_setup.sh - Additional applications (Chrome, Dropbox, Flatpaks)
+# apps_setup.sh - Additional applications (Chrome, Flatpaks)
 # =============================================================================
 
 set -e
@@ -49,14 +49,6 @@ if ! dnf repolist 2>/dev/null | grep -q google-chrome; then
 fi
 dnf_install google-chrome-stable
 log_success "Google Chrome installed"
-
-# =============================================================================
-# Dropbox
-# =============================================================================
-log_section "Installing Dropbox..."
-
-dnf_install dropbox nautilus-dropbox
-log_success "Dropbox installed"
 
 # =============================================================================
 # Calibre
@@ -166,7 +158,6 @@ echo ""
 echo "Installed applications:"
 echo "  - Firefox (DNF)"
 echo "  - Google Chrome (DNF)"
-echo "  - Dropbox (DNF)"
 echo "  - Calibre (DNF)"
 echo "  - VLC (DNF)"
 echo "  - Discord (Flatpak)"
