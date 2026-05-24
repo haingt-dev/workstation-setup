@@ -1,0 +1,25 @@
+# Cross-project symlinks declarative manifest
+# Source of truth for workspace-wide symlinks. Restore via scripts/restore_symlinks.sh
+# Audit drift via scripts/audit_symlinks.sh
+#
+# Format:
+#   link: path to create the symlink (will be created)
+#   target: path the symlink points to (must exist when restore runs)
+#   note: optional context for humans
+
+links:
+  # IronCradle docs ↔ Obsidian vault PARA project
+  - link: ~/Projects/IronCradle/docs/gdd
+    target: ~/Projects/Idea_Vault/20 Projects/Iron Cradle
+    note: Game Design Doc lives in vault; IronCradle references via docs/gdd/
+
+  - link: ~/Projects/IronCradle/docs/concept-art
+    target: ~/Projects/Idea_Vault/20 Projects/Iron Cradle/concept-art
+    note: Concept art folder shortcut
+
+  # Examples (uncomment when applicable):
+  # - link: ~/Projects/digital-identity/finance
+  #   target: ~/Projects/Idea_Vault/20 Projects/Finance
+  #
+  # - link: ~/Projects/digital-identity/health
+  #   target: ~/Projects/Idea_Vault/20 Projects/Health

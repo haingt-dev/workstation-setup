@@ -2,6 +2,13 @@
 # =============================================================================
 # godot_setup.sh - Godot Engine installation and configuration
 # =============================================================================
+#
+# Usage:
+#   ./godot_setup.sh                          # Auto-detect zip in ~/Downloads
+#   ./godot_setup.sh --version 4.6-stable     # Auto-download specified version
+#   ./godot_setup.sh --from-project <path>    # Read version from <path>/.godot-version
+#   ./godot_setup.sh --uninstall              # Remove Godot binary + desktop entry
+# =============================================================================
 
 set -e
 
@@ -17,10 +24,35 @@ GODOT_INSTALL_DIR="$HOME/.local/bin"
 GODOT_CONFIG_DIR="$HOME/.config/godot"
 DOWNLOADS_DIR="$HOME/Downloads"
 
+# Argument parsing
+EXPLICIT_VERSION=""
+FROM_PROJECT=""
+ACTION="install"
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --uninstall)
+            ACTION="uninstall"
+            shift
+            ;;
+        --version)
+            EXPLICIT_VERSION="$2"
+            shift 2
+            ;;
+        --from-project)
+            FROM_PROJECT="$2"
+            shift 2
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
 # =============================================================================
 # Handle Uninstall
 # =============================================================================
-if [[ "$1" == "--uninstall" ]]; then
+if [[ "$ACTION" == "uninstall" ]]; then
     log_section "Uninstalling Godot..."
     rm -f "$GODOT_INSTALL_DIR/godot"
     rm -f "$HOME/.local/share/applications/godot.desktop"
@@ -29,20 +61,90 @@ if [[ "$1" == "--uninstall" ]]; then
 fi
 
 # =============================================================================
-# Auto-detect Godot zip in ~/Downloads
+# Resolve target version from --from-project flag
 # =============================================================================
-log_section "Searching for Godot zip in $DOWNLOADS_DIR..."
+if [[ -n "$FROM_PROJECT" ]]; then
+    VERSION_FILE="$FROM_PROJECT/.godot-version"
+    if [[ ! -f "$VERSION_FILE" ]]; then
+        log_error "No .godot-version found in $FROM_PROJECT"
+        exit 1
+    fi
+    # Read version, normalize to GitHub release tag format
+    # Accepts:
+    #   "4.6"                   → "4.6-stable"
+    #   "4.6.stable"            → "4.6-stable"
+    #   "4.6.stable.official"   → "4.6-stable"
+    #   "4.6.1-rc2"             → "4.6.1-rc2" (passthrough)
+    RAW=$(head -1 "$VERSION_FILE" | tr -d '[:space:]')
+    if [[ "$RAW" =~ ^([0-9]+\.[0-9]+(\.[0-9]+)?)(\.([a-z]+)(\..*)?)?$ ]]; then
+        BASE="${BASH_REMATCH[1]}"
+        CHANNEL="${BASH_REMATCH[4]:-stable}"
+        EXPLICIT_VERSION="${BASE}-${CHANNEL}"
+    else
+        # Already in tag-style format like "4.6.1-rc2"
+        EXPLICIT_VERSION="$RAW"
+    fi
+    log_info "From project: read '$RAW' → resolved download version '$EXPLICIT_VERSION'"
+fi
 
-# Find the most recently modified Godot zip
-GODOT_ZIP_PATH=$(find "$DOWNLOADS_DIR" -maxdepth 1 -name "Godot_v*_linux.x86_64.zip" -type f -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
+# =============================================================================
+# Check if already installed at correct version
+# =============================================================================
+if [[ -n "$EXPLICIT_VERSION" ]] && [[ -f "$GODOT_INSTALL_DIR/godot" ]]; then
+    CURRENT=$("$GODOT_INSTALL_DIR/godot" --version 2>/dev/null | head -1)
+    # Match "4.6.stable.official.xxx" vs requested "4.6-stable"
+    REQ_BASE=$(echo "$EXPLICIT_VERSION" | sed -E 's/-/.${0:+0}/' | sed -E 's/-/./g')
+    # Simpler check: substring match e.g., "4.6.stable" should appear in current version
+    REQ_PATTERN=$(echo "$EXPLICIT_VERSION" | sed -E 's/-/.*/')
+    if echo "$CURRENT" | grep -qE "$REQ_PATTERN"; then
+        log_success "Godot already at requested version: $CURRENT"
+        log_info "(skip install — use --uninstall first to force reinstall)"
+        exit 0
+    else
+        log_warn "Version mismatch: installed=$CURRENT, requested=$EXPLICIT_VERSION"
+    fi
+fi
 
-if [[ -z "$GODOT_ZIP_PATH" ]]; then
-    log_error "No Godot zip found in $DOWNLOADS_DIR"
-    echo "  Expected pattern: Godot_v*_linux.x86_64.zip"
-    echo ""
-    echo "  Download Godot from: https://godotengine.org/download/linux/"
-    echo "  Place the zip in $DOWNLOADS_DIR and re-run this script."
-    exit 1
+# =============================================================================
+# Auto-download if version explicit
+# =============================================================================
+GODOT_ZIP_PATH=""
+if [[ -n "$EXPLICIT_VERSION" ]]; then
+    ZIP_NAME="Godot_v${EXPLICIT_VERSION}_linux.x86_64.zip"
+    GODOT_ZIP_PATH="$DOWNLOADS_DIR/$ZIP_NAME"
+
+    if [[ ! -f "$GODOT_ZIP_PATH" ]]; then
+        log_section "Downloading Godot $EXPLICIT_VERSION..."
+        ensure_dir "$DOWNLOADS_DIR"
+        URL="https://github.com/godotengine/godot/releases/download/${EXPLICIT_VERSION}/${ZIP_NAME}"
+        log_info "URL: $URL"
+        if ! curl -fL -o "$GODOT_ZIP_PATH" "$URL"; then
+            log_error "Download failed. Verify version on https://github.com/godotengine/godot/releases"
+            rm -f "$GODOT_ZIP_PATH"
+            exit 1
+        fi
+        log_success "Downloaded to $GODOT_ZIP_PATH"
+    else
+        log_success "Using existing download: $GODOT_ZIP_PATH"
+    fi
+else
+    # =============================================================================
+    # Fallback: Auto-detect Godot zip in ~/Downloads
+    # =============================================================================
+    log_section "Searching for Godot zip in $DOWNLOADS_DIR..."
+
+    GODOT_ZIP_PATH=$(find "$DOWNLOADS_DIR" -maxdepth 1 -name "Godot_v*_linux.x86_64.zip" -type f -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
+
+    if [[ -z "$GODOT_ZIP_PATH" ]]; then
+        log_error "No Godot zip found in $DOWNLOADS_DIR"
+        echo "  Expected pattern: Godot_v*_linux.x86_64.zip"
+        echo ""
+        echo "  Options:"
+        echo "    1. Download from: https://godotengine.org/download/linux/"
+        echo "    2. Re-run with: --version 4.6-stable (auto-download)"
+        echo "    3. Re-run with: --from-project <path> (read .godot-version)"
+        exit 1
+    fi
 fi
 
 GODOT_ZIP=$(basename "$GODOT_ZIP_PATH")
