@@ -123,6 +123,11 @@ run_core_setup() {
         podman
         podman-compose
         tmux
+        gh
+        gnupg2
+        rclone
+        cronie
+        sqlite
     )
     dnf_install "${CORE_PACKAGES[@]}"
     log_success "Core packages installed"
