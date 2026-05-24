@@ -53,6 +53,35 @@ fi
 # ─────────────────────────────────────────────────────────────
 # gh CLI hosts.yml + oauth token (token via keyring or fallback)
 # ─────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────
+# Recovery self-files (bundle.pass, bundle.conf, rclone.conf)
+# Without these, restored cron fires but fails — circular dependency broken
+# ─────────────────────────────────────────────────────────────
+if [[ -d "$SECRETS/recovery-self" ]]; then
+    log_info "Restoring recovery self-files (cron will work post-restore)"
+    if $DRY_RUN; then
+        log_info "[DRY-RUN] would restore bundle.pass, bundle.conf, rclone.conf"
+    else
+        mkdir -p "$HOME/.config/recovery" "$HOME/.config/rclone"
+        for f in "$SECRETS/recovery-self/"*; do
+            [[ -f "$f" ]] || continue
+            name=$(basename "$f")
+            case "$name" in
+                rclone.conf)
+                    /bin/cp "$f" "$HOME/.config/rclone/rclone.conf"
+                    chmod 600 "$HOME/.config/rclone/rclone.conf"
+                    log_success "  rclone.conf (OneDrive token preserved)"
+                    ;;
+                bundle.pass|bundle.conf)
+                    /bin/cp "$f" "$HOME/.config/recovery/$name"
+                    chmod 600 "$HOME/.config/recovery/$name"
+                    log_success "  recovery/$name"
+                    ;;
+            esac
+        done
+    fi
+fi
+
 if [[ -f "$SECRETS/gh-hosts.yml" ]]; then
     log_info "Restoring gh CLI config"
     if $DRY_RUN; then

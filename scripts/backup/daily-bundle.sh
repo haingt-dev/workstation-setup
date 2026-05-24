@@ -123,6 +123,18 @@ if [[ -f "$HOME/.config/gh/hosts.yml" ]]; then
     success "  gh CLI hosts (config only — token in keyring)"
 fi
 
+# Recovery system self-files (bundle.pass + bundle.conf + rclone.conf)
+# CRITICAL: without these, restored cron will fire but daily-bundle fails
+mkdir -p "$STAGE/secrets/recovery-self"
+for f in "$HOME/.config/recovery/bundle.pass" \
+         "$HOME/.config/recovery/bundle.conf" \
+         "$HOME/.config/rclone/rclone.conf"; do
+    if [[ -f "$f" ]]; then
+        /bin/cp "$f" "$STAGE/secrets/recovery-self/$(basename "$f")"
+        success "  recovery-self/$(basename "$f")"
+    fi
+done
+
 # Extract gh oauth token from keyring → plain file (restored via `gh auth login --with-token`)
 if command -v gh >/dev/null && gh auth status >/dev/null 2>&1; then
     gh auth token > "$STAGE/secrets/gh-token" 2>/dev/null && {
