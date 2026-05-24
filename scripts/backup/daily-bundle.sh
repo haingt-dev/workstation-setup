@@ -120,7 +120,15 @@ fi
 
 if [[ -f "$HOME/.config/gh/hosts.yml" ]]; then
     /bin/cp "$HOME/.config/gh/hosts.yml" "$STAGE/secrets/gh-hosts.yml"
-    success "  gh CLI hosts (incl token)"
+    success "  gh CLI hosts (config only — token in keyring)"
+fi
+
+# Extract gh oauth token from keyring → plain file (restored via `gh auth login --with-token`)
+if command -v gh >/dev/null && gh auth status >/dev/null 2>&1; then
+    gh auth token > "$STAGE/secrets/gh-token" 2>/dev/null && {
+        chmod 600 "$STAGE/secrets/gh-token"
+        success "  gh oauth token (from keyring)"
+    }
 fi
 
 # ─────────────────────────────────────────────────────────────
@@ -135,8 +143,14 @@ CLAUDE_DST="$STAGE/claude"
 for item in CLAUDE.md core-memory.md brains settings.json config.json keybindings.json plans agents installed_plugins.json; do
     src="$CLAUDE_DIR/$item"
     if [[ -e "$src" ]]; then
-        /bin/cp -r "$src" "$CLAUDE_DST/"
-        success "  $item"
+        # -L: dereference symlinks so content survives even if symlink target
+        # (e.g., agent/global/CLAUDE.md) isn't restored yet
+        /bin/cp -rL "$src" "$CLAUDE_DST/"
+        if [[ -L "$src" ]]; then
+            success "  $item (dereferenced symlink → $(readlink "$src"))"
+        else
+            success "  $item"
+        fi
     fi
 done
 
@@ -153,9 +167,10 @@ if [[ -d "$CLAUDE_DIR/plugins" ]]; then
     log "  plugins/ — including cache for version pin..."
     tar czf "$CLAUDE_DST/plugins.tar.gz" -C "$CLAUDE_DIR" \
         --exclude='plugins/_logs' \
+        --exclude='plugins/cache/engram' \
         plugins 2>/dev/null || true
     sz=$(du -h "$CLAUDE_DST/plugins.tar.gz" | cut -f1)
-    success "  plugins.tar.gz ($sz)"
+    success "  plugins.tar.gz ($sz, engram excluded — reinstall from marketplace post-restore)"
 fi
 
 # ─────────────────────────────────────────────────────────────
@@ -240,14 +255,8 @@ if [[ -d "$HS" ]]; then
     done
 
     # Tar tier2 (exclude logs, cache, models, outputs, jellyfin-cache)
+    # --exclude must come BEFORE positional file args (GNU tar quirk)
     tar czf "$HS_DST/tier2-state.tar.gz" -C "$HS" \
-        forge/data/forge/config \
-        forge/data/forge/extensions \
-        forge/data/forge/embeddings \
-        sillytavern/data \
-        media/data \
-        dashboard/data \
-        dashboard/backups \
         --exclude='*/forge/models' \
         --exclude='*/forge/outputs' \
         --exclude='*/_cache' \
@@ -257,6 +266,13 @@ if [[ -d "$HS" ]]; then
         --exclude='*/logs' \
         --exclude='*/Logs' \
         --exclude='*/transcodes' \
+        forge/data/forge/config \
+        forge/data/forge/extensions \
+        forge/data/forge/embeddings \
+        sillytavern/data \
+        media/data \
+        dashboard/data \
+        dashboard/backups \
         2>/dev/null || true
     sz=$(du -h "$HS_DST/tier2-state.tar.gz" | cut -f1)
     success "    tier2-state.tar.gz ($sz)"
@@ -301,12 +317,12 @@ fi
 
 # VS Code User (settings, keybindings, snippets)
 if [[ -d "$HOME/.config/Code/User" ]]; then
-    tar czf "$IC_DST/vscode-user.tar.gz" -C "$HOME/.config/Code" User \
+    tar czf "$IC_DST/vscode-user.tar.gz" -C "$HOME/.config/Code" \
         --exclude='User/globalStorage' \
         --exclude='User/workspaceStorage' \
         --exclude='User/History' \
         --exclude='User/sync' \
-        2>/dev/null
+        User
     success "  vscode-user.tar.gz"
 fi
 

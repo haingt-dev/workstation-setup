@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Phase 7: Verify recovery + report manual steps remaining
-set -euo pipefail
+set -uo pipefail
+# No -e: per-check failures must continue scanning all checks before reporting
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$SCRIPT_DIR/common.sh"
@@ -17,10 +18,10 @@ check() {
     local desc="$1" cmd="$2"
     if eval "$cmd" >/dev/null 2>&1; then
         log_success "  $desc"
-        ((PASS++))
+        PASS=$((PASS + 1))
     else
         log_warn "  $desc"
-        ((FAIL++))
+        FAIL=$((FAIL + 1))
     fi
 }
 

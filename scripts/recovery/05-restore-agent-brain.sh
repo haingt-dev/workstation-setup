@@ -84,16 +84,27 @@ if [[ -f "$BRAIN_SRC" ]]; then
 fi
 
 # ─────────────────────────────────────────────────────────────
-# Symlinks: ~/.claude/skills → agent/global/skills
+# Symlinks: ~/.claude/{skills,brains,CLAUDE.md,settings.json} → agent/global/
+# (CLAUDE.md + settings.json were dereferenced into bundle by backup; now
+#  replace them with the canonical symlink architecture)
 # ─────────────────────────────────────────────────────────────
-log_info "Creating Claude symlinks"
+log_info "Creating Claude symlinks (skills, brains, CLAUDE.md, settings.json)"
+
+# Restore gitignored agent/global/CLAUDE.md from ~/.claude/CLAUDE.md content
+# (Phase 4 wrote real content via deref backup; here we re-seed the symlink target)
+if [[ -f "$HOME/.claude/CLAUDE.md" && ! -L "$HOME/.claude/CLAUDE.md" && ! -e "$AGENT_DIR/global/CLAUDE.md" ]]; then
+    log_info "  Re-seeding gitignored $AGENT_DIR/global/CLAUDE.md from bundle content"
+    $DRY_RUN || /bin/cp "$HOME/.claude/CLAUDE.md" "$AGENT_DIR/global/CLAUDE.md"
+fi
 
 for link_pair in \
     "$HOME/.claude/skills:$AGENT_DIR/global/skills" \
-    "$HOME/.claude/brains:$AGENT_DIR/global/brains"
+    "$HOME/.claude/brains:$AGENT_DIR/global/brains" \
+    "$HOME/.claude/CLAUDE.md:$AGENT_DIR/global/CLAUDE.md" \
+    "$HOME/.claude/settings.json:$AGENT_DIR/global/settings.json"
 do
     IFS=':' read -r link target <<< "$link_pair"
-    [[ ! -d "$target" ]] && { log_warn "  Target missing: $target — skip"; continue; }
+    [[ ! -e "$target" ]] && { log_warn "  Target missing: $target — skip"; continue; }
 
     if [[ -L "$link" ]]; then
         current=$(readlink "$link")
@@ -101,7 +112,7 @@ do
         log_warn "  $link → $current (drift, fixing)"
         $DRY_RUN || /bin/rm "$link"
     elif [[ -e "$link" ]]; then
-        log_warn "  $link exists as dir/file (not symlink) — back up + replace"
+        log_warn "  $link exists as file/dir (not symlink) — back up + replace"
         $DRY_RUN || /bin/mv "$link" "${link}.pre-restore-$(date +%s)"
     fi
 
@@ -117,6 +128,14 @@ done
 # Install daily backup cron (replaces legacy brain.db.bak)
 # ─────────────────────────────────────────────────────────────
 log_info "Installing daily-bundle cron"
+
+# Ensure crontab available (cloud images often skip cronie)
+if ! command -v crontab >/dev/null 2>&1; then
+    log_warn "  crontab missing — installing cronie"
+    $DRY_RUN || sudo dnf install -y cronie 2>&1 | tail -3
+    $DRY_RUN || sudo systemctl enable --now crond 2>/dev/null || true
+fi
+
 if $DRY_RUN; then
     log_info "[DRY-RUN] would run install-cron.sh"
 else

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Phase 6: Clone 6 critical repos + restore .env + post-hooks
-set -euo pipefail
+set -uo pipefail
+# NOTE: not using -e — phases like clone may fail per-repo, want to continue
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$SCRIPT_DIR/common.sh"
@@ -13,36 +14,48 @@ STAGING=$(cat "$HOME/.local/share/recovery/.staging-path" 2>/dev/null)
 PROJECTS="$HOME/Projects"
 mkdir -p "$PROJECTS"
 
-# Repos to clone (skip if already exists)
-declare -A REPOS=(
-    ["agent"]="haingt-dev/agent"
-    ["digital-identity"]="haingt-dev/digital-identity"
-    ["home-server"]="haingt-dev/home-server"
-    ["Idea_Vault"]="haingt-dev/my-obsidian-vault"
-    ["IronCradle"]="haingt-dev/IronCradle"
-    ["workstation-setup"]="haingt-dev/workstation-setup"
-)
+# Read repo list from bundle (single source of truth, auto-generated from
+# current git remotes at backup time)
+REPOS_TXT="$STAGING/repos.txt"
+[[ ! -f "$REPOS_TXT" ]] && { log_error "repos.txt missing from bundle"; exit 1; }
+
+log_info "Reading repos from $REPOS_TXT"
 
 # ─────────────────────────────────────────────────────────────
-# Clone loop
+# Clone loop (parse: name | git-remote | local-path)
 # ─────────────────────────────────────────────────────────────
-for name in "${!REPOS[@]}"; do
-    target="$PROJECTS/$name"
+clone_failed=()
 
-    if [[ -d "$target/.git" ]]; then
+while IFS='|' read -r name remote local_path; do
+    # Skip comments + empty lines
+    name=$(echo "$name" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    [[ -z "$name" || "$name" == \#* ]] && continue
+
+    remote=$(echo "$remote" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    local_path=$(echo "$local_path" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    local_path="${local_path/#\~/$HOME}"
+
+    if [[ -d "$local_path/.git" ]]; then
         log_success "$name already cloned"
         continue
     fi
 
-    remote="${REPOS[$name]}"
-    log_info "Cloning $name from $remote"
+    log_info "Cloning $name from $remote → $local_path"
     if $DRY_RUN; then
-        log_info "[DRY-RUN] gh repo clone $remote $target"
+        log_info "[DRY-RUN] git clone $remote $local_path"
     else
-        gh repo clone "$remote" "$target"
-        log_success "  $name"
+        if git clone "$remote" "$local_path" 2>&1; then
+            log_success "  $name"
+        else
+            log_warn "  $name clone FAILED — continuing with other repos"
+            clone_failed+=("$name")
+        fi
     fi
-done
+done < "$REPOS_TXT"
+
+if [[ ${#clone_failed[@]} -gt 0 ]]; then
+    log_warn "Failed to clone: ${clone_failed[*]} (will continue post-hooks for the rest)"
+fi
 
 # ─────────────────────────────────────────────────────────────
 # Restore per-repo .env from bundle
@@ -157,23 +170,29 @@ if [[ -d "$IC" && -d "$IC_BUNDLE" ]]; then
     fi
 fi
 
-# Hook: restore crontab
+# Hook: restore crontab (strip legacy brain.db.bak — replaced by daily-bundle)
 if [[ -f "$STAGING/crontabs/user-crontab.txt" ]]; then
     log_info "  Crontab restore"
     if $DRY_RUN; then
-        log_info "  [DRY-RUN] would import crontab"
+        log_info "  [DRY-RUN] would merge crontab (strip legacy + dedup)"
     else
-        # Merge with existing — don't overwrite daily-bundle cron from Phase 5
         current=$(crontab -l 2>/dev/null || true)
         bundle_cron=$(cat "$STAGING/crontabs/user-crontab.txt")
-        # Strip daily-bundle entries from current (already installed in Phase 5)
-        # and from bundle (avoid duplication)
-        merged=$(echo -e "$current\n$bundle_cron" | grep -v "daily-bundle.sh" | grep -v "managed by workstation-setup" | sort -u)
-        # Re-add Phase 5's daily-bundle
-        merged="$merged
-$(echo "$current" | grep "daily-bundle.sh" || true)"
+
+        # 1. Take bundle crontab as base
+        # 2. Strip legacy: brain.db.bak (superseded by daily-bundle)
+        # 3. Strip duplicates of daily-bundle (will re-add from current = Phase 5's install)
+        # 4. Append current's daily-bundle entry (Phase 5's install — authoritative)
+        merged=$(echo "$bundle_cron" | grep -v "brain.db.bak" | grep -v "daily-bundle.sh" | grep -v "managed by workstation-setup")
+        daily_bundle_entry=$(echo "$current" | grep -A1 "managed by workstation-setup" | grep "daily-bundle.sh" || true)
+        marker_line=$(echo "$current" | grep "managed by workstation-setup" || true)
+        if [[ -n "$daily_bundle_entry" ]]; then
+            merged="$merged
+$marker_line
+$daily_bundle_entry"
+        fi
         echo "$merged" | crontab -
-        log_success "  Crontab merged"
+        log_success "  Crontab merged (legacy brain.db.bak removed)"
     fi
 fi
 

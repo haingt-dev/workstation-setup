@@ -51,17 +51,35 @@ if [[ -d "$SECRETS/gnupg" ]]; then
 fi
 
 # ─────────────────────────────────────────────────────────────
-# gh CLI hosts (token)
+# gh CLI hosts.yml + oauth token (token via keyring or fallback)
 # ─────────────────────────────────────────────────────────────
 if [[ -f "$SECRETS/gh-hosts.yml" ]]; then
-    log_info "Restoring gh CLI token"
+    log_info "Restoring gh CLI config"
     if $DRY_RUN; then
-        log_info "[DRY-RUN] would write to ~/.config/gh/hosts.yml"
+        log_info "[DRY-RUN] would write to ~/.config/gh/hosts.yml + gh auth login --with-token"
     else
         mkdir -p "$HOME/.config/gh"
         /bin/cp "$SECRETS/gh-hosts.yml" "$HOME/.config/gh/hosts.yml"
         chmod 600 "$HOME/.config/gh/hosts.yml"
-        log_success "  gh token restored"
+        log_success "  gh hosts.yml"
+
+        # Re-auth using bundled token (writes to keyring or .config/gh/hosts.yml fallback)
+        if [[ -f "$SECRETS/gh-token" ]]; then
+            if gh auth login --with-token < "$SECRETS/gh-token" 2>/dev/null; then
+                log_success "  gh oauth token restored (via gh auth login --with-token)"
+            else
+                # Fallback: write token directly to hosts.yml oauth_token field
+                token=$(cat "$SECRETS/gh-token")
+                python3 -c "
+import yaml, sys
+with open('$HOME/.config/gh/hosts.yml') as f: data = yaml.safe_load(f) or {}
+data.setdefault('github.com', {})['oauth_token'] = '$token'
+with open('$HOME/.config/gh/hosts.yml', 'w') as f: yaml.safe_dump(data, f)
+" 2>/dev/null && log_success "  gh token written to hosts.yml (keyring fallback)" || log_warn "  gh token restore failed — login manually: gh auth login"
+            fi
+        else
+            log_warn "  No bundled token — run: gh auth login"
+        fi
     fi
 fi
 
