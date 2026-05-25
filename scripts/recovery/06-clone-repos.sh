@@ -126,6 +126,60 @@ if [[ -d "$HS" && -d "$HS_BUNDLE" ]]; then
             "$HS/scripts/install-tray.sh" || log_warn "    tray install failed (non-fatal — re-run manually)"
         fi
     fi
+
+    # Install Calibre Library systemd sync timer (rclone backup local → OneDrive cloud)
+    if [[ -x "$HS/scripts/calibre-sync-setup.sh" ]]; then
+        log_info "  Installing calibre-sync.timer (daily 22:30 backup to OneDrive)"
+        if $DRY_RUN; then
+            log_info "  [DRY-RUN] $HS/scripts/calibre-sync-setup.sh"
+        else
+            "$HS/scripts/calibre-sync-setup.sh" || log_warn "    calibre-sync install failed (non-fatal — re-run manually)"
+        fi
+
+        # Auto-fetch Calibre Library content from cloud (~26GB, NOT in encrypted bundle).
+        # Verify: directory empty/missing + rclone remote available + cloud has data → pull.
+        CALIBRE_DIR="/home/haint/Data/Calibre Library"
+        if [[ ! -d "$CALIBRE_DIR" ]] || [[ -z "$(ls -A "$CALIBRE_DIR" 2>/dev/null)" ]]; then
+            if ! command -v rclone >/dev/null || ! rclone listremotes 2>/dev/null | grep -qx "onedrive-dev:"; then
+                log_warn "  Calibre Library missing; rclone remote 'onedrive-dev:' not configured — skip auto-fetch"
+                log_warn "    Restore later: rclone copy \"onedrive-dev:Calibre Library/\" \"$CALIBRE_DIR/\" --progress"
+            elif rclone lsd "onedrive-dev:Calibre Library" >/dev/null 2>&1; then
+                cloud_info=$(rclone size "onedrive-dev:Calibre Library" --json 2>/dev/null | \
+                    python3 -c "import sys,json;d=json.load(sys.stdin);print(f\"{d.get('count',0)} files / {d.get('bytes',0)/1024/1024/1024:.1f}GB\")" 2>/dev/null || echo "unknown size")
+                log_info "  Calibre Library missing locally — cloud has $cloud_info"
+
+                FETCH=true
+                if ${INTERACTIVE:-true}; then
+                    read -rp "  Auto-fetch Calibre Library now (may take 10-30min)? [Y/n] " ans
+                    [[ "$ans" =~ ^[nN]$ ]] && FETCH=false
+                else
+                    log_info "  --non-interactive — fetching automatically"
+                fi
+
+                if $FETCH; then
+                    if $DRY_RUN; then
+                        log_info "  [DRY-RUN] rclone copy onedrive-dev:Calibre Library/ \"$CALIBRE_DIR/\""
+                    else
+                        mkdir -p "$CALIBRE_DIR"
+                        log_info "  Fetching Calibre Library from cloud..."
+                        if rclone copy "onedrive-dev:Calibre Library/" "$CALIBRE_DIR/" \
+                            --progress --transfers 4 --checkers 8 --fast-list; then
+                            log_success "    Calibre Library restored ($(du -sh "$CALIBRE_DIR" | cut -f1))"
+                        else
+                            log_warn "    rclone copy failed — re-run manually:"
+                            log_warn "      rclone copy \"onedrive-dev:Calibre Library/\" \"$CALIBRE_DIR/\" --progress"
+                        fi
+                    fi
+                else
+                    log_info "  Skipped — restore later: rclone copy \"onedrive-dev:Calibre Library/\" \"$CALIBRE_DIR/\" --progress"
+                fi
+            else
+                log_warn "  Cloud 'onedrive-dev:Calibre Library' not found — first-ever recovery or cloud cleared. Skip fetch."
+            fi
+        else
+            log_info "  Calibre Library already present at $CALIBRE_DIR ($(du -sh "$CALIBRE_DIR" 2>/dev/null | cut -f1)) — skip fetch"
+        fi
+    fi
 fi
 
 # Hook: IronCradle dev env

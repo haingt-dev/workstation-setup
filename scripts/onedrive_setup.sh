@@ -1,140 +1,161 @@
 #!/bin/bash
 # =============================================================================
-# onedrive_setup.sh - Setup for OneDrive with multi-account support
+# onedrive_setup.sh - Setup onedriver (FUSE on-demand client) for OneDrive
+# =============================================================================
+#
+# Replaces abraunegg/onedrive sync client with jstaf/onedriver — true Files-On-Demand
+# semantics (placeholder files, download on access) instead of full sync.
+#
+# Mount layout:
+#   /home/haint/Data/OneDrive/Dev/      ← Dev account (work/code/calibre cloud view)
+#   /home/haint/Data/OneDrive/Personal/ ← Personal account
+#
+# Calibre Library NOT in this sync — it lives at /home/haint/Data/Calibre Library/
+# (real local btrfs) and is backed up daily via calibre-sync.timer (see home-server
+# scripts/calibre-sync-setup.sh).
+#
+# Auth tokens persist in ~/.cache/onedriver/<escaped-mountpoint>/auth_tokens.json
+# and are bundled by workstation-setup daily-bundle.sh for recovery.
 # =============================================================================
 
 set -e
 
-# Source common utilities
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
 check_not_root
 
-log_section "Setting up OneDrive"
+log_section "Setting up onedriver (OneDrive Files-On-Demand)"
+
+# Mount layout — paths are systemd-escaped to derive unit names
+DATA_ROOT="$HOME/Data/OneDrive"
+ACCOUNTS=(Dev Personal)
 
 # =============================================================================
-# Install OneDrive Client
+# Install onedriver from Fedora COPR (jstaf/onedriver)
 # =============================================================================
-if ! check_command onedrive; then
-    log_info "Installing OneDrive client..."
-    dnf_install onedrive
-    log_success "OneDrive client installed"
+if ! check_command onedriver; then
+    log_info "Enabling COPR repo: jstaf/onedriver"
+    sudo dnf copr enable -y jstaf/onedriver
+    log_info "Installing onedriver..."
+    dnf_install onedriver
+    log_success "onedriver installed"
 else
-    log_info "OneDrive client is already installed"
+    log_info "onedriver already installed: $(rpm -q onedriver 2>/dev/null || echo unknown)"
 fi
 
 # =============================================================================
-# Restore Configurations from Assets
+# Create mount points
 # =============================================================================
-if [[ -d "$BACKUP_DIR/.config/onedrive/accounts" ]]; then
-    log_info "Restoring OneDrive configurations from assets..."
-    ensure_dir "$HOME/.config/onedrive/accounts"
-    
-    for account_dir in "$BACKUP_DIR/.config/onedrive/accounts"/*/; do
-        if [[ -d "$account_dir" ]]; then
-            account_name=$(basename "$account_dir")
-            config_dest="$HOME/.config/onedrive/accounts/$account_name"
-            ensure_dir "$config_dest"
-            
-            if [[ -f "$account_dir/config" ]]; then
-                # Replace $HOME placeholder with actual home directory
-                sed "s|\$HOME|$HOME|g" "$account_dir/config" > "$config_dest/config"
-                log_success "Restored config for $account_name"
-                
-                # Extract and create sync directory
-                sync_dir=$(grep '^sync_dir' "$config_dest/config" | sed 's/sync_dir = "\(.*\)"/\1/')
-                if [[ -n "$sync_dir" ]]; then
-                    ensure_dir "$sync_dir"
-                    log_info "Ensured sync directory exists: $sync_dir"
-                fi
-                
-                # Enable systemd service
-                if systemctl --user enable --now "onedrive@$account_name" 2>/dev/null; then
-                    log_success "Enabled service for $account_name"
-                else
-                    log_warn "Failed to enable service for $account_name (may need authentication)"
-                fi
-            fi
-        fi
-    done
-    log_success "OneDrive configurations restored. Re-authentication may be required."
-fi
+ensure_dir "$DATA_ROOT"
+for acct in "${ACCOUNTS[@]}"; do
+    ensure_dir "$DATA_ROOT/$acct"
+done
+log_success "Mount points ready: $DATA_ROOT/{$(IFS=,; echo "${ACCOUNTS[*]}")}/"
 
 # =============================================================================
-# Multi-Account Configuration Loop
+# Detect existing tokens (restored by Phase 3 / 03-restore-secrets.sh)
 # =============================================================================
-echo ""
-echo "This script can help you configure multiple OneDrive accounts."
-echo "Each account will have its own configuration and sync directory."
-echo ""
-
-while true; do
-    read -p "Do you want to configure a new OneDrive account? [y/N] " response
-    if [[ ! "$response" =~ ^[yY]$ ]]; then
-        break
+# Tokens encode the OAuth refresh token. If already present (e.g., restored
+# from encrypted recovery bundle), systemd units mount without OAuth.
+# Phase 3 puts tokens at ~/.cache/onedriver/<escaped-path>/auth_tokens.json.
+TOKEN_FOUND=()
+for acct in "${ACCOUNTS[@]}"; do
+    escaped=$(systemd-escape --path "$DATA_ROOT/$acct" | sed 's|^-||')
+    if [[ -f "$HOME/.cache/onedriver/$escaped/auth_tokens.json" ]]; then
+        TOKEN_FOUND+=("$acct")
     fi
+done
+[[ ${#TOKEN_FOUND[@]} -gt 0 ]] && log_info "Existing tokens detected for: ${TOKEN_FOUND[*]}"
 
-    echo ""
-    read -p "Enter a name for this account (e.g., 'personal', 'work'): " account_name
-    
-    if [[ -z "$account_name" ]]; then
-        log_error "Account name cannot be empty."
+# =============================================================================
+# Enable + start systemd user units (only for accounts that already have tokens)
+# =============================================================================
+# OAuth + enable for missing accounts is handled in 2 contexts:
+#   - Recovery: Phase 3 (03-restore-secrets.sh) restores tokens from bundle
+#     → enables units automatically. Phase 1 just preps the mountpoint.
+#   - Fresh setup: user runs OAuth manually after this script (instructions below).
+# This keeps Phase 1 non-interactive and idempotent.
+AUTH_NEEDED=()
+for acct in "${ACCOUNTS[@]}"; do
+    escaped=$(systemd-escape --path "$DATA_ROOT/$acct" | sed 's|^-||')
+    unit="onedriver@${escaped}.service"
+
+    if [[ ! -f "$HOME/.cache/onedriver/$escaped/auth_tokens.json" ]]; then
+        AUTH_NEEDED+=("$acct")
+        log_info "  $acct — no tokens yet (defer to Phase 3 or manual OAuth)"
         continue
     fi
 
-    # Define paths
-    config_dir="$HOME/.config/onedrive/accounts/${account_name}"
-    sync_dir="$HOME/OneDrive/${account_name}"
-    
-    log_info "Creating configuration for '$account_name'..."
-    
-    # Create config directory
-    ensure_dir "$config_dir"
-    
-    # Create sync directory
-    ensure_dir "$sync_dir"
-    
-    # Create config file
-    config_file="$config_dir/config"
-    if [[ ! -f "$config_file" ]]; then
-        echo "sync_dir = \"$sync_dir\"" > "$config_file"
-        log_success "Created config file at: $config_file"
+    systemctl --user reset-failed "$unit" 2>/dev/null || true
+    if systemctl --user enable --now "$unit" 2>/dev/null; then
+        log_success "  $unit enabled"
     else
-        log_warn "Config file already exists at: $config_file"
+        log_warn "  Failed to enable $unit — check: systemctl --user status $unit"
     fi
-    
-    # Authentication
-    echo ""
-    log_section "Authentication for '$account_name'"
-    echo "The OneDrive client will now run in interactive mode."
-    echo "1. Open the URL displayed in your browser."
-    echo "2. Log in with your '$account_name' Microsoft account."
-    echo "3. Copy the response URL and paste it back into the terminal."
-    echo ""
-    read -p "Press Enter to start authentication..."
-    
-    # Run onedrive with the specific config directory
-    # Using 'if' ensures the script doesn't exit if authentication fails (due to set -e)
-    if onedrive --confdir="$config_dir" --reauth; then
-        log_success "Authentication successful for '$account_name'"
-        
-        # Enable systemd service
-        log_info "Enabling background service 'onedrive@${account_name}'..."
-        systemctl --user enable --now "onedrive@${account_name}"
-        log_success "Service started and enabled"
-        
-        # Initial sync (optional, running in background now)
-        log_info "Initial sync started in background."
-    else
-        log_error "Authentication failed or was cancelled."
-    fi
-    
-    echo ""
 done
 
-log_section "OneDrive Setup Complete"
-echo "You can manage your services with:"
-echo "  systemctl --user status onedrive@<name>"
-echo "  systemctl --user stop onedrive@<name>"
-echo "  systemctl --user restart onedrive@<name>"
+# =============================================================================
+# Disable abraunegg/onedrive remnants if present (migration leftover)
+# =============================================================================
+if rpm -q onedrive >/dev/null 2>&1; then
+    log_warn "abraunegg/onedrive package still installed — migration leftover."
+    log_warn "Remove after verifying onedriver works: sudo dnf remove onedrive"
+fi
+
+OLD_AUTOSTART="$HOME/.config/autostart/OneDriveGUI.desktop"
+if [[ -f "$OLD_AUTOSTART" ]]; then
+    log_info "Disabling old OneDriveGUI autostart..."
+    mv "$OLD_AUTOSTART" "${OLD_AUTOSTART}.disabled-by-onedrive-setup"
+    log_success "  Renamed to ${OLD_AUTOSTART}.disabled-by-onedrive-setup"
+fi
+
+# =============================================================================
+# Summary
+# =============================================================================
+echo ""
+log_section "onedriver setup complete"
+echo "Mounts (Files-On-Demand):"
+for acct in "${ACCOUNTS[@]}"; do
+    echo "  $DATA_ROOT/$acct"
+done
+echo ""
+echo "Manage:"
+echo "  systemctl --user status onedriver@<escaped-path>.service"
+echo "  systemctl --user restart onedriver@<escaped-path>.service"
+echo "  onedriver-launcher                                # GUI"
+echo ""
+echo "Drop a file into a mount → uploads to cloud automatically (like Windows OneDrive)."
+echo "List a folder → shows placeholders (no download until read)."
+echo ""
+if (( ${#TOKEN_FOUND[@]} > 0 )); then
+    echo "Mounts enabled (tokens present): ${TOKEN_FOUND[*]}"
+fi
+if (( ${#AUTH_NEEDED[@]} > 0 )); then
+    echo ""
+    log_section "Manual OAuth required for: ${AUTH_NEEDED[*]}"
+    echo "Run each of these in a terminal (browser opens, sign in, returns):"
+    echo ""
+    for acct in "${AUTH_NEEDED[@]}"; do
+        echo "  WEBKIT_DISABLE_DMABUF_RENDERER=1 GDK_BACKEND=x11 onedriver --auth-only \"$DATA_ROOT/$acct\""
+    done
+    echo ""
+    echo "Then enable mount: systemctl --user enable --now 'onedriver@<escaped-path>.service'"
+    echo ""
+    echo "(In recovery context, Phase 3 restores tokens + enables units automatically — skip this.)"
+fi
+
+cat <<'EOF'
+
+Notes:
+- onedriver does NOT support pinning ("always keep local") nor selective folder
+  exclusion. Calibre Library is therefore kept OUTSIDE this mount tree, at
+  /home/haint/Data/Calibre Library/ (real local btrfs, backed up daily by
+  home-server scripts/calibre-sync-setup.sh).
+- A phantom Calibre Library folder will appear inside the Dev mount as
+  on-demand placeholders (mirroring cloud). Ignore — CWA uses the real path.
+- Individual files > ~1 GB load into memory on access. Avoid storing GB-size
+  files inside the mount; use rclone copy instead for large transfers.
+- KDE Plasma Wayland: WebKit OAuth fails with Gdk Error 71. Workaround flags
+  WEBKIT_DISABLE_DMABUF_RENDERER=1 + GDK_BACKEND=x11 are documented above.
+EOF

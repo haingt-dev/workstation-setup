@@ -135,6 +135,28 @@ for f in "$HOME/.config/recovery/bundle.pass" \
     fi
 done
 
+# onedriver OAuth refresh tokens (per-mount; without these, recovery requires
+# re-OAuth which needs interactive browser + WEBKIT_DISABLE_DMABUF_RENDERER
+# workaround on Wayland). Only the tokens — skip file-content cache (large + rebuildable).
+if [[ -d "$HOME/.cache/onedriver" ]]; then
+    mkdir -p "$STAGE/secrets/onedriver-cache"
+    found=0
+    for tok in "$HOME/.cache/onedriver"/*/auth_tokens.json; do
+        [[ -f "$tok" ]] || continue
+        mount_id=$(basename "$(dirname "$tok")")
+        mkdir -p "$STAGE/secrets/onedriver-cache/$mount_id"
+        /bin/cp "$tok" "$STAGE/secrets/onedriver-cache/$mount_id/auth_tokens.json"
+        found=$((found+1))
+    done
+    [[ $found -gt 0 ]] && success "  onedriver-cache/ ($found auth_tokens.json files)"
+fi
+
+# onedriver launcher config (optional — only present if user customized via GUI)
+if [[ -d "$HOME/.config/onedriver" ]]; then
+    /bin/cp -r "$HOME/.config/onedriver" "$STAGE/secrets/onedriver-config"
+    success "  onedriver-config/"
+fi
+
 # Extract gh oauth token from keyring → plain file (restored via `gh auth login --with-token`)
 if command -v gh >/dev/null && gh auth status >/dev/null 2>&1; then
     gh auth token > "$STAGE/secrets/gh-token" 2>/dev/null && {

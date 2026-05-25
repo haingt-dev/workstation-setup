@@ -27,12 +27,13 @@ Recovery cần **bundle passphrase** (lưu password manager). Bộ recover.sh h�
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ DAILY BACKUP (cron 4:30 AM)                                  │
+│ DAILY BACKUP (cron 23:00)                                    │
 │                                                              │
 │   daily-bundle.sh → tar + GPG AES256 + rclone push          │
 │     ↓                                                        │
-│   onedrive-dev:dev/recovery-bundle/daily/  (~688MB)         │
+│   onedrive-dev:dev/recovery-bundle/daily/  (~750MB)         │
 │   Retention: 7d + 4w + 12m (server-side)                    │
+│   23:00 aligns with bandwidth flip to unlimited.            │
 └─────────────────────────────────────────────────────────────┘
                           ↓ (disaster)
 ┌─────────────────────────────────────────────────────────────┐
@@ -50,7 +51,7 @@ Recovery cần **bundle passphrase** (lưu password manager). Bộ recover.sh h�
 
 | Section | Contents |
 |---|---|
-| `secrets/` | ~/.ssh, ~/.gnupg, gh oauth token, **rclone.conf + bundle.pass + bundle.conf** (self-files) |
+| `secrets/` | ~/.ssh, ~/.gnupg, gh oauth token, **rclone.conf + bundle.pass + bundle.conf** (self-files), **onedriver auth_tokens.json** (per-mount, skip re-OAuth on restore) |
 | `claude/` | CLAUDE.md, core-memory, brains, settings.json, **dot-claude.json (global MCP)**, plans, projects.tar.gz (conv history), plugins.tar.gz (cache + marketplaces) |
 | `envs/` | All .env files via **manifest.txt** (sequential `env-N.bin` + path mapping — handles dashes in dirnames correctly) |
 | `brain/` | brain.db (sqlite `.backup` WAL-safe snapshot) |
@@ -164,6 +165,9 @@ chmod 600 ~/.config/recovery/bundle.conf
 - ✓ brain.db (sqlite WAL-safe snapshot)
 - ✓ Godot binary auto-installed từ pin file
 - ✓ VS Code User settings + extensions list
+- ✓ **onedriver auth tokens** (Dev + Personal) → systemd units enabled in Phase 3 → mounts auto-start on next login
+- ✓ **calibre-sync.timer** installed in Phase 6 (daily 22:30 backup local → cloud)
+- ✓ **Calibre Library content** auto-fetched từ cloud nếu local empty (Phase 6 post-hook, prompt-or-auto tuỳ INTERACTIVE flag)
 
 **Manual after recovery (cannot auto)**:
 1. **Forge models** (~9GB): `cd ~/Projects/home-server && ./scripts/forge-pull-models.sh` (URLs trong forge/models.yml)
@@ -171,6 +175,8 @@ chmod 600 ~/.config/recovery/bundle.conf
 3. **IronCradle assets reimport**: open Godot lần đầu → tự reimport (5-30 min)
 4. **home-server stack up**: `cd ~/Projects/home-server && ./scripts/up.sh all`
 5. **engram plugin reinstall** (excluded từ bundle vì recursive dirs): qua marketplace
+6. **Calibre Library content** (~26GB, NOT in bundle — too large): **auto-fetched** trong Phase 6 post-hook nếu local empty + cloud có data. Interactive mode prompt `[Y/n]`, non-interactive auto-fetch. Manual fallback: `rclone copy "onedrive-dev:Calibre Library/" "/home/haint/Data/Calibre Library/" --progress`. Daily backup local→cloud by `calibre-sync.timer` (22:30).
+7. **OneDrive content** sống dưới `~/Data/OneDrive/{Dev,Personal}` qua onedriver. On-demand placeholders → file chỉ download khi mở. Không có manual restore step — onedriver pulls metadata lazily.
 
 ## Verification (quarterly drill)
 
@@ -195,6 +201,7 @@ Sử dụng VM Fedora Cloud test:
 - **Conversation history full backup**: 832MB → ~150MB compressed. Acceptable bandwidth VN.
 - **MS 365 single point of failure**: hedge với B2 fallback (optional, currently disabled).
 - **rclone OAuth in M365 Business**: yêu cầu tenant admin grant consent on rclone app. Recovery preserves token via bundle, no re-OAuth needed.
+- **OneDrive client = onedriver (jstaf) not abraunegg/onedrive**: chuyển 2026-05-25 để có Files-On-Demand (Windows-equivalent placeholder semantics). Trade-off: onedriver KHÔNG hỗ trợ pinning folder "always local" → Calibre Library tách ra `~/Data/Calibre Library/` (real local btrfs), backup riêng qua `calibre-sync.timer`. Fresh-setup OAuth cần workaround `WEBKIT_DISABLE_DMABUF_RENDERER=1 GDK_BACKEND=x11 onedriver --auth-only <mount>` trên KDE Plasma Wayland (Gdk Error 71 native).
 
 ## Related docs
 

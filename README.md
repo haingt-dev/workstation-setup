@@ -25,7 +25,7 @@ Automated workstation setup for Nobara 42 / Fedora — terminal, dev tools, apps
 
 ### Applications
 - **Additional Apps**: Chrome, Discord, Obsidian, Anki, Todoist
-- **OneDrive**: Multi-account support via `abraunegg/onedrive` client
+- **OneDrive**: Multi-account Files-On-Demand via `jstaf/onedriver` (FUSE, drop-and-go upload, on-demand download)
 - **Audio Processing**: EasyEffects with pre-tuned presets
 - **DNS**: Cloudflare Block Malware configuration
 - **OBS Studio**: Recording and streaming software (Flatpak)
@@ -66,7 +66,7 @@ Options:
   --skip-obs          Skip OBS Studio
   --skip-easyeffects  Skip EasyEffects audio setup
   --skip-dns          Skip DNS setup
-  --onedrive          Setup OneDrive (multiple accounts)
+  --onedrive          Setup onedriver Files-On-Demand (Dev + Personal accounts)
   --vietnamese        Install Vietnamese input method
   --obs               Setup OBS Studio
   --remote            Remote access (Tailscale, SSH, WoL)
@@ -115,7 +115,7 @@ Examples:
     ├── godot_setup.sh          # Godot Engine installation
     ├── obs_setup.sh            # OBS Studio installation
     ├── apps_setup.sh           # Chrome, Flatpak apps
-    ├── onedrive_setup.sh       # OneDrive multi-account setup
+    ├── onedrive_setup.sh       # onedriver Files-On-Demand setup (Dev + Personal mounts)
     ├── easyeffects_setup.sh    # EasyEffects audio presets
     ├── dns_setup.sh            # DNS configuration
     ├── input_setup.sh          # Vietnamese input method
@@ -241,7 +241,7 @@ sudo shutdown -h now
 - **Godot**: Downloads to ~/.local/bin, creates desktop entry
 - **OBS Studio**: Installed via Flatpak (com.obsproject.Studio)
 - **Apps**: Chrome (DNF), Discord, Obsidian, Anki, Todoist (Flatpak)
-- **OneDrive**: Multi-account sync with systemd services
+- **OneDrive**: `onedriver` FUSE mounts at `~/Data/OneDrive/{Dev,Personal}` (Files-On-Demand). Calibre Library lives separately at `~/Data/Calibre Library/` with daily rclone backup (`calibre-sync.timer`).
 - **EasyEffects**: Audio presets for speakers/headsets
 - **DNS**: Cloudflare Block Malware (1.1.1.2/1.0.0.2)
 - **Vietnamese Input**: fcitx5-unikey (auto-configured with Super+Space trigger)

@@ -82,6 +82,58 @@ if [[ -d "$SECRETS/recovery-self" ]]; then
     fi
 fi
 
+# ─────────────────────────────────────────────────────────────
+# onedriver OAuth tokens (per-mount)
+# Without these, mounts fail on boot and require interactive re-auth.
+# ─────────────────────────────────────────────────────────────
+if [[ -d "$SECRETS/onedriver-cache" ]]; then
+    log_info "Restoring onedriver auth tokens"
+    if $DRY_RUN; then
+        log_info "[DRY-RUN] would restore auth_tokens.json files + enable systemd units"
+    else
+        restored_units=()
+        for mount_dir in "$SECRETS/onedriver-cache"/*/; do
+            [[ -d "$mount_dir" ]] || continue
+            mount_id=$(basename "$mount_dir")
+            dst="$HOME/.cache/onedriver/$mount_id"
+            mkdir -p "$dst"
+            if [[ -f "$mount_dir/auth_tokens.json" ]]; then
+                /bin/cp "$mount_dir/auth_tokens.json" "$dst/auth_tokens.json"
+                chmod 600 "$dst/auth_tokens.json"
+                log_success "  $mount_id/auth_tokens.json"
+                restored_units+=("onedriver@${mount_id}.service")
+            fi
+        done
+
+        # Restore launcher config (account list metadata)
+        if [[ -d "$SECRETS/onedriver-config" ]]; then
+            mkdir -p "$HOME/.config/onedriver"
+            /bin/cp -r "$SECRETS/onedriver-config/." "$HOME/.config/onedriver/"
+            log_success "  ~/.config/onedriver/ (launcher config)"
+        fi
+
+        # Enable systemd user units so mounts auto-start on login
+        if (( ${#restored_units[@]} > 0 )); then
+            for unit in "${restored_units[@]}"; do
+                # Mount point dir must exist before systemd starts onedriver.
+                # Use systemd-escape -u to safely invert path escaping (handles literal
+                # dashes in path components via \x2d sequences — naive sed -e 's|-|/|g'
+                # would break for paths like /home/my-user/...).
+                escaped="${unit#onedriver@}"
+                escaped="${escaped%.service}"
+                mount_path=$(systemd-escape --path --unescape "$escaped")
+                mkdir -p "$mount_path"
+                systemctl --user reset-failed "$unit" 2>/dev/null || true
+                if systemctl --user enable --now "$unit" 2>/dev/null; then
+                    log_success "  enabled $unit"
+                else
+                    log_warn "  failed to enable $unit (check: systemctl --user status $unit)"
+                fi
+            done
+        fi
+    fi
+fi
+
 if [[ -f "$SECRETS/gh-hosts.yml" ]]; then
     log_info "Restoring gh CLI config"
     if $DRY_RUN; then

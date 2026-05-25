@@ -24,7 +24,7 @@ if [[ -f "$CONFIG_FILE" ]]; then
     # shellcheck disable=SC1090
     source "$CONFIG_FILE"
 fi
-SCHEDULE="${CRON_SCHEDULE:-30 4 * * *}"
+SCHEDULE="${CRON_SCHEDULE:-0 23 * * *}"
 MARKER="# managed by workstation-setup/scripts/backup/install-cron.sh"
 LEGACY_MARKER="brain.db.bak"
 
