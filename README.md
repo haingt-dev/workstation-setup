@@ -13,9 +13,8 @@ Automated workstation setup for Nobara 42 / Fedora — terminal, dev tools, apps
 
 ### Agent System
 - **Agent Hub**: Unified configuration for Claude Code ([separate repo](https://github.com/haingt-dev/agent))
-- **Memory Bank System**: Project context management with `.memory-bank/`
-- **Git Hooks**: Auto-reminder to update Memory Bank after significant commits
-- **Shell Aliases**: Quick commands for agent workflows (mbk, mbc, ag, cdc, etc.)
+- **Brain Memory**: Semantic memory via `haingt-brain` MCP (cross-session/cross-project, full CRUD)
+- **Shell Aliases**: Quick commands for agent workflows (ag, cdc, bootstrap, etc.)
 - **Claude Plugins**: haint-core (hooks, skills), godot-dev (GDScript patterns)
 
 ### Development & Tools
@@ -131,28 +130,23 @@ AI agent workflow integration for Claude Code:
 
 **Agent Hub** (`~/Projects/agent/` — [separate git repo](https://github.com/haingt-dev/agent)):
 - Cloned from GitHub by `agent_setup.sh` (not backed up in this repo)
-- Memory Bank templates and project bootstrapping
-- Git hooks (auto-reminder for Memory Bank updates)
-- Shell aliases (mbk, mbc, ag, cdc, etc.)
+- Project bootstrapping (`bootstrap-project.sh`)
+- Shell aliases (ag, cdc, bootstrap, etc.)
 - Claude plugins (haint-core, godot-dev)
 
 **Claude Integration** (`~/.claude/`):
-- MCP server configuration
+- MCP server configuration (incl. `haingt-brain` for semantic memory)
 - Plugin registry (marketplace + installed plugins)
 
 **Per-Project Structure** (created by `bootstrap`):
 - `AGENTS.md` - Shared project context (all agents)
-- `.memory-bank/` - Project knowledge (brief, product, context, task, architecture, tech)
 - `.claude/` - Claude Code config + skills
-- Git post-commit hook for Memory Bank reminders
 
 **Quick Commands**:
 ```bash
 ag              # Go to Agent Hub
-mbk             # Edit Memory Bank
-mbc             # Quick edit context.md
-mbt             # Quick edit task.md
 cdc <project>   # Switch to project
+bootstrap <dir> # Initialize a project
 ag-help         # Show all commands
 ```
 

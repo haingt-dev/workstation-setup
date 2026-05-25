@@ -15,16 +15,6 @@
 - Prefer `dnf` over manual installations. Prefer Flatpak for GUI apps when available
 - Test scripts in dry-run mode when possible before live execution
 
-## Memory Bank
-Auto-loaded at session start (brief, context, tech). Full files in `.memory-bank/`:
-- `brief.md` — Project goals and scope
-- `product.md` — Product context and constraints
-- `context.md` — Current focus and recent changes
-- `architecture.md` — System architecture
-- `tech.md` — Tech stack and tooling
-
-After major tasks or architectural changes, update relevant Memory Bank files.
-
 ## Security
 **CRITICAL**: NEVER commit, push, or expose secrets, API keys, tokens, or credentials to version control.
 

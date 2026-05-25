@@ -61,7 +61,6 @@ setup_agent_hub() {
 
     # Make scripts executable
     find "$AGENT_DIR" -name '*.sh' -type f -exec chmod +x {} +
-    [[ -f "$AGENT_DIR/hooks/post-commit-mb-reminder" ]] && chmod +x "$AGENT_DIR/hooks/post-commit-mb-reminder"
 
     # Restore Claude configuration
     if [[ -d "$BACKUP_DIR/.claude" ]]; then
@@ -106,12 +105,6 @@ configure_projects() {
     if [[ ! -d "$HOME/Projects" ]]; then
         log_warn "~/Projects directory not found, creating..."
         mkdir -p "$HOME/Projects"
-    fi
-
-    if [[ -f "$AGENT_DIR/hooks/install-all-projects.sh" ]]; then
-        log_info "Installing Memory Bank git hooks to all projects..."
-        "$AGENT_DIR/hooks/install-all-projects.sh"
-        log_success "Git hooks installed"
     fi
 
     log_success "Project configuration complete!"
@@ -176,7 +169,7 @@ echo "3. Bootstrap new projects: bootstrap /path/to/project"
 echo ""
 echo -e "${CYAN}${BOLD}Quick Commands:${NC}"
 echo "  ag            - Go to Agent Hub"
-echo "  mbk           - Edit Memory Bank"
 echo "  cdc <project> - Switch to project"
+echo "  bootstrap <d> - Initialize a project"
 echo "  ag-help       - Show all commands"
 echo ""
