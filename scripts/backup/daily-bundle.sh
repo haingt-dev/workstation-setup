@@ -208,6 +208,11 @@ CRITICAL_REPOS=(
     "workstation-setup"
 )
 
+# Manifest preserves exact paths (filename encoding lossy with dashes in dir names)
+ENVS_MANIFEST="$STAGE/envs/manifest.txt"
+: > "$ENVS_MANIFEST"
+
+idx=0
 for repo in "${CRITICAL_REPOS[@]}"; do
     base="$HOME/Projects/$repo"
     [[ ! -d "$base" ]] && continue
@@ -215,9 +220,11 @@ for repo in "${CRITICAL_REPOS[@]}"; do
     # Find all .env files (max depth 3 to skip node_modules etc.)
     while IFS= read -r envfile; do
         rel=$(realpath --relative-to="$base" "$envfile")
-        # Normalize name: repo + path joined by --
-        flat=$(echo "${repo}--${rel}" | tr '/' '-' | tr ' ' '_')
+        idx=$((idx+1))
+        # Sequential filename + manifest mapping (avoids dash-in-dirname mangling)
+        flat="env-${idx}.bin"
         /bin/cp "$envfile" "$STAGE/envs/$flat"
+        echo "${flat}|${repo}|${rel}" >> "$ENVS_MANIFEST"
         success "  $repo: $rel"
     done < <(find "$base" -maxdepth 3 -name ".env" -not -path "*/node_modules/*" -not -path "*/.venv/*" 2>/dev/null)
 done

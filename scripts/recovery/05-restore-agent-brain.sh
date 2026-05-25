@@ -39,10 +39,22 @@ if [[ -f "$AGENT_ENV" ]]; then
 fi
 
 # ─────────────────────────────────────────────────────────────
-# Setup brain MCP venv
+# Setup brain MCP venv (+ uv if missing — brain MCP launched via uv run)
 # ─────────────────────────────────────────────────────────────
 BRAIN_DIR="$AGENT_DIR/mcp/haingt-brain"
 VENV="$BRAIN_DIR/.venv"
+
+# Install uv if missing (Astral package manager — not in dnf, install via curl)
+# ~/.claude.json runs brain MCP via `uv run --project ... haingt-brain`
+if ! command -v uv >/dev/null && [[ ! -x "$HOME/.local/bin/uv" ]]; then
+    log_info "Installing uv (Astral Python package manager)..."
+    if $DRY_RUN; then
+        log_info "[DRY-RUN] curl install uv"
+    else
+        curl -LsSf https://astral.sh/uv/install.sh | sh 2>&1 | tail -3
+        export PATH="$HOME/.local/bin:$PATH"
+    fi
+fi
 
 if [[ -d "$VENV" ]]; then
     log_success "Brain MCP venv exists"

@@ -61,36 +61,32 @@ fi
 # Restore per-repo .env from bundle
 # ─────────────────────────────────────────────────────────────
 log_info ""
-log_info "Restoring .env files"
+log_info "Restoring .env files (from envs/manifest.txt)"
 
-for envfile in "$STAGING/envs/"*; do
-    [[ -f "$envfile" ]] || continue
-    flat=$(basename "$envfile")
+MANIFEST="$STAGING/envs/manifest.txt"
+if [[ ! -f "$MANIFEST" ]]; then
+    log_warn "  envs/manifest.txt missing — bundle from older daemon version, skip"
+else
+    while IFS='|' read -r flat repo rel; do
+        envfile="$STAGING/envs/$flat"
+        [[ -f "$envfile" ]] || { log_warn "  missing bundle file: $flat"; continue; }
 
-    # Decode: repo--path-to-env → repo + relative path
-    repo="${flat%%--*}"
-    rest="${flat#*--}"
-    rel=$(echo "$rest" | tr '-' '/' | sed 's|//|.|')
+        target="$PROJECTS/$repo/$rel"
+        if [[ ! -d "$PROJECTS/$repo" ]]; then
+            log_warn "  $repo not cloned, skip .env"
+            continue
+        fi
 
-    # Special case: top-level .env stored as "repo--.env"
-    [[ "$rest" == ".env" ]] && rel=".env"
-
-    target="$PROJECTS/$repo/$rel"
-
-    if [[ ! -d "$PROJECTS/$repo" ]]; then
-        log_warn "  $repo not cloned, skip .env"
-        continue
-    fi
-
-    if $DRY_RUN; then
-        log_info "[DRY-RUN] $envfile → $target"
-    else
-        mkdir -p "$(dirname "$target")"
-        /bin/cp "$envfile" "$target"
-        chmod 600 "$target"
-        log_success "  $repo/$rel"
-    fi
-done
+        if $DRY_RUN; then
+            log_info "[DRY-RUN] $flat → $target"
+        else
+            mkdir -p "$(dirname "$target")"
+            /bin/cp "$envfile" "$target"
+            chmod 600 "$target"
+            log_success "  $repo/$rel"
+        fi
+    done < "$MANIFEST"
+fi
 
 # ─────────────────────────────────────────────────────────────
 # Post-hooks
