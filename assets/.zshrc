@@ -232,4 +232,4 @@ export DOTNET_ROOT=$HOME/.dotnet
 export PATH=$PATH:$HOME/.dotnet:$HOME/.dotnet/tools
 
 # Agent Hub Aliases
-source ~/Projects/agent/shell-aliases.sh
+source ~/Projects/agent/bin/shell-aliases.sh

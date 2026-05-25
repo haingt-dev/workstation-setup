@@ -84,12 +84,12 @@ setup_agent_hub() {
     # Verify shell aliases integration
     log_info "Verifying shell aliases integration..."
 
-    if grep -q "Projects/agent/shell-aliases.sh" "$HOME/.zshrc" 2>/dev/null; then
+    if grep -q "Projects/agent/bin/shell-aliases.sh" "$HOME/.zshrc" 2>/dev/null; then
         log_success "Shell aliases already integrated in ~/.zshrc"
     else
         log_warn "Shell aliases not found in ~/.zshrc"
         log_info "Add this line to ~/.zshrc:"
-        echo "    source ~/Projects/agent/shell-aliases.sh"
+        echo "    source ~/Projects/agent/bin/shell-aliases.sh"
     fi
 
     log_success "Agent Hub setup complete!"
@@ -132,7 +132,7 @@ verify_installation() {
         log_warn "Legacy ~/.agent_global symlink still exists"
     fi
 
-    if [[ ! -f "$AGENT_DIR/shell-aliases.sh" ]]; then
+    if [[ ! -f "$AGENT_DIR/bin/shell-aliases.sh" ]]; then
         log_error "Shell aliases script not found"
         ((ERRORS++))
     fi
