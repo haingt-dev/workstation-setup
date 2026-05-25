@@ -1,0 +1,65 @@
+═══════════════════════════════════════════════════════════════
+  HẢI'S WORKSTATION DISASTER RECOVERY — QUICK CARD
+  Save copy to Google Keep + paper safe
+═══════════════════════════════════════════════════════════════
+
+PASSPHRASE: <look in password manager: "bundle.pass haingt workstation">
+
+───────────────────────────────────────────────────────────────
+  ON FRESH NOBARA/FEDORA MACHINE — copy/paste these in order:
+───────────────────────────────────────────────────────────────
+
+# 1. Bootstrap prereqs (1 min)
+sudo dnf install -y git curl gh gnupg2 rclone
+
+# 2. Auth GitHub (browser opens, login normally)
+gh auth login --web
+
+# 3. Clone recovery scripts
+mkdir -p ~/Projects
+gh repo clone haingt-dev/workstation-setup ~/Projects/workstation-setup
+
+# 4. Run recovery (interactive, 60-90 min total)
+#    Phase 2 will prompt for bundle passphrase — paste from password manager
+cd ~/Projects/workstation-setup && ./recover.sh
+
+# 5. After recovery, pull Forge models if needed (optional, 30-60 min)
+cd ~/Projects/home-server && ./scripts/forge-pull-models.sh
+
+───────────────────────────────────────────────────────────────
+  WHAT RECOVERY RESTORES (auto):
+───────────────────────────────────────────────────────────────
+  • All SSH/GPG/gh tokens, ALL .env files (Civitai, AirVPN, OpenAI...)
+  • Brain DB + ~/.claude/ full (conversation history, plans, plugins)
+  • 6 repos: agent, digital-identity, home-server, Idea_Vault, IronCradle, workstation-setup
+  • Godot 4.6 + VS Code settings + extensions
+  • Cron 4:30 AM daily backup re-installed
+
+───────────────────────────────────────────────────────────────
+  MANUAL AFTER (cannot automate):
+───────────────────────────────────────────────────────────────
+  1. Forge models ~9GB: cd ~/Projects/home-server && ./scripts/forge-pull-models.sh
+  2. IronCradle: open Godot first time → reimport 5-30 min one-time
+  3. home-server stack: cd ~/Projects/home-server && ./scripts/up.sh all
+
+───────────────────────────────────────────────────────────────
+  IF SOMETHING BREAKS:
+───────────────────────────────────────────────────────────────
+  • Resume after failed phase N:  ./recover.sh --from-phase N
+  • Skip a phase:                 ./recover.sh --skip-phase N
+  • Preview without changes:      ./recover.sh --dry-run
+  • Logs:                         ~/.local/share/recovery/recover.log
+  • Detailed docs:                ~/Projects/workstation-setup/docs/RECOVERY.md
+
+───────────────────────────────────────────────────────────────
+  CRITICAL POINTERS:
+───────────────────────────────────────────────────────────────
+  Bundle location: onedrive-dev:dev/recovery-bundle/daily/recovery-bundle-YYYY-MM-DD.tar.gz.gpg
+  Passphrase: password manager entry "bundle.pass haingt workstation"
+  M365 account: haint@bluesea98.onmicrosoft.com (Microsoft tenant)
+  GitHub: github.com/haingt-dev (gh CLI auto-clones via SSH from bundled key)
+
+═══════════════════════════════════════════════════════════════
+  Last verified: 2026-05-25 (VM test passed, 13 checks ✓)
+  Recovery system version: 1de26c7
+═══════════════════════════════════════════════════════════════
