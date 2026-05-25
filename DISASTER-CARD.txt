@@ -3,7 +3,7 @@
   Save copy to Google Keep + paper safe
 ═══════════════════════════════════════════════════════════════
 
-PASSPHRASE: <look in password manager: "bundle.pass haingt workstation">
+PASSPHRASE: search Zoho Vault entry "bundle.pass haingt workstation recovery"
 
 ───────────────────────────────────────────────────────────────
   ON FRESH NOBARA/FEDORA MACHINE — copy/paste these in order:
@@ -20,7 +20,7 @@ mkdir -p ~/Projects
 gh repo clone haingt-dev/workstation-setup ~/Projects/workstation-setup
 
 # 4. Run recovery (interactive, 60-90 min total)
-#    Phase 2 will prompt for bundle passphrase — paste from password manager
+#    Phase 2 will prompt for bundle passphrase — paste from Zoho Vault
 cd ~/Projects/workstation-setup && ./recover.sh
 
 # 5. After recovery, pull Forge models if needed (optional, 30-60 min)
@@ -55,7 +55,7 @@ cd ~/Projects/home-server && ./scripts/forge-pull-models.sh
   CRITICAL POINTERS:
 ───────────────────────────────────────────────────────────────
   Bundle location: onedrive-dev:dev/recovery-bundle/daily/recovery-bundle-YYYY-MM-DD.tar.gz.gpg
-  Passphrase: password manager entry "bundle.pass haingt workstation"
+  Passphrase: Zoho Vault entry "bundle.pass haingt workstation recovery"
   M365 account: haint@bluesea98.onmicrosoft.com (Microsoft tenant)
   GitHub: github.com/haingt-dev (gh CLI auto-clones via SSH from bundled key)
 
