@@ -116,6 +116,16 @@ if [[ -d "$HS" && -d "$HS_BUNDLE" ]]; then
             fi
         fi
     done
+
+    # Install KDE tray indicator (PyQt6 dnf + ~/.config/autostart/*.desktop)
+    if [[ -x "$HS/scripts/install-tray.sh" ]]; then
+        log_info "  Installing home-server tray"
+        if $DRY_RUN; then
+            log_info "  [DRY-RUN] $HS/scripts/install-tray.sh"
+        else
+            "$HS/scripts/install-tray.sh" || log_warn "    tray install failed (non-fatal — re-run manually)"
+        fi
+    fi
 fi
 
 # Hook: IronCradle dev env

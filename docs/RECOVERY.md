@@ -54,7 +54,7 @@ Recovery cần **bundle passphrase** (lưu password manager). Bộ recover.sh h�
 | `claude/` | CLAUDE.md, core-memory, brains, settings.json, **dot-claude.json (global MCP)**, plans, projects.tar.gz (conv history), plugins.tar.gz (cache + marketplaces) |
 | `envs/` | All .env files via **manifest.txt** (sequential `env-N.bin` + path mapping — handles dashes in dirnames correctly) |
 | `brain/` | brain.db (sqlite `.backup` WAL-safe snapshot) |
-| `home-server/` | tier1 (.env × 3), tier2 (configs+DBs), tier3 (Forge outputs, weekly only) |
+| `home-server/` | tier1 (.env × 4 incl. ebooks), tier2 (configs+DBs + ebooks/data/config), tier3 (Forge outputs, weekly only) |
 | `ironcradle/` | Godot version pin, ~/.config/godot, VS Code User, extensions list |
 | `crontabs/` | Snapshot user crontab |
 | `manifest.txt + repos.txt` | Bundle metadata + auto-generated repo list with remotes |

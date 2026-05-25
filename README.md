@@ -24,7 +24,7 @@ Automated workstation setup for Nobara 42 / Fedora — terminal, dev tools, apps
 - **Godot Engine**: Game engine setup and configuration
 
 ### Applications
-- **Additional Apps**: Chrome, Discord, Obsidian, Anki, Calibre, Todoist
+- **Additional Apps**: Chrome, Discord, Obsidian, Anki, Todoist
 - **OneDrive**: Multi-account support via `abraunegg/onedrive` client
 - **Audio Processing**: EasyEffects with pre-tuned presets
 - **DNS**: Cloudflare Block Malware configuration
@@ -240,7 +240,7 @@ sudo shutdown -h now
 - **Qdrant**: Podman container with systemd service at http://localhost:6333
 - **Godot**: Downloads to ~/.local/bin, creates desktop entry
 - **OBS Studio**: Installed via Flatpak (com.obsproject.Studio)
-- **Apps**: Chrome (DNF), Discord, Obsidian, Anki, Calibre, Todoist (Flatpak)
+- **Apps**: Chrome (DNF), Discord, Obsidian, Anki, Todoist (Flatpak)
 - **OneDrive**: Multi-account sync with systemd services
 - **EasyEffects**: Audio presets for speakers/headsets
 - **DNS**: Cloudflare Block Malware (1.1.1.2/1.0.0.2)

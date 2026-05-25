@@ -51,14 +51,6 @@ dnf_install google-chrome-stable
 log_success "Google Chrome installed"
 
 # =============================================================================
-# Calibre
-# =============================================================================
-log_section "Installing Calibre..."
-
-dnf_install calibre
-log_success "Calibre installed"
-
-# =============================================================================
 # VLC
 # =============================================================================
 log_section "Installing VLC..."
@@ -158,7 +150,6 @@ echo ""
 echo "Installed applications:"
 echo "  - Firefox (DNF)"
 echo "  - Google Chrome (DNF)"
-echo "  - Calibre (DNF)"
 echo "  - VLC (DNF)"
 echo "  - Discord (Flatpak)"
 echo "  - Obsidian (AppImage)"
