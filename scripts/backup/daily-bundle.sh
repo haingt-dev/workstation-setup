@@ -152,7 +152,7 @@ log "=== Section 2: Claude state ==="
 CLAUDE_DIR="$HOME/.claude"
 CLAUDE_DST="$STAGE/claude"
 
-for item in CLAUDE.md core-memory.md brains settings.json config.json keybindings.json plans agents installed_plugins.json; do
+for item in CLAUDE.md core-memory.md brains settings.json config.json keybindings.json plans agents; do
     src="$CLAUDE_DIR/$item"
     if [[ -e "$src" ]]; then
         # -L: dereference symlinks so content survives even if symlink target
@@ -165,6 +165,14 @@ for item in CLAUDE.md core-memory.md brains settings.json config.json keybinding
         fi
     fi
 done
+
+# Global MCP config (~/.claude.json — separate from ~/.claude/ dir)
+# Contains mcpServers (haingt-brain, todoist, etc) + plugin marketplace state
+# Without this: post-restore Claude Code has no MCP servers configured
+if [[ -f "$HOME/.claude.json" ]]; then
+    /bin/cp "$HOME/.claude.json" "$CLAUDE_DST/dot-claude.json"
+    success "  ~/.claude.json (global MCP + plugin marketplace state)"
+fi
 
 # projects/ = conversation history + memory (832MB, compresses ~150-200MB)
 if [[ -d "$CLAUDE_DIR/projects" ]]; then

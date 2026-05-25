@@ -21,7 +21,7 @@ log_info "Restoring ~/.claude/ from bundle"
 # ─────────────────────────────────────────────────────────────
 # Flat files
 # ─────────────────────────────────────────────────────────────
-for f in CLAUDE.md core-memory.md settings.json config.json keybindings.json installed_plugins.json; do
+for f in CLAUDE.md core-memory.md settings.json config.json keybindings.json; do
     src="$CLAUDE_SRC/$f"
     if [[ -f "$src" ]]; then
         if $DRY_RUN; then
@@ -32,6 +32,17 @@ for f in CLAUDE.md core-memory.md settings.json config.json keybindings.json ins
         fi
     fi
 done
+
+# Global MCP config (~/.claude.json — sibling of ~/.claude/ dir)
+if [[ -f "$CLAUDE_SRC/dot-claude.json" ]]; then
+    if $DRY_RUN; then
+        log_info "[DRY-RUN] cp dot-claude.json → ~/.claude.json"
+    else
+        /bin/cp "$CLAUDE_SRC/dot-claude.json" "$HOME/.claude.json"
+        chmod 600 "$HOME/.claude.json"
+        log_success "  ~/.claude.json (global MCP config — haingt-brain, todoist, etc.)"
+    fi
+fi
 
 # ─────────────────────────────────────────────────────────────
 # Directories (brains, agents, plans)
