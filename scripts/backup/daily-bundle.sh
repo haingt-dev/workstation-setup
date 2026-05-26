@@ -489,19 +489,22 @@ log "=== Retention cleanup ==="
 
 apply_retention() {
     local remote="$1"
-    log "  $remote"
+    local daily="${2:-$RETAIN_DAILY_DAYS}"
+    local weekly="${3:-$RETAIN_WEEKLY_COUNT}"
+    local monthly="${4:-$RETAIN_MONTHLY_COUNT}"
+    log "  $remote (daily=${daily}d weekly=${weekly} monthly=${monthly})"
 
-    # Daily: delete >7 days old
-    rclone delete "$remote/daily/" --min-age "${RETAIN_DAILY_DAYS}d" \
+    # Daily: delete older than configured days
+    rclone delete "$remote/daily/" --min-age "${daily}d" \
         --include "recovery-bundle-*.tar.gz.gpg" 2>&1 | tail -3 || true
 
-    # Weekly: promote Sunday daily → weekly, keep 4
+    # Weekly: promote Sunday daily → weekly
     if [[ "$(date +%u)" == "7" ]]; then
         latest=$(rclone lsf "$remote/daily/" --include "recovery-bundle-${DATE}.tar.gz.gpg")
         if [[ -n "$latest" ]]; then
             rclone copy "$remote/daily/$latest" "$remote/weekly/" 2>&1 | tail -1 || true
         fi
-        rclone delete "$remote/weekly/" --min-age "$((RETAIN_WEEKLY_COUNT * 7))d" 2>&1 | tail -3 || true
+        rclone delete "$remote/weekly/" --min-age "$((weekly * 7))d" 2>&1 | tail -3 || true
     fi
 
     # Monthly: promote 1st of month
@@ -510,13 +513,16 @@ apply_retention() {
         if [[ -n "$latest" ]]; then
             rclone copy "$remote/daily/$latest" "$remote/monthly/" 2>&1 | tail -1 || true
         fi
-        rclone delete "$remote/monthly/" --min-age "$((RETAIN_MONTHLY_COUNT * 31))d" 2>&1 | tail -3 || true
+        rclone delete "$remote/monthly/" --min-age "$((monthly * 31))d" 2>&1 | tail -3 || true
     fi
 }
 
 if ! $DRY_RUN; then
     apply_retention "$RCLONE_REMOTE_PRIMARY"
-    [[ -n "${RCLONE_REMOTE_FALLBACK:-}" ]] && apply_retention "$RCLONE_REMOTE_FALLBACK"
+    [[ -n "${RCLONE_REMOTE_FALLBACK:-}" ]] && apply_retention "$RCLONE_REMOTE_FALLBACK" \
+        "${FALLBACK_RETAIN_DAILY_DAYS:-$RETAIN_DAILY_DAYS}" \
+        "${FALLBACK_RETAIN_WEEKLY_COUNT:-$RETAIN_WEEKLY_COUNT}" \
+        "${FALLBACK_RETAIN_MONTHLY_COUNT:-$RETAIN_MONTHLY_COUNT}"
 fi
 
 # ─────────────────────────────────────────────────────────────

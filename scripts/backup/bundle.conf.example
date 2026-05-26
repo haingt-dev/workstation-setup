@@ -18,9 +18,16 @@ RCLONE_REMOTE_FALLBACK="b2-recovery:hai-recovery-bundle"
 BANDWIDTH_SCHEDULE="07:00,8M 23:00,off"
 
 # Retention (server-side, applied via rclone delete --min-age)
+# Primary remote — full retention (OneDrive 1TB plan, plenty of headroom)
 RETAIN_DAILY_DAYS=7
 RETAIN_WEEKLY_COUNT=4    # 4 weeks of Sunday snapshots
 RETAIN_MONTHLY_COUNT=12  # 12 months of 1st-of-month snapshots
+
+# Fallback remote override — leave unset to mirror primary retention.
+# B2 free tier = 10GB cap. With ~700M bundle, 7+4+2=13 bundles ≈ 9.1GB stays under cap.
+FALLBACK_RETAIN_DAILY_DAYS=7
+FALLBACK_RETAIN_WEEKLY_COUNT=4
+FALLBACK_RETAIN_MONTHLY_COUNT=2
 
 # Tier 3 (Forge outputs) frequency: daily, weekly, or skip
 TIER3_FREQUENCY="weekly"
