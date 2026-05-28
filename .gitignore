@@ -4,18 +4,15 @@
 # VS Code project settings
 .vscode/
 
-# Claude sensitive files (contain API keys, session data)
-assets/.claude/config.json
-assets/.claude/projects/
-assets/.claude/history.jsonl
-assets/.claude/stats-cache.json
-assets/.claude/plugins/marketplaces/
-assets/.claude/plugins/cache/
-assets/.claude/plugins/blocklist.json
-assets/.claude/plugins/install-counts-cache.json
-
-# Agent Hub — exclude .git if accidentally copied
-assets/.agent_global/.git/
+# Tool-managed state — captured by the backup bundle, NEVER vendored in this repo.
+# assets/.claude + assets/vscode were the source of a real secret leak in git
+# history (purged 2026-05-29). Keep these ignored permanently.
+assets/.claude/
+assets/vscode/
+assets/.config/Code/
+assets/godot/
+assets/fonts/
+assets/.agent_global/
 
 # Environment secrets (NEVER commit)
 .env

@@ -8,9 +8,7 @@
 #
 # This script sets up:
 #   - ~/Projects/agent/ (clone from GitHub if not present)
-#   - ~/.claude/ settings (MCP, plugins)
-#   - Shell aliases integration
-#   - Git hooks installation to all projects
+#   - Shell aliases integration (verifies ~/.zshrc sources shell-aliases.sh)
 #
 # Note: This script complements terminal_setup.sh and should be run AFTER it.
 #
@@ -62,24 +60,10 @@ setup_agent_hub() {
     # Make scripts executable
     find "$AGENT_DIR" -name '*.sh' -type f -exec chmod +x {} +
 
-    # Restore Claude configuration
-    if [[ -d "$BACKUP_DIR/.claude" ]]; then
-        log_info "Restoring Claude configuration..."
-        ensure_dir "$HOME/.claude"
-
-        [[ -f "$BACKUP_DIR/.claude/mcp_settings.json" ]] && \
-            cp "$BACKUP_DIR/.claude/mcp_settings.json" "$HOME/.claude/"
-
-        if [[ -d "$BACKUP_DIR/.claude/plugins" ]]; then
-            ensure_dir "$HOME/.claude/plugins"
-            [[ -f "$BACKUP_DIR/.claude/plugins/known_marketplaces.json" ]] && \
-                cp "$BACKUP_DIR/.claude/plugins/known_marketplaces.json" "$HOME/.claude/plugins/"
-            [[ -f "$BACKUP_DIR/.claude/plugins/installed_plugins.json" ]] && \
-                cp "$BACKUP_DIR/.claude/plugins/installed_plugins.json" "$HOME/.claude/plugins/"
-        fi
-
-        log_success "Claude configuration restored"
-    fi
+    # Claude config (~/.claude.json MCP servers + ~/.claude/plugins/) is live,
+    # tool-managed state — seeded fresh by Claude Code on first run, backed up by
+    # scripts/backup/daily-bundle.sh (Section 2) and restored by recover.sh Phase 4.
+    # Nothing to seed from this repo.
 
     # Verify shell aliases integration
     log_info "Verifying shell aliases integration..."

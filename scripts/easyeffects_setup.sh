@@ -24,25 +24,25 @@ log_success "EasyEffects installed"
 # =============================================================================
 # Restore presets and configuration
 # =============================================================================
-log_section "Restoring EasyEffects presets..."
+log_section "Linking EasyEffects presets..."
 
 EASYEFFECTS_BACKUP="$BACKUP_DIR/.config/easyeffects"
 EASYEFFECTS_TARGET="$HOME/.config/easyeffects"
 
+# Symlink preset files individually (NOT the whole dir): EasyEffects writes its
+# own state into ~/.config/easyeffects/, so only the user-authored presets are
+# linked back to the repo. Editing a preset in the GUI then writes through to git.
 if [[ -d "$EASYEFFECTS_BACKUP" ]]; then
-    copy_dir "$EASYEFFECTS_BACKUP" "$EASYEFFECTS_TARGET"
-    log_success "EasyEffects presets restored to $EASYEFFECTS_TARGET"
+    for preset in "$EASYEFFECTS_BACKUP"/output/*.json \
+                  "$EASYEFFECTS_BACKUP"/autoload/output/*.json; do
+        [[ -e "$preset" ]] || continue
+        link_file "${preset#"$BACKUP_DIR"/}" "$EASYEFFECTS_TARGET/${preset#"$EASYEFFECTS_BACKUP"/}"
+    done
+    log_success "EasyEffects presets linked into $EASYEFFECTS_TARGET"
     
-    # Also copy to Flatpak location if it exists
-    FLATPAK_CONFIG="$HOME/.var/app/com.github.wwmm.easyeffects/config/easyeffects"
-    if [[ -d "$HOME/.var/app/com.github.wwmm.easyeffects" ]]; then
-        log_info "Detected Flatpak EasyEffects, copying presets there too..."
-        copy_dir "$EASYEFFECTS_BACKUP" "$FLATPAK_CONFIG"
-        log_success "EasyEffects presets also restored to Flatpak location"
-    fi
 else
-    log_warn "EasyEffects backup not found at $EASYEFFECTS_BACKUP"
-    log_info "No presets to restore. Configure EasyEffects manually."
+    log_warn "EasyEffects presets not found at $EASYEFFECTS_BACKUP"
+    log_info "No presets to link. Configure EasyEffects manually."
 fi
 
 # =============================================================================

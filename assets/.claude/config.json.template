@@ -1,6 +1,0 @@
-{
-  "primaryApiKey": "YOUR_ANTHROPIC_API_KEY_HERE",
-  "customApiKeyResponses": {
-    "approved": []
-  }
-}

@@ -43,10 +43,27 @@ cd workstation-setup
 
 ## Philosophy
 
-- **Single source of truth**: The `assets/` directory contains all configurations
-- **No backups**: Running setup overwrites existing configs without creating backups
+- **Symlink, don't copy**: User-authored configs (zsh, kitty, starship, tmux, …) are
+  **symlinked** from `assets/` into `$HOME` — the repo is the source of truth and editing
+  either side is the same file (zero drift, full git history). First link of an existing
+  real file backs it up to `<path>.pre-symlink.<ts>.bak`.
+- **Config in git, state in backup**: Tool-managed state (VS Code, Godot, Claude, shell
+  history) is **not** vendored here — it's captured by the encrypted backup pipeline
+  (below) and restored by `recover.sh`. Fonts are downloaded on-demand.
 - **One profile**: Single, full-featured terminal configuration (no "core" vs "enhanced")
 - **Opinionated**: Curated, clean configs with Catppuccin theming throughout
+
+## Backup & Recovery
+
+This repo provisions a *fresh* machine; a separate pipeline preserves *state* that can't
+be regenerated:
+
+- **`scripts/backup/daily-bundle.sh`** — bundles non-git state (SSH/GPG keys, `.env` files,
+  brain DB, `~/.claude` state, VS Code/Godot config, home-server data) into one GPG-encrypted
+  tarball pushed to OneDrive + optional Backblaze B2 (cron via `scripts/backup/install-cron.sh`).
+- **`recover.sh`** — 7-phase disaster recovery: runs `setup.sh` (dotfiles via symlink), then
+  restores secrets/brain/Claude/repos from the latest bundle. See `docs/RECOVERY.md` and
+  `DISASTER-CARD.txt`.
 
 ## Usage
 
@@ -93,20 +110,20 @@ Examples:
 .
 ├── setup.sh                    # Master orchestrator script
 ├── TERMINAL_CAPABILITIES.md    # Terminal features & shortcuts guide
-├── assets/                     # Configuration data (source of truth)
+├── assets/                     # User-authored configs (symlinked into $HOME)
 │   ├── .zshrc                  # Zsh configuration
 │   ├── .bashrc                 # Bash configuration
 │   ├── .gitconfig              # Git configuration
-│   ├── .config/                # App configs
-│   │   ├── starship/           # Starship prompt config
-│   │   ├── atuin/              # Atuin shell history config
-│   │   ├── fastfetch/          # Fastfetch system info config
-│   │   ├── kitty/              # Kitty terminal + Catppuccin theme
-│   │   ├── tmux/               # Tmux + TPM plugins
-│   │   └── easyeffects/        # Audio presets
-│   ├── fonts/                  # CaskaydiaCove Nerd Font
-│   ├── godot/                  # Godot editor settings
-│   └── images/                 # Custom assets (fastfetch logo)
+│   ├── symlinks.yml            # Declarative cross-project symlink manifest
+│   └── .config/                # App configs
+│       ├── starship/           # Starship prompt config
+│       ├── atuin/              # Atuin config (config.toml)
+│       ├── fastfetch/          # Fastfetch config + logo
+│       ├── kitty/              # Kitty terminal + Catppuccin + background
+│       ├── tmux/               # Tmux + TPM plugins
+│       ├── fish/               # fish conf.d
+│       └── easyeffects/        # Audio presets (G560/G435)
+│   # fonts downloaded on-demand; Godot/VS Code/Claude state → backup bundle
 └── scripts/
     ├── common.sh               # Shared utilities
     ├── terminal_setup.sh       # Terminal setup (single profile)
@@ -135,8 +152,8 @@ AI agent workflow integration for Claude Code:
 - Claude plugins (haint-core, godot-dev)
 
 **Claude Integration** (`~/.claude/`):
-- MCP server configuration (incl. `haingt-brain` for semantic memory)
-- Plugin registry (marketplace + installed plugins)
+- MCP servers + plugin registry are live, tool-managed state — seeded by Claude Code on
+  first run and restored from the backup bundle (not vendored in this repo)
 
 **Per-Project Structure** (created by `bootstrap`):
 - `AGENTS.md` - Shared project context (all agents)
@@ -152,7 +169,6 @@ ag-help         # Show all commands
 
 **Documentation**:
 - `~/Projects/agent/README.md` - Agent Hub overview
-- `~/.claude/MCP_SETUP.md` - MCP server setup
 
 ### Terminal Setup (`terminal_setup.sh`)
 
@@ -260,11 +276,10 @@ sudo shutdown -h now
 
 ## Customization
 
-To customize configs:
-1. Edit files directly in `assets/`
-2. Run `./setup.sh --terminal` to apply changes
-
-The repo is your source of truth - changes are tracked in git.
+Configs are symlinked, so **editing `~/.zshrc` (or any linked config) edits the repo file
+directly** — changes show up in `git status` immediately, no re-run needed. Run
+`./setup.sh --terminal` only to (re)create links on a fresh machine or after adding a new
+config file. Commit from the repo to keep history.
 
 ## License
 

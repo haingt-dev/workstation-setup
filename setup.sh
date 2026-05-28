@@ -9,8 +9,9 @@
 #   ./setup.sh --skip-godot # Full installation EXCEPT Godot
 #   ./setup.sh --help
 #
-# Note: This script overwrites existing configs without backup.
-# The repo (assets/) is the single source of truth.
+# Note: User-authored configs are symlinked from assets/ into $HOME (repo = source
+# of truth, zero drift). Tool-managed state (VS Code, Godot, Claude) is restored
+# from the encrypted backup bundle by recover.sh, not seeded here.
 #
 # =============================================================================
 

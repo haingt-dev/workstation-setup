@@ -14,8 +14,9 @@
 #   - Fonts (CaskaydiaCove Nerd Font)
 #   - Catppuccin themes for kitty, tmux, fzf
 #
-# Note: This script overwrites existing configs without backup.
-# The repo (assets/) is the single source of truth.
+# Note: User-authored configs are SYMLINKED from assets/ into $HOME — the repo is
+# the source of truth and editing either side is the same file (zero drift).
+# An existing real file is backed up to <path>.pre-symlink.<ts>.bak on first link.
 #
 # =============================================================================
 
@@ -187,71 +188,68 @@ run_core_setup() {
         log_success "zsh-autocomplete cloned to $ZSH_AUTOCOMPLETE_LOCAL"
     fi
 
-    # 6. Restore Dotfiles (overwrite without backup)
-    log_section "Restoring dotfiles..."
+    # 6. Link dotfiles (repo = source of truth; $HOME files symlink into assets/)
+    log_section "Linking dotfiles..."
 
-    # .zshrc
-    if [[ -f "$BACKUP_DIR/.zshrc" ]]; then
-        cp -f "$BACKUP_DIR/.zshrc" ~/
-        # Update zsh-autocomplete path if using local installation
-        if [[ ! -f "$ZSH_AUTOCOMPLETE_SYSTEM" ]] && [[ -d "$ZSH_AUTOCOMPLETE_LOCAL" ]]; then
-            sed -i "s|source /usr/share/zsh-autocomplete/zsh-autocomplete.plugin.zsh|source $ZSH_AUTOCOMPLETE_LOCAL/zsh-autocomplete.plugin.zsh|g" ~/.zshrc
-            log_success ".zshrc installed (updated with local zsh-autocomplete path)"
-        else
-            log_success ".zshrc installed"
-        fi
-    fi
+    # .zshrc — assets/.zshrc already resolves the zsh-autocomplete path itself
+    # (system path vs ~/.local fallback via if/elif), so no post-copy sed needed.
+    link_file ".zshrc" ~/.zshrc
 
     # .bashrc
-    restore_file ".bashrc" ~/.bashrc
+    link_file ".bashrc" ~/.bashrc
 
     # .gitconfig
-    restore_file ".gitconfig" ~/.gitconfig
+    link_file ".gitconfig" ~/.gitconfig
 
-    # 7. Restore .config directories (overwrite without backup)
-    log_section "Restoring .config directories..."
+    # 7. Link .config (repo = source of truth)
+    log_section "Linking .config..."
     ensure_dir ~/.config
 
     # starship config
-    restore_file ".config/starship/starship.toml" ~/.config/starship/starship.toml
+    link_file ".config/starship/starship.toml" ~/.config/starship/starship.toml
+    link_file ".config/starship/starship-catppuccin.toml" ~/.config/starship/starship-catppuccin.toml
 
-    # atuin config
-    restore_dir ".config/atuin" ~/.config/atuin
+    # atuin config (config.toml only — install receipt is machine state, not versioned)
+    link_file ".config/atuin/config.toml" ~/.config/atuin/config.toml
 
-    # fastfetch config
-    restore_dir ".config/fastfetch" ~/.config/fastfetch
+    # fastfetch config (whole dir — fastfetch never writes here; carries assets/jedi.png)
+    link_dir ".config/fastfetch" ~/.config/fastfetch
 
-    # fastfetch custom logo
-    restore_file "images/jedi.png" ~/.config/fastfetch/assets/jedi.png
+    # fish config (only conf.d — fish writes its own state into ~/.config/fish/)
+    link_dir ".config/fish/conf.d" ~/.config/fish/conf.d
 
-    # fish config (if present)
-    restore_dir ".config/fish" ~/.config/fish
-
-    # kitty config
-    if [[ -d "$BACKUP_DIR/.config/kitty" ]]; then
-        ensure_dir ~/.config/kitty
-        cp -f "$BACKUP_DIR/.config/kitty/kitty.conf" ~/.config/kitty/ 2>/dev/null || true
-        cp -f "$BACKUP_DIR/.config/kitty/catppuccin-mocha.conf" ~/.config/kitty/ 2>/dev/null || true
-        cp -f "$BACKUP_DIR/.config/kitty/startup.conf" ~/.config/kitty/ 2>/dev/null || true
-        cp -f "$BACKUP_DIR/.config/kitty/background.jpg" ~/.config/kitty/ 2>/dev/null || true
-        log_success "kitty config installed"
-    fi
+    # kitty config (per-file — kitty never writes here; background.jpg is versioned)
+    link_file ".config/kitty/kitty.conf"            ~/.config/kitty/kitty.conf
+    link_file ".config/kitty/catppuccin-mocha.conf" ~/.config/kitty/catppuccin-mocha.conf
+    link_file ".config/kitty/startup.conf"          ~/.config/kitty/startup.conf
+    link_file ".config/kitty/background.jpg"        ~/.config/kitty/background.jpg
 
     # Configure GNOME Kitty shortcut (Ctrl+Space)
     configure_gnome_kitty_shortcut
 
     # tmux config
-    restore_file ".config/tmux/tmux.conf" ~/.config/tmux/tmux.conf
+    link_file ".config/tmux/tmux.conf" ~/.config/tmux/tmux.conf
 
-    # 8. Install Fonts
-    log_section "Installing fonts..."
-    if [[ -d "$BACKUP_DIR/fonts" ]]; then
-        ensure_dir ~/.local/share/fonts
-        cp "$BACKUP_DIR/fonts/"*.ttf ~/.local/share/fonts/ 2>/dev/null || true
-        fc-cache -fv
-        log_success "Fonts installed and cache updated"
+    # 8. Install Nerd Font (downloaded on-demand; not vendored in git)
+    log_section "Installing CaskaydiaCove Nerd Font..."
+    FONT_DIR="$HOME/.local/share/fonts"
+    if compgen -G "$FONT_DIR/CaskaydiaCove*.ttf" > /dev/null; then
+        log_success "CaskaydiaCove Nerd Font already installed; skipping download"
     else
-        log_warn "No fonts directory found in backup"
+        ensure_dir "$FONT_DIR"
+        FONT_TMP="$(mktemp -d)"
+        # GitHub 'latest' redirect — no version pin to go stale
+        FONT_URL="https://github.com/ryanoasis/nerd-fonts/releases/latest/download/CascadiaCode.zip"
+        log_info "Downloading CascadiaCode Nerd Font (latest release)..."
+        if curl -fSL "$FONT_URL" -o "$FONT_TMP/CascadiaCode.zip"; then
+            unzip -qo "$FONT_TMP/CascadiaCode.zip" -d "$FONT_TMP/extract"
+            find "$FONT_TMP/extract" -name 'CaskaydiaCove*.ttf' -exec cp -f {} "$FONT_DIR/" \;
+            fc-cache -f "$FONT_DIR"
+            log_success "CaskaydiaCove Nerd Font installed and cache rebuilt"
+        else
+            log_warn "Font download failed (network?). Terminal still works with a fallback font."
+        fi
+        rm -rf "$FONT_TMP"
     fi
 
     # 9. Change Default Shell to Zsh

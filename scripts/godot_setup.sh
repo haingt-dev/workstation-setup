@@ -212,22 +212,12 @@ cd - > /dev/null
 rm -rf "$TEMP_DIR"
 
 # =============================================================================
-# Restore Configuration
+# Configuration (NOT seeded from this repo)
 # =============================================================================
-log_section "Restoring Godot configuration..."
-
-if [[ -d "$BACKUP_DIR/godot" ]]; then
-    ensure_dir "$GODOT_CONFIG_DIR"
-    cp -r "$BACKUP_DIR/godot/"* "$GODOT_CONFIG_DIR/"
-    log_success "Configuration restored to $GODOT_CONFIG_DIR"
-    
-    # Check external editor integration
-    if grep -q 'text_editor/external/use_external_editor = true' "$GODOT_CONFIG_DIR/"editor_settings*.tres 2>/dev/null; then
-        log_success "External editor integration preserved"
-    fi
-else
-    log_warn "No Godot config backup found in $BACKUP_DIR/godot"
-fi
+# Godot editor settings (~/.config/godot/) are live, tool-managed state that Godot
+# rewrites as you use the editor — NOT seeded from this repo. They are backed up by
+# scripts/backup/daily-bundle.sh (Section 6) and restored by recover.sh Phase 6.
+log_info "Godot config not seeded from repo — restored from backup bundle during recovery."
 
 # =============================================================================
 # Desktop Integration
@@ -235,13 +225,8 @@ fi
 log_section "Setting up desktop integration..."
 
 ICON_PATH="$HOME/.local/share/icons/godot.svg"
-if [[ -f "$BACKUP_DIR/godot/godot.svg" ]]; then
-    cp "$BACKUP_DIR/godot/godot.svg" "$ICON_PATH"
-    log_success "Icon copied from backup"
-else
-    curl -sL -o "$ICON_PATH" "https://raw.githubusercontent.com/godotengine/godot/master/icon.svg" 2>/dev/null || true
-    log_success "Icon downloaded from GitHub"
-fi
+curl -sL -o "$ICON_PATH" "https://raw.githubusercontent.com/godotengine/godot/master/icon.svg" 2>/dev/null || true
+log_success "Icon downloaded from GitHub"
 
 # Create desktop entry
 cat > "$HOME/.local/share/applications/godot.desktop" << EOF

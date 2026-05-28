@@ -141,6 +141,72 @@ restore_dir() {
     fi
 }
 
+# Symlink a file from assets/ into place (idempotent). The repo is the source of
+# truth: editing the live file edits the repo file (zero drift), with git history.
+# Usage: link_file "relative/path/in/assets" "$HOME/dest"
+#   - dest is already the correct symlink  -> skip
+#   - dest is a real file/dir that differs -> back up to <dest>.pre-symlink.<ts>.bak, then link
+#   - dest does not exist (fresh machine)  -> just link
+# Returns 1 (with warning) if the source is missing in assets/.
+link_file() {
+    local rel_path="$1"
+    local dest="$2"
+    local src="$BACKUP_DIR/$rel_path"
+
+    if [[ ! -e "$src" ]]; then
+        log_warn "Source missing in assets: $rel_path (skip)"
+        return 1
+    fi
+
+    ensure_dir "$(dirname "$dest")"
+
+    if [[ -L "$dest" ]]; then
+        if [[ "$(readlink "$dest")" == "$src" ]]; then
+            log_success "Already linked: $dest"
+            return 0
+        fi
+        rm -f "$dest"                       # stale/wrong symlink -> re-point
+    elif [[ -e "$dest" ]]; then
+        local backup="${dest}.pre-symlink.$(date +%Y%m%d-%H%M%S).bak"
+        mv "$dest" "$backup"                 # real file/dir -> preserve once
+        log_warn "Backed up existing $dest -> $backup"
+    fi
+
+    ln -s "$src" "$dest"
+    log_success "Linked: $dest -> $src"
+}
+
+# Symlink a whole directory from assets/ into place (idempotent).
+# Use ONLY for dirs that contain solely user-authored files (no tool-written
+# state), e.g. fastfetch. Usage: link_dir "relative/path" "$HOME/dest"
+link_dir() {
+    local rel_path="$1"
+    local dest="$2"
+    local src="$BACKUP_DIR/$rel_path"
+
+    if [[ ! -d "$src" ]]; then
+        log_warn "Source dir missing in assets: $rel_path (skip)"
+        return 1
+    fi
+
+    ensure_dir "$(dirname "$dest")"
+
+    if [[ -L "$dest" ]]; then
+        if [[ "$(readlink "$dest")" == "$src" ]]; then
+            log_success "Already linked: $dest"
+            return 0
+        fi
+        rm -f "$dest"
+    elif [[ -e "$dest" ]]; then
+        local backup="${dest}.pre-symlink.$(date +%Y%m%d-%H%M%S).bak"
+        mv "$dest" "$backup"
+        log_warn "Backed up existing dir $dest -> $backup"
+    fi
+
+    ln -s "$src" "$dest"
+    log_success "Linked dir: $dest -> $src"
+}
+
 # =============================================================================
 # Export for sourcing
 # =============================================================================
