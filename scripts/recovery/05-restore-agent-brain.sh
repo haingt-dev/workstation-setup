@@ -96,45 +96,11 @@ if [[ -f "$BRAIN_SRC" ]]; then
 fi
 
 # ─────────────────────────────────────────────────────────────
-# Symlinks: ~/.claude/{skills,brains,CLAUDE.md,settings.json} → agent/global/
-# (CLAUDE.md + settings.json were dereferenced into bundle by backup; now
-#  replace them with the canonical symlink architecture)
+# Claude global config (CLAUDE.md, settings.json, skills, brains, statusline)
+# now lives NATIVELY in ~/.claude/ — restored as real files by Phase 4
+# (04-restore-claude.sh) from the bundle. No symlinks into agent/global anymore
+# (agent is a tooling repo, not the config source). Nothing to do here.
 # ─────────────────────────────────────────────────────────────
-log_info "Creating Claude symlinks (skills, brains, CLAUDE.md, settings.json)"
-
-# Restore gitignored agent/global/CLAUDE.md from ~/.claude/CLAUDE.md content
-# (Phase 4 wrote real content via deref backup; here we re-seed the symlink target)
-if [[ -f "$HOME/.claude/CLAUDE.md" && ! -L "$HOME/.claude/CLAUDE.md" && ! -e "$AGENT_DIR/global/CLAUDE.md" ]]; then
-    log_info "  Re-seeding gitignored $AGENT_DIR/global/CLAUDE.md from bundle content"
-    $DRY_RUN || /bin/cp "$HOME/.claude/CLAUDE.md" "$AGENT_DIR/global/CLAUDE.md"
-fi
-
-for link_pair in \
-    "$HOME/.claude/skills:$AGENT_DIR/global/skills" \
-    "$HOME/.claude/brains:$AGENT_DIR/global/brains" \
-    "$HOME/.claude/CLAUDE.md:$AGENT_DIR/global/CLAUDE.md" \
-    "$HOME/.claude/settings.json:$AGENT_DIR/global/settings.json"
-do
-    IFS=':' read -r link target <<< "$link_pair"
-    [[ ! -e "$target" ]] && { log_warn "  Target missing: $target — skip"; continue; }
-
-    if [[ -L "$link" ]]; then
-        current=$(readlink "$link")
-        [[ "$current" == "$target" ]] && { log_success "  $link OK"; continue; }
-        log_warn "  $link → $current (drift, fixing)"
-        $DRY_RUN || /bin/rm "$link"
-    elif [[ -e "$link" ]]; then
-        log_warn "  $link exists as file/dir (not symlink) — back up + replace"
-        $DRY_RUN || /bin/mv "$link" "${link}.pre-restore-$(date +%s)"
-    fi
-
-    if $DRY_RUN; then
-        log_info "  [DRY-RUN] ln -s $target $link"
-    else
-        ln -s "$target" "$link"
-        log_success "  $link → $target"
-    fi
-done
 
 # ─────────────────────────────────────────────────────────────
 # Install daily backup cron (replaces legacy brain.db.bak)

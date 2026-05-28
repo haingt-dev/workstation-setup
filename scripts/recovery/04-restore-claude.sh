@@ -21,7 +21,7 @@ log_info "Restoring ~/.claude/ from bundle"
 # ─────────────────────────────────────────────────────────────
 # Flat files
 # ─────────────────────────────────────────────────────────────
-for f in CLAUDE.md core-memory.md settings.json config.json keybindings.json; do
+for f in CLAUDE.md core-memory.md settings.json config.json keybindings.json statusline-command.sh; do
     src="$CLAUDE_SRC/$f"
     if [[ -f "$src" ]]; then
         if $DRY_RUN; then
@@ -47,7 +47,7 @@ fi
 # ─────────────────────────────────────────────────────────────
 # Directories (brains, agents, plans)
 # ─────────────────────────────────────────────────────────────
-for d in brains agents plans; do
+for d in brains agents plans skills; do
     src="$CLAUDE_SRC/$d"
     if [[ -d "$src" ]]; then
         if $DRY_RUN; then

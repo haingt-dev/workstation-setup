@@ -140,10 +140,12 @@ alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 
-# Safety nets
-alias rm='rm -i'
-alias cp='cp -i'
-alias mv='mv -i'
+# Safety nets — interactive shells only (non-interactive/automation bypasses to avoid -i prompt hangs)
+if [[ -o interactive ]]; then
+    alias rm='rm -i'
+    alias cp='cp -i'
+    alias mv='mv -i'
+fi
 
 # Misc
 alias cls='clear'

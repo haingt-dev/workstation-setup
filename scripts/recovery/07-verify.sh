@@ -47,7 +47,7 @@ check "Brain MCP venv"                            "[[ -d $HOME/Projects/agent/mc
 # Claude state
 check "~/.claude/CLAUDE.md"                       "[[ -f $HOME/.claude/CLAUDE.md ]]"
 check "~/.claude/projects/ has dirs"             "[[ \$(find $HOME/.claude/projects -maxdepth 1 -mindepth 1 -type d 2>/dev/null | wc -l) -gt 0 ]]"
-check "~/.claude/skills → agent (symlink)"       "[[ -L $HOME/.claude/skills ]] && [[ \$(readlink $HOME/.claude/skills) == */agent/global/skills ]]"
+check "~/.claude/skills (real dir, native)"      "[[ -d $HOME/.claude/skills && ! -L $HOME/.claude/skills ]]"
 
 # Symlinks per manifest
 check "IronCradle docs/gdd symlink"               "[[ -L $HOME/Projects/IronCradle/docs/gdd ]]"
