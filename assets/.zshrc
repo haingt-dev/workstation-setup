@@ -235,3 +235,29 @@ export PATH=$PATH:$HOME/.dotnet:$HOME/.dotnet/tools
 
 # Agent Hub Aliases
 source ~/Projects/agent/bin/shell-aliases.sh
+
+# Claude Code MCP secrets
+if [ -f ~/.claude/.env ]; then
+  set -a; source ~/.claude/.env; set +a
+fi
+
+# bun completions
+[ -s "/home/haint/.bun/_bun" ] && source "/home/haint/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+
+# Project-scoped .env autoload (opt-in via CLAUDE_AUTOLOAD=1 flag)
+# Activate per-project: add `CLAUDE_AUTOLOAD=1` line to project's .env
+_claude_project_env_autoload() {
+  local env_file="$PWD/.env"
+  [ -f "$env_file" ] || return 0
+  grep -q '^CLAUDE_AUTOLOAD=1' "$env_file" 2>/dev/null || return 0
+  set -a
+  source "$env_file"
+  set +a
+}
+autoload -Uz add-zsh-hook
+add-zsh-hook chpwd _claude_project_env_autoload
+_claude_project_env_autoload  # run once for current dir at shell init
