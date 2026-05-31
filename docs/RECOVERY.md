@@ -52,7 +52,7 @@ Recovery cần **bundle passphrase** (lưu password manager). Bộ recover.sh h�
 | Section | Contents |
 |---|---|
 | `secrets/` | ~/.ssh, ~/.gnupg, gh oauth token, **rclone.conf + bundle.pass + bundle.conf** (self-files), **onedriver auth_tokens.json** (per-mount, skip re-OAuth on restore) |
-| `claude/` | CLAUDE.md, core-memory, brains, settings.json, **dot-claude.json (global MCP)**, plans, projects.tar.gz (conv history), plugins.tar.gz (cache + marketplaces) |
+| `claude/` | CLAUDE.md, core-memory, brains, settings.json, hooks (Claude Code lifecycle hooks), **dot-claude.json (global MCP)**, plans, projects.tar.gz (conv history), plugins.tar.gz (cache + marketplaces) |
 | `envs/` | All .env files via **manifest.txt** (sequential `env-N.bin` + path mapping — handles dashes in dirnames correctly) |
 | `brain/` | brain.db (sqlite `.backup` WAL-safe snapshot) |
 | `home-server/` | tier1 (.env × 4 incl. ebooks), tier2 (configs+DBs + ebooks/data/config), tier3 (Forge outputs, weekly only) |

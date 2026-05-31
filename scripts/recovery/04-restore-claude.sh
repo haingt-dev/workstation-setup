@@ -47,7 +47,7 @@ fi
 # ─────────────────────────────────────────────────────────────
 # Directories (brains, agents, plans)
 # ─────────────────────────────────────────────────────────────
-for d in brains agents plans skills; do
+for d in brains agents plans skills hooks; do
     src="$CLAUDE_SRC/$d"
     if [[ -d "$src" ]]; then
         if $DRY_RUN; then

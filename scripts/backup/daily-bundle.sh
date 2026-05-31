@@ -174,7 +174,7 @@ log "=== Section 2: Claude state ==="
 CLAUDE_DIR="$HOME/.claude"
 CLAUDE_DST="$STAGE/claude"
 
-for item in CLAUDE.md core-memory.md brains settings.json config.json keybindings.json statusline-command.sh skills plans agents; do
+for item in CLAUDE.md core-memory.md brains settings.json config.json keybindings.json statusline-command.sh skills plans agents hooks; do
     src="$CLAUDE_DIR/$item"
     if [[ -e "$src" ]]; then
         # -L: dereference symlinks so content survives even if symlink target
