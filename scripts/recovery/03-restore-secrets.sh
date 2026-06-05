@@ -46,7 +46,16 @@ if [[ -d "$SECRETS/gnupg" ]]; then
         chmod 700 "$HOME/.gnupg"
         find "$HOME/.gnupg" -type f -exec chmod 600 {} \;
         find "$HOME/.gnupg" -type d -exec chmod 700 {} \;
-        log_success "  GPG keys restored"
+        # Strip stale lock/socket files carried over from the source machine.
+        # On a fresh host, keyboxd/gpg-agent treat these as held locks and time
+        # out ("waiting for lock (held by <old-pid>)" → keydb_search_first
+        # failed), making restored keys appear missing. Removing them + resetting
+        # the daemons makes the keyring usable immediately.
+        find "$HOME/.gnupg" \( -name '*.lock' -o -name '.#lk*' \
+            -o -name 'S.gpg-agent*' -o -name 'S.keyboxd' -o -name 'S.scdaemon' \) \
+            -delete 2>/dev/null || true
+        gpgconf --kill all 2>/dev/null || true
+        log_success "  GPG keys restored (stale locks/sockets stripped)"
     fi
 fi
 

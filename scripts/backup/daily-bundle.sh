@@ -115,7 +115,12 @@ fi
 
 if [[ -d "$HOME/.gnupg" ]]; then
     /bin/cp -r "$HOME/.gnupg" "$STAGE/secrets/gnupg"
-    success "  ~/.gnupg"
+    # Don't ship runtime lock/socket files — they carry the source host's pid/name
+    # and make keyboxd/gpg-agent hang on restore (keys appear missing until removed).
+    find "$STAGE/secrets/gnupg" \( -name '*.lock' -o -name '.#lk*' \
+        -o -name 'S.gpg-agent*' -o -name 'S.keyboxd' -o -name 'S.scdaemon' \) \
+        -delete 2>/dev/null || true
+    success "  ~/.gnupg (runtime lock/socket files excluded)"
 fi
 
 if [[ -f "$HOME/.config/gh/hosts.yml" ]]; then
