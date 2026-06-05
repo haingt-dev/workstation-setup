@@ -106,6 +106,30 @@ chmod 600 ~/.config/recovery/bundle.conf
 # Edit: set RCLONE_REMOTE_FALLBACK="" if no B2 backup
 ```
 
+#### 3.1. B2 fallback hardening (REQUIRED if using B2 — one-time per bucket)
+
+B2 keeps all file versions. rclone's retention `delete` only **hides** files (a
+hide-marker) unless `hard_delete=true`, and hidden versions **still count toward
+the 10GB free cap**. Without this step, real storage only grows — `rclone size`
+looks fine (~6GB) while Backblaze emails "Daily Storage Cap reached 75/100%"
+(measure truth with `rclone size <remote> --b2-versions`). Hit 2026-06-05.
+
+```bash
+# 1. Retention hard-deletes instead of hiding (applies going forward)
+rclone config update b2-recovery hard_delete true
+
+# 2. Server-side safety net: purge any hidden version after 1 day (survives DR,
+#    independent of rclone config — bucket-side, persists on a new machine)
+rclone backend lifecycle b2-recovery:hai-recovery-bundle -o daysFromHidingToDeleting=1
+
+# 3. One-shot: purge the existing backlog of hidden versions
+rclone cleanup b2-recovery:hai-recovery-bundle
+
+# Verify visible == all-versions (no dead weight left):
+rclone size b2-recovery:hai-recovery-bundle
+rclone size b2-recovery:hai-recovery-bundle --b2-versions
+```
+
 ### 4. First push + install cron
 
 ```bash

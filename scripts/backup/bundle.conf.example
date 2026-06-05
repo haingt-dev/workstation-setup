@@ -24,7 +24,12 @@ RETAIN_WEEKLY_COUNT=4    # 4 weeks of Sunday snapshots
 RETAIN_MONTHLY_COUNT=12  # 12 months of 1st-of-month snapshots
 
 # Fallback remote override — leave unset to mirror primary retention.
-# B2 free tier = 10GB cap. With ~700M bundle, 7+4+2=13 bundles ≈ 9.1GB stays under cap.
+# B2 free tier = 10GB cap. With ~700M bundle, 7+4+2=13 bundles ≈ 9.1GB.
+# GOTCHA: this only holds if hidden versions are purged. B2 keeps all versions;
+# rclone's retention `delete` only HIDES files unless hard_delete=true, and hidden
+# versions STILL count toward the cap. Without the one-time B2 hardening
+# (hard_delete + lifecycle rule — see docs/RECOVERY.md §3.1), real storage only
+# grows and silently blows past 10GB even though `rclone size` looks fine.
 FALLBACK_RETAIN_DAILY_DAYS=7
 FALLBACK_RETAIN_WEEKLY_COUNT=4
 FALLBACK_RETAIN_MONTHLY_COUNT=2
