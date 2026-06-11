@@ -36,7 +36,7 @@ check "gh auth status"                            "gh auth status"
 check "GPG secret keys present"                   "gpg --list-secret-keys 2>/dev/null | grep -q sec"
 
 # Repos
-for repo in agent digital-identity home-server Idea_Vault IronCradle workstation-setup; do
+for repo in agent digital-identity home-server Idea_Vault chimera workstation-setup; do
     check "Repo cloned: $repo"                    "[[ -d $HOME/Projects/$repo/.git ]]"
 done
 
@@ -48,9 +48,6 @@ check "Brain MCP venv"                            "[[ -d $HOME/Projects/agent/mc
 check "~/.claude/CLAUDE.md"                       "[[ -f $HOME/.claude/CLAUDE.md ]]"
 check "~/.claude/projects/ has dirs"             "[[ \$(find $HOME/.claude/projects -maxdepth 1 -mindepth 1 -type d 2>/dev/null | wc -l) -gt 0 ]]"
 check "~/.claude/skills (real dir, native)"      "[[ -d $HOME/.claude/skills && ! -L $HOME/.claude/skills ]]"
-
-# Symlinks per manifest
-check "IronCradle docs/gdd symlink"               "[[ -L $HOME/Projects/IronCradle/docs/gdd ]]"
 
 # Daily bundle cron
 check "daily-bundle cron installed"               "crontab -l 2>/dev/null | grep -q daily-bundle.sh"
@@ -70,9 +67,9 @@ if [[ -d "$HOME/Projects/home-server" ]]; then
     fi
 fi
 
-if [[ -d "$HOME/Projects/IronCradle" && -x "$(command -v godot)" ]]; then
+if [[ -d "$HOME/Projects/chimera" && -x "$(command -v godot)" ]]; then
     current_godot=$(godot --version 2>/dev/null | head -1)
-    pinned=$(cat "$HOME/Projects/IronCradle/.godot-version" 2>/dev/null || echo "n/a")
+    pinned=$(cat "$HOME/Projects/chimera/.godot-version" 2>/dev/null || echo "n/a")
     log_info "  Godot: installed=$current_godot, pinned=$pinned"
 fi
 
@@ -88,7 +85,7 @@ Manual steps remaining (cannot automate):
   1. Forge models (~9GB): cd ~/Projects/home-server && ./scripts/forge-pull-models.sh
      - Civitai LoRAs need modelVersionId in forge/models.yml (pre-disaster homework)
   2. HuggingFace CLI login (if gated models): huggingface-cli login
-  3. IronCradle: open Godot once → reimport assets (5-30 min, one-time)
+  3. chimera: open Godot once → reimport assets (5-30 min, one-time)
   4. home-server: ./scripts/up.sh all (verify all 4 sections come up)
   5. Optional: bring up media stack — AirVPN keys already in media/.env from bundle
 

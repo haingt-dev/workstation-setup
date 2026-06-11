@@ -56,7 +56,7 @@ Recovery cần **bundle passphrase** (lưu password manager). Bộ recover.sh h�
 | `envs/` | All .env files via **manifest.txt** (sequential `env-N.bin` + path mapping — handles dashes in dirnames correctly) |
 | `brain/` | brain.db (sqlite `.backup` WAL-safe snapshot) |
 | `home-server/` | tier1 (.env × 4 incl. ebooks), tier2 (configs+DBs + ebooks/data/config), tier3 (Forge outputs, weekly only) |
-| `ironcradle/` | Godot version pin, ~/.config/godot, VS Code User, extensions list |
+| `chimera/` | Godot version pin (if present), ~/.config/godot, VS Code User, extensions list |
 | `crontabs/` | Snapshot user crontab |
 | `manifest.txt + repos.txt` | Bundle metadata + auto-generated repo list with remotes |
 
@@ -183,7 +183,7 @@ rclone size b2-recovery:hai-recovery-bundle --b2-versions
 - ✓ Conversation history + plans + memories + brains
 - ✓ Global MCP config (haingt-brain, todoist)
 - ✓ Plugin marketplaces + cache (engram excluded — reinstall manually)
-- ✓ Cross-project symlinks (IronCradle docs/gdd → Idea_Vault)
+- ✓ Cross-project symlinks (declarative — see `assets/symlinks.yml`; none active currently)
 - ✓ Crontab (incl daily-bundle re-install)
 - ✓ rclone.conf + bundle.conf + bundle.pass (self-files restored Phase 3)
 - ✓ brain.db (sqlite WAL-safe snapshot)
@@ -196,7 +196,7 @@ rclone size b2-recovery:hai-recovery-bundle --b2-versions
 **Manual after recovery (cannot auto)**:
 1. **Forge models** (~9GB): `cd ~/Projects/home-server && ./scripts/forge-pull-models.sh` (URLs trong forge/models.yml)
 2. **HuggingFace login** (nếu gated models): `huggingface-cli login`
-3. **IronCradle assets reimport**: open Godot lần đầu → tự reimport (5-30 min)
+3. **chimera assets reimport**: open Godot lần đầu → tự reimport (5-30 min)
 4. **home-server stack up**: `cd ~/Projects/home-server && ./scripts/up.sh all`
 5. **engram plugin reinstall** (excluded từ bundle vì recursive dirs): qua marketplace
 6. **Calibre Library content** (~26GB, NOT in bundle — too large): **auto-fetched** trong Phase 6 post-hook nếu local empty + cloud có data. Interactive mode prompt `[Y/n]`, non-interactive auto-fetch. Manual fallback: `rclone copy "onedrive-dev:Calibre Library/" "/home/haint/Data/Calibre Library/" --progress`. Daily backup local→cloud by `calibre-sync.timer` (22:30).

@@ -56,7 +56,7 @@ except: print('[]')
     "home_server_env_sha": "$(sha256_file "$HOME/Projects/home-server/.env")",
     "home_server_dashboard_sha": "$(sha256_file "$HOME/Projects/home-server/dashboard/.env")",
     "home_server_media_sha": "$(sha256_file "$HOME/Projects/home-server/media/.env")",
-    "ironcradle_env_sha": "$(sha256_file "$HOME/Projects/IronCradle/.env")",
+    "chimera_env_sha": "$(sha256_file "$HOME/Projects/chimera/.env")",
     "idea_vault_env_sha": "$(sha256_file "$HOME/Projects/Idea_Vault/.env")"
   },
 
@@ -65,7 +65,7 @@ except: print('[]')
     "digital_identity_head": "$(cd $HOME/Projects/digital-identity 2>/dev/null && git rev-parse --short HEAD 2>/dev/null || echo none)",
     "home_server_head": "$(cd $HOME/Projects/home-server 2>/dev/null && git rev-parse --short HEAD 2>/dev/null || echo none)",
     "idea_vault_head": "$(cd $HOME/Projects/Idea_Vault 2>/dev/null && git rev-parse --short HEAD 2>/dev/null || echo none)",
-    "ironcradle_head": "$(cd $HOME/Projects/IronCradle 2>/dev/null && git rev-parse --short HEAD 2>/dev/null || echo none)",
+    "chimera_head": "$(cd $HOME/Projects/chimera 2>/dev/null && git rev-parse --short HEAD 2>/dev/null || echo none)",
     "workstation_setup_head": "$(cd $HOME/Projects/workstation-setup 2>/dev/null && git rev-parse --short HEAD 2>/dev/null || echo none)"
   },
 
@@ -73,8 +73,7 @@ except: print('[]')
     "claude_skills_target": "$(readlink $HOME/.claude/skills 2>/dev/null || echo none)",
     "claude_brains_target": "$(readlink $HOME/.claude/brains 2>/dev/null || echo none)",
     "claude_md_target": "$(readlink $HOME/.claude/CLAUDE.md 2>/dev/null || echo none)",
-    "claude_settings_target": "$(readlink $HOME/.claude/settings.json 2>/dev/null || echo none)",
-    "ironcradle_gdd_target": "$(readlink $HOME/Projects/IronCradle/docs/gdd 2>/dev/null || echo none)"
+    "claude_settings_target": "$(readlink $HOME/.claude/settings.json 2>/dev/null || echo none)"
   },
 
   "cron_lines": $(crontab -l 2>/dev/null | grep -v "^#" | grep -v "^$" | python3 -c "

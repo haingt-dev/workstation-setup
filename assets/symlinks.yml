@@ -8,14 +8,8 @@
 #   note: optional context for humans
 
 links:
-  # IronCradle docs ↔ Obsidian vault PARA project
-  - link: ~/Projects/IronCradle/docs/gdd
-    target: ~/Projects/Idea_Vault/20 Projects/Iron Cradle
-    note: Game Design Doc lives in vault; IronCradle references via docs/gdd/
-
-  - link: ~/Projects/IronCradle/docs/concept-art
-    target: ~/Projects/Idea_Vault/20 Projects/Iron Cradle/concept-art
-    note: Concept art folder shortcut
+  # chimera (The Ninth Bride) keeps its GDD in-repo (docs/*.md) — no vault symlink.
+  # Add cross-project links here as the workspace grows.
 
   # Examples (uncomment when applicable):
   # - link: ~/Projects/digital-identity/finance

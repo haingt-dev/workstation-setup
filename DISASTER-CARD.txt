@@ -31,7 +31,7 @@ cd ~/Projects/home-server && ./scripts/forge-pull-models.sh
 ───────────────────────────────────────────────────────────────
   • All SSH/GPG/gh tokens, ALL .env files (Civitai, AirVPN, OpenAI...)
   • Brain DB + ~/.claude/ full (conversation history, plans, plugins)
-  • 6 repos: agent, digital-identity, home-server, Idea_Vault, IronCradle, workstation-setup
+  • 6 repos: agent, digital-identity, home-server, Idea_Vault, chimera, workstation-setup
   • Godot 4.6 + VS Code settings + extensions
   • Cron 4:30 AM daily backup re-installed
 
@@ -39,7 +39,7 @@ cd ~/Projects/home-server && ./scripts/forge-pull-models.sh
   MANUAL AFTER (cannot automate):
 ───────────────────────────────────────────────────────────────
   1. Forge models ~9GB: cd ~/Projects/home-server && ./scripts/forge-pull-models.sh
-  2. IronCradle: open Godot first time → reimport 5-30 min one-time
+  2. chimera: open Godot first time → reimport 5-30 min one-time
   3. home-server stack: cd ~/Projects/home-server && ./scripts/up.sh all
 
 ───────────────────────────────────────────────────────────────

@@ -12,7 +12,7 @@
 #   - ~/.claude/ state (CLAUDE.md, plans, projects, plugins/cache, config)
 #   - secrets (~/.ssh, ~/.gnupg, gh token)
 #   - .env files from 6 critical repos
-#   - IronCradle dev state (Godot config, VS Code User, extensions list)
+#   - chimera dev state (Godot config, VS Code User, extensions list)
 #   - crontab snapshot
 #
 # Usage:
@@ -100,7 +100,7 @@ WORK=$(mktemp -d -t recovery-bundle.XXXXXX)
 trap '/bin/rm -rf "$WORK"' EXIT
 
 STAGE="$WORK/recovery-bundle"
-mkdir -p "$STAGE"/{secrets,claude,envs,home-server,ironcradle,brain,crontabs}
+mkdir -p "$STAGE"/{secrets,claude,envs,home-server,chimera,brain,crontabs}
 
 # ─────────────────────────────────────────────────────────────
 # Section 1: Secrets
@@ -231,7 +231,7 @@ CRITICAL_REPOS=(
     "digital-identity"
     "home-server"
     "Idea_Vault"
-    "IronCradle"
+    "chimera"
     "workstation-setup"
 )
 
@@ -351,28 +351,28 @@ if [[ -d "$HS" ]]; then
 fi
 
 # ─────────────────────────────────────────────────────────────
-# Section 6: IronCradle dev environment
+# Section 6: chimera dev environment
 # ─────────────────────────────────────────────────────────────
 log ""
-log "=== Section 6: IronCradle dev env ==="
+log "=== Section 6: chimera dev env ==="
 
-IC_DST="$STAGE/ironcradle"
+CHIMERA_DST="$STAGE/chimera"
 
 # Godot version pin (read from project)
-if [[ -f "$HOME/Projects/IronCradle/.godot-version" ]]; then
-    /bin/cp "$HOME/Projects/IronCradle/.godot-version" "$IC_DST/godot-version.txt"
+if [[ -f "$HOME/Projects/chimera/.godot-version" ]]; then
+    /bin/cp "$HOME/Projects/chimera/.godot-version" "$CHIMERA_DST/godot-version.txt"
     success "  godot-version.txt"
 fi
 
 # Godot user config
 if [[ -d "$HOME/.config/godot" ]]; then
-    tar czf "$IC_DST/godot-user-config.tar.gz" -C "$HOME/.config" godot 2>/dev/null
+    tar czf "$CHIMERA_DST/godot-user-config.tar.gz" -C "$HOME/.config" godot 2>/dev/null
     success "  godot-user-config.tar.gz"
 fi
 
 # VS Code User (settings, keybindings, snippets)
 if [[ -d "$HOME/.config/Code/User" ]]; then
-    tar czf "$IC_DST/vscode-user.tar.gz" -C "$HOME/.config/Code" \
+    tar czf "$CHIMERA_DST/vscode-user.tar.gz" -C "$HOME/.config/Code" \
         --exclude='User/globalStorage' \
         --exclude='User/workspaceStorage' \
         --exclude='User/History' \
@@ -383,8 +383,8 @@ fi
 
 # VS Code extensions list
 if command -v code >/dev/null; then
-    code --list-extensions > "$IC_DST/vscode-extensions.txt"
-    cnt=$(wc -l < "$IC_DST/vscode-extensions.txt")
+    code --list-extensions > "$CHIMERA_DST/vscode-extensions.txt"
+    cnt=$(wc -l < "$CHIMERA_DST/vscode-extensions.txt")
     success "  vscode-extensions.txt ($cnt extensions)"
 fi
 
