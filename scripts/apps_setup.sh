@@ -79,21 +79,26 @@ log_section "Installing Flatpak applications..."
 
 # Discord
 log_info "Installing Discord..."
-flatpak install -y flathub com.discordapp.Discord
+flatpak install -y --system flathub com.discordapp.Discord
 log_success "Discord installed"
 
 # Anki
 log_info "Installing Anki..."
-flatpak install -y flathub net.ankiweb.Anki
+flatpak install -y --system flathub net.ankiweb.Anki
 log_success "Anki installed"
 
 # Todoist
 log_info "Installing Todoist..."
-flatpak install -y flathub com.todoist.Todoist
+flatpak install -y --system flathub com.todoist.Todoist
 flatpak override --user com.todoist.Todoist \
     --talk-name=org.kde.StatusNotifierWatcher \
     --talk-name=org.freedesktop.Notifications
 log_success "Todoist installed"
+
+# Krita (digital painting / game art)
+log_info "Installing Krita..."
+flatpak install -y --system flathub org.kde.krita
+log_success "Krita installed"
 
 # =============================================================================
 # Obsidian (AppImage)
@@ -155,3 +160,4 @@ echo "  - Discord (Flatpak)"
 echo "  - Obsidian (AppImage)"
 echo "  - Anki (Flatpak)"
 echo "  - Todoist (Flatpak)"
+echo "  - Krita (Flatpak)"

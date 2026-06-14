@@ -23,11 +23,10 @@ Automated workstation setup for Nobara 42 / Fedora — terminal, dev tools, apps
 - **Godot Engine**: Game engine setup and configuration
 
 ### Applications
-- **Additional Apps**: Chrome, Discord, Obsidian, Anki, Todoist
+- **Additional Apps**: Chrome, Discord, Obsidian, Anki, Todoist, Krita
 - **OneDrive**: Multi-account Files-On-Demand via `jstaf/onedriver` (FUSE, drop-and-go upload, on-demand download)
 - **Audio Processing**: EasyEffects with pre-tuned presets
 - **DNS**: Cloudflare Block Malware configuration
-- **OBS Studio**: Recording and streaming software (Flatpak)
 - **Vietnamese Input**: fcitx5-unikey for Vietnamese typing
 
 ## Quick Start
@@ -79,12 +78,10 @@ Options:
   --skip-qdrant       Skip Qdrant setup
   --skip-godot        Skip Godot installation
   --skip-apps         Skip additional apps
-  --skip-obs          Skip OBS Studio
   --skip-easyeffects  Skip EasyEffects audio setup
   --skip-dns          Skip DNS setup
   --onedrive          Setup onedriver Files-On-Demand (Dev + Personal accounts)
   --vietnamese        Install Vietnamese input method
-  --obs               Setup OBS Studio
   --remote            Remote access (Tailscale, SSH, WoL)
   --skip-remote       Skip remote access setup
   --help              Show help message
@@ -93,7 +90,6 @@ Exclusive Mode (Run ONLY specific components):
   ./setup.sh --terminal       # ONLY run terminal setup
   ./setup.sh --agent          # ONLY setup agent system ⭐ NEW
   ./setup.sh --qdrant         # ONLY setup Qdrant
-  ./setup.sh --obs            # ONLY setup OBS Studio
   ./setup.sh --dns            # ONLY setup DNS
 
 Examples:
@@ -101,7 +97,6 @@ Examples:
   ./setup.sh --terminal       # Terminal setup only
   ./setup.sh --agent          # Agent system setup only
   ./setup.sh --skip-godot     # Full setup EXCEPT Godot
-  ./setup.sh --obs            # OBS Studio setup only
 ```
 
 ## Project Structure
@@ -129,7 +124,6 @@ Examples:
     ├── terminal_setup.sh       # Terminal setup (single profile)
     ├── qdrant_setup.sh         # Qdrant vector database
     ├── godot_setup.sh          # Godot Engine installation
-    ├── obs_setup.sh            # OBS Studio installation
     ├── apps_setup.sh           # Chrome, Flatpak apps
     ├── onedrive_setup.sh       # onedriver Files-On-Demand setup (Dev + Personal mounts)
     ├── easyeffects_setup.sh    # EasyEffects audio presets
@@ -249,8 +243,7 @@ sudo shutdown -h now
 
 - **Qdrant**: Podman container with systemd service at http://localhost:6333
 - **Godot**: Downloads to ~/.local/bin, creates desktop entry
-- **OBS Studio**: Installed via Flatpak (com.obsproject.Studio)
-- **Apps**: Chrome (DNF), Discord, Obsidian, Anki, Todoist (Flatpak)
+- **Apps**: Chrome (DNF), Discord, Obsidian, Anki, Todoist, Krita (Flatpak)
 - **OneDrive**: `onedriver` FUSE mounts at `~/Data/OneDrive/{Dev,Personal}` (Files-On-Demand). Calibre Library lives separately at `~/Data/Calibre Library/` with daily rclone backup (`calibre-sync.timer`).
 - **EasyEffects**: Audio presets for speakers/headsets
 - **DNS**: Cloudflare Block Malware (1.1.1.2/1.0.0.2)

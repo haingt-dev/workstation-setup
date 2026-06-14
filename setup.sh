@@ -34,7 +34,6 @@ INSTALL_AGENT=true
 INSTALL_QDRANT=true
 INSTALL_GODOT=true
 INSTALL_APPS=true
-INSTALL_OBS=true
 INSTALL_EASYEFFECTS=true
 INSTALL_DNS=true
 INSTALL_VSCODE=true
@@ -64,7 +63,6 @@ show_help() {
     echo "  --qdrant            Qdrant setup"
     echo "  --godot             Godot setup"
     echo "  --apps              Additional apps (Chrome, Flatpaks)"
-    echo "  --obs               OBS Studio setup"
     echo "  --easyeffects       EasyEffects audio setup"
     echo "  --dns               DNS setup (Cloudflare Block Malware)"
     echo "  --onedrive          OneDrive setup (supports multiple accounts)"
@@ -80,7 +78,6 @@ show_help() {
     echo "  --skip-qdrant       Skip Qdrant"
     echo "  --skip-godot        Skip Godot"
     echo "  --skip-apps         Skip Apps"
-    echo "  --skip-obs          Skip OBS Studio"
     echo "  --skip-easyeffects  Skip EasyEffects"
     echo "  --skip-dns          Skip DNS setup"
 
@@ -102,7 +99,7 @@ show_help() {
 EXCLUSIVE_MODE=false
 for arg in "$@"; do
     case $arg in
-        --terminal|--agent|--qdrant|--godot|--apps|--obs|--easyeffects|--dns|--onedrive|--vietnamese|--vscode|--remote)
+        --terminal|--agent|--qdrant|--godot|--apps|--easyeffects|--dns|--onedrive|--vietnamese|--vscode|--remote)
             EXCLUSIVE_MODE=true
             break
             ;;
@@ -117,7 +114,6 @@ if $EXCLUSIVE_MODE; then
     INSTALL_QDRANT=false
     INSTALL_GODOT=false
     INSTALL_APPS=false
-    INSTALL_OBS=false
     INSTALL_EASYEFFECTS=false
     INSTALL_DNS=false
     INSTALL_ONEDRIVE=false
@@ -138,7 +134,6 @@ for arg in "$@"; do
             INSTALL_QDRANT=true
             INSTALL_GODOT=true
             INSTALL_APPS=true
-            INSTALL_OBS=true
             INSTALL_EASYEFFECTS=true
             INSTALL_DNS=true
             INSTALL_ONEDRIVE=true
@@ -152,7 +147,6 @@ for arg in "$@"; do
         --qdrant)             INSTALL_QDRANT=true ;;
         --godot)              INSTALL_GODOT=true ;;
         --apps)               INSTALL_APPS=true ;;
-        --obs)                INSTALL_OBS=true ;;
         --easyeffects)        INSTALL_EASYEFFECTS=true ;;
         --dns)                INSTALL_DNS=true ;;
         --onedrive)           INSTALL_ONEDRIVE=true ;;
@@ -166,7 +160,6 @@ for arg in "$@"; do
         --skip-qdrant)        INSTALL_QDRANT=false ;;
         --skip-godot)         INSTALL_GODOT=false ;;
         --skip-apps)          INSTALL_APPS=false ;;
-        --skip-obs)           INSTALL_OBS=false ;;
         --skip-easyeffects)   INSTALL_EASYEFFECTS=false ;;
         --skip-dns)           INSTALL_DNS=false ;;
         --skip-vscode)        INSTALL_VSCODE=false ;;
@@ -242,15 +235,7 @@ elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping additional apps setup"
 fi
 
-# 6. OBS Studio Setup
-if $INSTALL_OBS; then
-    log_section "Running OBS Setup..."
-    bash "$SCRIPTS_DIR/obs_setup.sh"
-elif ! $EXCLUSIVE_MODE; then
-    log_warn "Skipping OBS setup"
-fi
-
-# 7. EasyEffects Setup
+# 6. EasyEffects Setup
 if $INSTALL_EASYEFFECTS; then
     log_section "Running EasyEffects Setup..."
     bash "$SCRIPTS_DIR/easyeffects_setup.sh"
@@ -258,7 +243,7 @@ elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping EasyEffects setup"
 fi
 
-# 8. DNS Setup
+# 7. DNS Setup
 if $INSTALL_DNS; then
     log_section "Running DNS Setup..."
     bash "$SCRIPTS_DIR/dns_setup.sh"
@@ -266,7 +251,7 @@ elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping DNS setup"
 fi
 
-# 9. Vietnamese Input Method
+# 8. Vietnamese Input Method
 if $INSTALL_VIETNAMESE; then
     log_section "Running Vietnamese Input Setup..."
     bash "$SCRIPTS_DIR/input_setup.sh"
@@ -274,7 +259,7 @@ elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping Vietnamese input setup"
 fi
 
-# 10. OneDrive Setup
+# 9. OneDrive Setup
 if $INSTALL_ONEDRIVE; then
     log_section "Running OneDrive Setup..."
     bash "$SCRIPTS_DIR/onedrive_setup.sh"
@@ -282,7 +267,7 @@ elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping OneDrive setup"
 fi
 
-# 11. VS Code Setup
+# 10. VS Code Setup
 if $INSTALL_VSCODE; then
     log_section "Running VS Code Setup..."
     bash "$SCRIPTS_DIR/vscode_setup.sh"
@@ -290,7 +275,7 @@ elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping VS Code setup"
 fi
 
-# 12. Remote Access Setup
+# 11. Remote Access Setup
 if $INSTALL_REMOTE; then
     log_section "Running Remote Access Setup..."
     bash "$SCRIPTS_DIR/remote_access_setup.sh"
