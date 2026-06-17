@@ -105,6 +105,10 @@ HS="$PROJECTS/home-server"
 HS_BUNDLE="$STAGING/home-server"
 if [[ -d "$HS" && -d "$HS_BUNDLE" ]]; then
     log_info "  Home-server tier restore"
+    # tier3-outputs no longer ships inside the main bundle (it's a separate
+    # primary-only artifact since 2026-06-17 — see docs/RECOVERY.md §3.2). The
+    # -f guard below skips it gracefully; restore it manually post-recovery if
+    # the Forge gallery is needed (it's regenerable, so DR doesn't pull it).
     for tier in tier1-secrets tier2-state tier3-outputs; do
         ar="$HS_BUNDLE/${tier}.tar.gz"
         if [[ -f "$ar" ]]; then

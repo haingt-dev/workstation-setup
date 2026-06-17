@@ -24,18 +24,30 @@ RETAIN_WEEKLY_COUNT=4    # 4 weeks of Sunday snapshots
 RETAIN_MONTHLY_COUNT=12  # 12 months of 1st-of-month snapshots
 
 # Fallback remote override — leave unset to mirror primary retention.
-# B2 free tier = 10GB cap. With ~700M bundle, 7+4+2=13 bundles ≈ 9.1GB.
-# GOTCHA: this only holds if hidden versions are purged. B2 keeps all versions;
-# rclone's retention `delete` only HIDES files unless hard_delete=true, and hidden
-# versions STILL count toward the cap. Without the one-time B2 hardening
-# (hard_delete + lifecycle rule — see docs/RECOVERY.md §3.1), real storage only
-# grows and silently blows past 10GB even though `rclone size` looks fine.
+# B2 free tier = 10GB cap. The main bundle is tier3-FREE (~600M each), so
+# 7+4+2=13 bundles ≈ 7.8GB — comfortably under cap, and STAYS there regardless
+# of how large Forge outputs grow (tier3 goes to the primary remote only; see
+# TIER3_FREQUENCY note + docs/RECOVERY.md §3.2).
+# GOTCHA #1 (hidden versions): B2 keeps all versions; rclone's retention `delete`
+# only HIDES files unless hard_delete=true, and hidden versions STILL count toward
+# the cap. Without the one-time B2 hardening (hard_delete + lifecycle rule — see
+# docs/RECOVERY.md §3.1), real storage silently grows even though `rclone size`
+# looks fine.
+# GOTCHA #2 (bundle bloat — fixed 2026-06-17): tier3 Forge outputs used to ride
+# inside the main bundle, ballooning Sunday snapshots to ~1.5GB and blowing the
+# cap once kept ×4 as weekly. Tier3 is now a separate primary-only artifact.
 FALLBACK_RETAIN_DAILY_DAYS=7
 FALLBACK_RETAIN_WEEKLY_COUNT=4
 FALLBACK_RETAIN_MONTHLY_COUNT=2
 
-# Tier 3 (Forge outputs) frequency: daily, weekly, or skip
+# Tier 3 (Forge outputs) frequency: daily, weekly, or skip.
+# Tier3 is pushed to the PRIMARY remote ONLY (never the B2 fallback) as a
+# standalone recovery-tier3-<date>.tar.gz.gpg under <primary>/tier3/.
 TIER3_FREQUENCY="weekly"
+
+# Tier3 retention on primary (weeks of Forge-output snapshots to keep). Primary
+# is OneDrive 1TB — plenty of headroom — so this can be generous.
+RETAIN_TIER3_WEEKS=8
 
 # Cron schedule (passed to install-cron.sh)
 # 23:00 daily — overlaps with bandwidth unlimited window (23:00,off above)

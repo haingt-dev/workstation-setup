@@ -102,6 +102,10 @@ trap '/bin/rm -rf "$WORK"' EXIT
 STAGE="$WORK/recovery-bundle"
 mkdir -p "$STAGE"/{secrets,claude,envs,home-server,chimera,brain,crontabs}
 
+# Set in Section 5 when tier3 is built. Tier3 is a SEPARATE artifact (outside
+# $STAGE) so it never enters the main bundle — see Section 5 rationale.
+TIER3_ARTIFACT=""
+
 # ─────────────────────────────────────────────────────────────
 # Section 1: Secrets
 # ─────────────────────────────────────────────────────────────
@@ -339,13 +343,20 @@ if [[ -d "$HS" ]]; then
     done
 
     # Tier 3: outputs (weekly or forced)
+    # Built as a SEPARATE artifact OUTSIDE $STAGE so it never enters the main
+    # bundle. The main bundle mirrors to BOTH remotes; tier3 is 850MB+ of
+    # regenerable Forge images that would blow the B2 fallback's 10GB free cap
+    # (each Sunday bundle ballooned to ~1.5GB and was kept ×4 as weekly). Tier3
+    # is therefore pushed to the PRIMARY remote only. See docs/RECOVERY.md §3.2.
     if $INCLUDE_TIER3; then
-        log "  Tier 3: Forge outputs (weekly snapshot)"
+        log "  Tier 3: Forge outputs (separate artifact — primary remote only)"
         if [[ -d "$HS/forge/data/forge/outputs" ]]; then
-            tar czf "$HS_DST/tier3-outputs.tar.gz" -C "$HS" \
+            mkdir -p "$WORK/tier3"
+            tar czf "$WORK/tier3/tier3-outputs.tar.gz" -C "$HS" \
                 forge/data/forge/outputs 2>/dev/null || true
-            sz=$(du -h "$HS_DST/tier3-outputs.tar.gz" | cut -f1)
-            success "    tier3-outputs.tar.gz ($sz)"
+            TIER3_ARTIFACT="$WORK/tier3/tier3-outputs.tar.gz"
+            sz=$(du -h "$TIER3_ARTIFACT" | cut -f1)
+            success "    tier3-outputs.tar.gz ($sz, excluded from main bundle)"
         fi
     fi
 fi
@@ -449,6 +460,16 @@ success "  Encrypted: $sz"
 
 /bin/rm "$BUNDLE"  # plain tarball gone, only encrypted remains
 
+# Encrypt tier3 separately (primary-only artifact — kept out of the main bundle)
+TIER3_ENCRYPTED=""
+if [[ -n "$TIER3_ARTIFACT" && -f "$TIER3_ARTIFACT" ]]; then
+    TIER3_ENCRYPTED="$WORK/recovery-tier3-${DATE}.tar.gz.gpg"
+    gpg --batch --yes --symmetric --cipher-algo AES256 \
+        --passphrase-file "$BUNDLE_PASS_FILE" \
+        --output "$TIER3_ENCRYPTED" "$TIER3_ARTIFACT"
+    success "  Tier3 encrypted: $(du -h "$TIER3_ENCRYPTED" | cut -f1)"
+fi
+
 # ─────────────────────────────────────────────────────────────
 # Push to cloud (unless --no-push)
 # ─────────────────────────────────────────────────────────────
@@ -458,6 +479,11 @@ if $NO_PUSH; then
     persist="$HOME/recovery-bundle-${DATE}.tar.gz.gpg"
     /bin/mv "$ENCRYPTED" "$persist"
     log "Moved to: $persist"
+    if [[ -n "$TIER3_ENCRYPTED" ]]; then
+        tier3_persist="$HOME/recovery-tier3-${DATE}.tar.gz.gpg"
+        /bin/mv "$TIER3_ENCRYPTED" "$tier3_persist"
+        log "Moved tier3 to: $tier3_persist"
+    fi
     exit 0
 fi
 
@@ -483,6 +509,21 @@ if [[ -n "${RCLONE_REMOTE_FALLBACK:-}" ]]; then
         rclone copy "$ENCRYPTED" "$RCLONE_REMOTE_FALLBACK/daily/" \
             --bwlimit "$BANDWIDTH_SCHEDULE" --transfers 2 --progress || \
             err "    Fallback push failed (continuing)"
+    fi
+fi
+
+# Tier3 → PRIMARY ONLY (regenerable Forge outputs; too large for B2 free cap)
+if [[ -n "$TIER3_ENCRYPTED" ]]; then
+    log "  Tier3 → primary only: $RCLONE_REMOTE_PRIMARY/tier3/"
+    if $DRY_RUN; then
+        log "  [DRY-RUN] rclone copy $TIER3_ENCRYPTED $RCLONE_REMOTE_PRIMARY/tier3/"
+    else
+        if rclone copy "$TIER3_ENCRYPTED" "$RCLONE_REMOTE_PRIMARY/tier3/" \
+            --bwlimit "$BANDWIDTH_SCHEDULE" --transfers 2 --progress; then
+            success "    Pushed tier3 to primary"
+        else
+            err "    Tier3 push failed (continuing)"
+        fi
     fi
 fi
 
@@ -528,6 +569,12 @@ if ! $DRY_RUN; then
         "${FALLBACK_RETAIN_DAILY_DAYS:-$RETAIN_DAILY_DAYS}" \
         "${FALLBACK_RETAIN_WEEKLY_COUNT:-$RETAIN_WEEKLY_COUNT}" \
         "${FALLBACK_RETAIN_MONTHLY_COUNT:-$RETAIN_MONTHLY_COUNT}"
+
+    # Tier3 retention (primary only) — keep last N weeks of Forge output snapshots
+    log "  $RCLONE_REMOTE_PRIMARY/tier3/ (keep ${RETAIN_TIER3_WEEKS:-8} weeks)"
+    rclone delete "$RCLONE_REMOTE_PRIMARY/tier3/" \
+        --min-age "$(( ${RETAIN_TIER3_WEEKS:-8} * 7 ))d" \
+        --include "recovery-tier3-*.tar.gz.gpg" 2>&1 | tail -3 || true
 fi
 
 # ─────────────────────────────────────────────────────────────

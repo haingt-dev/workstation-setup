@@ -55,7 +55,7 @@ Recovery cần **bundle passphrase** (lưu password manager). Bộ recover.sh h�
 | `claude/` | CLAUDE.md, core-memory, brains, settings.json, hooks (Claude Code lifecycle hooks), **dot-claude.json (global MCP)**, plans, projects.tar.gz (conv history), plugins.tar.gz (cache + marketplaces) |
 | `envs/` | All .env files via **manifest.txt** (sequential `env-N.bin` + path mapping — handles dashes in dirnames correctly) |
 | `brain/` | brain.db (sqlite `.backup` WAL-safe snapshot) |
-| `home-server/` | tier1 (.env × 4 incl. ebooks), tier2 (configs+DBs + ebooks/data/config), tier3 (Forge outputs, weekly only) |
+| `home-server/` | tier1 (.env × 4 incl. ebooks), tier2 (configs+DBs + ebooks/data/config). **tier3 (Forge outputs) is NOT here** — separate primary-only artifact, see §3.2 |
 | `chimera/` | Godot version pin (if present), ~/.config/godot, VS Code User, extensions list |
 | `crontabs/` | Snapshot user crontab |
 | `manifest.txt + repos.txt` | Bundle metadata + auto-generated repo list with remotes |
@@ -128,6 +128,29 @@ rclone cleanup b2-recovery:hai-recovery-bundle
 # Verify visible == all-versions (no dead weight left):
 rclone size b2-recovery:hai-recovery-bundle
 rclone size b2-recovery:hai-recovery-bundle --b2-versions
+```
+
+#### 3.2. Tier3 (Forge outputs) is primary-only (since 2026-06-17)
+
+The main bundle mirrors to **both** remotes. Tier3 Forge outputs (Stable
+Diffusion gallery, 850MB+ and growing) used to ride *inside* that bundle, so
+every weekly snapshot ballooned to ~1.5GB and — once kept ×4 as weekly — blew
+the B2 free cap (75% alert 2026-06-17, real cause, **not** hidden versions this
+time). Tier3 is now built as a **separate** `recovery-tier3-<date>.tar.gz.gpg`
+artifact pushed to the **PRIMARY remote only**, under `<primary>/tier3/`.
+Retention: `RETAIN_TIER3_WEEKS` (default 8) on primary. The B2 main bundle stays
+uniform (~600MB) regardless of how large Forge outputs grow.
+
+DR does **not** auto-restore tier3 (it's regenerable — keeps recovery lean). To
+restore the Forge gallery manually after recovery:
+
+```bash
+src="$RCLONE_REMOTE_PRIMARY/tier3"   # e.g. onedrive-dev:dev/recovery-bundle/tier3
+latest=$(rclone lsf "$src/" --include "recovery-tier3-*.tar.gz.gpg" | sort -r | head -1)
+rclone copy "$src/$latest" /tmp/
+gpg --decrypt --passphrase-file ~/.config/recovery/bundle.pass \
+    --output /tmp/tier3.tar.gz "/tmp/$latest"
+tar xzf /tmp/tier3.tar.gz -C ~/Projects/home-server   # restores forge/data/forge/outputs
 ```
 
 ### 4. First push + install cron
