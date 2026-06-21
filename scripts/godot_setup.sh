@@ -5,7 +5,7 @@
 #
 # Usage:
 #   ./godot_setup.sh                          # Auto-detect zip in ~/Downloads
-#   ./godot_setup.sh --version 4.6-stable     # Auto-download specified version
+#   ./godot_setup.sh --version 4.7-stable     # Auto-download specified version
 #   ./godot_setup.sh --from-project <path>    # Read version from <path>/.godot-version
 #   ./godot_setup.sh --uninstall              # Remove Godot binary + desktop entry
 # =============================================================================
@@ -71,17 +71,17 @@ if [[ -n "$FROM_PROJECT" ]]; then
     fi
     # Read version, normalize to GitHub release tag format
     # Accepts:
-    #   "4.6"                   → "4.6-stable"
-    #   "4.6.stable"            → "4.6-stable"
-    #   "4.6.stable.official"   → "4.6-stable"
-    #   "4.6.1-rc2"             → "4.6.1-rc2" (passthrough)
+    #   "4.7"                   → "4.7-stable"
+    #   "4.7.stable"            → "4.7-stable"
+    #   "4.7.stable.official"   → "4.7-stable"
+    #   "4.7.1-rc2"             → "4.7.1-rc2" (passthrough)
     RAW=$(head -1 "$VERSION_FILE" | tr -d '[:space:]')
     if [[ "$RAW" =~ ^([0-9]+\.[0-9]+(\.[0-9]+)?)(\.([a-z]+)(\..*)?)?$ ]]; then
         BASE="${BASH_REMATCH[1]}"
         CHANNEL="${BASH_REMATCH[4]:-stable}"
         EXPLICIT_VERSION="${BASE}-${CHANNEL}"
     else
-        # Already in tag-style format like "4.6.1-rc2"
+        # Already in tag-style format like "4.7.1-rc2"
         EXPLICIT_VERSION="$RAW"
     fi
     log_info "From project: read '$RAW' → resolved download version '$EXPLICIT_VERSION'"
@@ -92,9 +92,9 @@ fi
 # =============================================================================
 if [[ -n "$EXPLICIT_VERSION" ]] && [[ -f "$GODOT_INSTALL_DIR/godot" ]]; then
     CURRENT=$("$GODOT_INSTALL_DIR/godot" --version 2>/dev/null | head -1)
-    # Match "4.6.stable.official.xxx" vs requested "4.6-stable"
+    # Match "4.7.stable.official.xxx" vs requested "4.7-stable"
     REQ_BASE=$(echo "$EXPLICIT_VERSION" | sed -E 's/-/.${0:+0}/' | sed -E 's/-/./g')
-    # Simpler check: substring match e.g., "4.6.stable" should appear in current version
+    # Simpler check: substring match e.g., "4.7.stable" should appear in current version
     REQ_PATTERN=$(echo "$EXPLICIT_VERSION" | sed -E 's/-/.*/')
     if echo "$CURRENT" | grep -qE "$REQ_PATTERN"; then
         log_success "Godot already at requested version: $CURRENT"
@@ -141,14 +141,14 @@ else
         echo ""
         echo "  Options:"
         echo "    1. Download from: https://godotengine.org/download/linux/"
-        echo "    2. Re-run with: --version 4.6-stable (auto-download)"
+        echo "    2. Re-run with: --version 4.7-stable (auto-download)"
         echo "    3. Re-run with: --from-project <path> (read .godot-version)"
         exit 1
     fi
 fi
 
 GODOT_ZIP=$(basename "$GODOT_ZIP_PATH")
-# Extract version from filename (e.g., "Godot_v4.6-stable_linux.x86_64.zip" -> "4.6-stable")
+# Extract version from filename (e.g., "Godot_v4.7-stable_linux.x86_64.zip" -> "4.7-stable")
 GODOT_VERSION=$(echo "$GODOT_ZIP" | sed -n 's/^Godot_v\(.*\)_linux\.x86_64\.zip$/\1/p')
 
 if [[ -z "$GODOT_VERSION" ]]; then
@@ -224,9 +224,21 @@ log_info "Godot config not seeded from repo — restored from backup bundle duri
 # =============================================================================
 log_section "Setting up desktop integration..."
 
+# Download the official Godot icon (press-kit SVG). The body MUST be validated:
+# a failed download (404/error page) silently written to disk renders as a "?" in
+# the taskbar. The old raw.githubusercontent master/icon.svg path is dead (404).
 ICON_PATH="$HOME/.local/share/icons/godot.svg"
-curl -sL -o "$ICON_PATH" "https://raw.githubusercontent.com/godotengine/godot/master/icon.svg" 2>/dev/null || true
-log_success "Icon downloaded from GitHub"
+ICON_REF="applications-games"   # themed fallback if download fails
+ICON_URL="https://godotengine.org/assets/press/icon_color.svg"
+TMP_ICON=$(mktemp)
+if curl -fsSL -o "$TMP_ICON" "$ICON_URL" && [[ -s "$TMP_ICON" ]] && grep -qi '<svg' "$TMP_ICON"; then
+    mv "$TMP_ICON" "$ICON_PATH"
+    ICON_REF="$ICON_PATH"
+    log_success "Icon downloaded: $ICON_URL"
+else
+    rm -f "$TMP_ICON"
+    log_warn "Icon download failed — using themed fallback icon '$ICON_REF'"
+fi
 
 # Create desktop entry
 cat > "$HOME/.local/share/applications/godot.desktop" << EOF
@@ -234,7 +246,7 @@ cat > "$HOME/.local/share/applications/godot.desktop" << EOF
 Name=Godot Engine
 Comment=Multi-platform 2D and 3D game engine
 Exec=$GODOT_INSTALL_DIR/godot %f
-Icon=$ICON_PATH
+Icon=$ICON_REF
 Terminal=false
 Type=Application
 Categories=Development;IDE;
