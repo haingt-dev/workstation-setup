@@ -220,6 +220,18 @@ if [[ -d "$CHIMERA" && -d "$CHIMERA_BUNDLE" ]]; then
         fi
     fi
 
+    # Aseprite config (prefs, keybindings, brushes, layouts, palettes, scripts,
+    # extensions). Extensions auto-load on next launch — no GUI re-add needed.
+    if [[ -f "$CHIMERA_BUNDLE/aseprite-config.tar.gz" ]]; then
+        if $DRY_RUN; then
+            log_info "    [DRY-RUN] extract aseprite-config.tar.gz"
+        else
+            mkdir -p "$HOME/.config"
+            tar xzf "$CHIMERA_BUNDLE/aseprite-config.tar.gz" -C "$HOME/.config"
+            log_success "    Aseprite config"
+        fi
+    fi
+
     # VS Code extensions
     if [[ -f "$CHIMERA_BUNDLE/vscode-extensions.txt" ]] && command -v code >/dev/null; then
         log_info "    Installing VS Code extensions"

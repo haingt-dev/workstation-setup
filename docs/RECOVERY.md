@@ -56,7 +56,7 @@ Recovery cần **bundle passphrase** (lưu password manager). Bộ recover.sh h�
 | `envs/` | All .env files via **manifest.txt** (sequential `env-N.bin` + path mapping — handles dashes in dirnames correctly) |
 | `brain/` | brain.db (sqlite `.backup` WAL-safe snapshot) |
 | `home-server/` | tier1 (.env × 4 incl. ebooks), tier2 (configs+DBs + ebooks/data/config). **tier3 (Forge outputs) is NOT here** — separate primary-only artifact, see §3.2 |
-| `chimera/` | Godot version pin (if present), ~/.config/godot, VS Code User, extensions list |
+| `chimera/` | Godot version pin (if present), ~/.config/godot, VS Code User, extensions list, **Aseprite config** (~/.config/aseprite — prefs/keybindings/brushes/layouts/palettes/scripts/extensions; sessions+files cache excluded) |
 | `crontabs/` | Snapshot user crontab |
 | `manifest.txt + repos.txt` | Bundle metadata + auto-generated repo list with remotes |
 
@@ -212,6 +212,7 @@ tar xzf /tmp/tier3.tar.gz -C ~/Projects/home-server   # restores forge/data/forg
 - ✓ brain.db (sqlite WAL-safe snapshot)
 - ✓ Godot binary auto-installed từ pin file
 - ✓ VS Code User settings + extensions list
+- ✓ Aseprite config (prefs, keybindings, custom palettes, Lua scripts, extensions — auto-load on launch)
 - ✓ **onedriver auth tokens** (Dev + Personal) → systemd units enabled in Phase 3 → mounts auto-start on next login
 - ✓ **calibre-sync.timer** installed in Phase 6 (daily 22:30 backup local → cloud)
 - ✓ **Calibre Library content** auto-fetched từ cloud nếu local empty (Phase 6 post-hook, prompt-or-auto tuỳ INTERACTIVE flag)

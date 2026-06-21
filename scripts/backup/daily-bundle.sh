@@ -12,7 +12,7 @@
 #   - ~/.claude/ state (CLAUDE.md, plans, projects, plugins/cache, config)
 #   - secrets (~/.ssh, ~/.gnupg, gh token)
 #   - .env files from 6 critical repos
-#   - chimera dev state (Godot config, VS Code User, extensions list)
+#   - chimera dev state (Godot config, VS Code User, Aseprite config, extensions list)
 #   - crontab snapshot
 #
 # Usage:
@@ -397,6 +397,19 @@ if command -v code >/dev/null; then
     code --list-extensions > "$CHIMERA_DST/vscode-extensions.txt"
     cnt=$(wc -l < "$CHIMERA_DST/vscode-extensions.txt")
     success "  vscode-extensions.txt ($cnt extensions)"
+fi
+
+# Aseprite config (pixel-art tool for chimera sprites): prefs, keybindings,
+# brushes, layouts, custom palettes, user Lua scripts, installed extensions.
+# Exclude volatile/regenerable state: sessions/ (crash-recovery backups, ~1MB),
+# files/ (per-document UI cache keyed by file path), Aseprite.log.
+if [[ -d "$HOME/.config/aseprite" ]]; then
+    tar czf "$CHIMERA_DST/aseprite-config.tar.gz" -C "$HOME/.config" \
+        --exclude='aseprite/sessions' \
+        --exclude='aseprite/files' \
+        --exclude='aseprite/Aseprite.log' \
+        aseprite
+    success "  aseprite-config.tar.gz ($(du -h "$CHIMERA_DST/aseprite-config.tar.gz" | cut -f1))"
 fi
 
 # ─────────────────────────────────────────────────────────────
