@@ -23,12 +23,15 @@
 #           "Auto Power OFF: OFF" so the panel keeps its DDC bus alive.
 #   Layer 2 (automated): KDE "turn off screen" -> never, so the display is never
 #           DPMS-blanked on idle -> the wake race never fires.
-#   Plus: restores the known-good EDID blob to ~/.local/share/edid/ for a future
-#         Layer 3 (debugfs edid_override auto-recovery for the system-suspend
-#         case — NOT built yet; the debugfs path is the one injection method that
-#         DOES work on nvidia-drm).
+#   Layer 3 (needs root): a systemd-sleep hook that pre-sets the connector's
+#         debugfs edid_override before sleep and nudges KWin on resume if the
+#         EDID still came back broken — for the system-suspend case. Source:
+#         scripts/display/nvidia-dp-edid.sleep.sh. The debugfs edid_override is
+#         the one injection path that has a hook on nvidia-drm (drm.edid_firmware
+#         is a no-op there). Efficacy self-logs to /var/log/nvidia-dp-edid.log.
 #
-# Idempotent. No sudo required.
+# Idempotent. Layers 1-2 + EDID need no sudo; Layer 3 install uses sudo if
+# available (skipped with manual instructions otherwise).
 # =============================================================================
 
 set -e
@@ -119,6 +122,33 @@ else
 fi
 
 # -----------------------------------------------------------------------------
+# Layer 3 — auto-recovery for the system-suspend case (needs root).
+# Installs the known-good EDID + a systemd-sleep hook (pre: set edid_override;
+# post: nudge KWin if EDID came back broken). Self-logs to /var/log.
+# -----------------------------------------------------------------------------
+HOOK_SRC="$SCRIPT_DIR/display/nvidia-dp-edid.sleep.sh"
+if sudo -n true 2>/dev/null; then
+    if [[ -f "$EDID_REPO" ]]; then
+        sudo install -D -m644 "$EDID_REPO" /usr/local/share/nvidia-dp-edid/dp3-good.bin
+        log_success "Installed known-good EDID -> /usr/local/share/nvidia-dp-edid/dp3-good.bin"
+    else
+        log_warn "No committed EDID — Layer 3 hook will fall back to ~/.local/share/edid/"
+    fi
+    if [[ -f "$HOOK_SRC" ]]; then
+        sudo install -m755 "$HOOK_SRC" /usr/lib/systemd/system-sleep/nvidia-dp-edid
+        log_success "Installed systemd-sleep hook -> /usr/lib/systemd/system-sleep/nvidia-dp-edid"
+        log_info "Layer 3 active on next suspend. Log: /var/log/nvidia-dp-edid.log"
+    else
+        log_warn "Hook source missing: $HOOK_SRC (skip Layer 3)"
+    fi
+else
+    log_warn "sudo not available non-interactively — skipping Layer 3 auto-install."
+    log_info "Install Layer 3 manually:"
+    log_info "  sudo install -D -m644 $EDID_REPO /usr/local/share/nvidia-dp-edid/dp3-good.bin"
+    log_info "  sudo install -m755 $HOOK_SRC /usr/lib/systemd/system-sleep/nvidia-dp-edid"
+fi
+
+# -----------------------------------------------------------------------------
 # Layer 1 — hardware reminder (cannot be automated).
 # -----------------------------------------------------------------------------
 log_section "Display Setup complete"
@@ -131,4 +161,4 @@ echo "  └───────────────────────
 echo ""
 log_info "If the screen ever drops to 640x480: power-cycle the monitor (or replug DP)."
 log_info "Health check:  wc -c < /sys/class/drm/${LIVE_DP:-card1-DP-3}/edid   # 384=healthy, 0=bug hit"
-log_info "Background + un-built Layer 3 (suspend auto-recovery): brain 4db7e40bc653"
+log_info "Layer 3 auto-recovery log: /var/log/nvidia-dp-edid.log  (design: brain 4db7e40bc653)"

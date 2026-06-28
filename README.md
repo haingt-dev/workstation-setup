@@ -252,7 +252,7 @@ sudo shutdown -h now
 - **EasyEffects**: Audio presets for speakers/headsets
 - **DNS**: Cloudflare Block Malware (1.1.1.2/1.0.0.2)
 - **Vietnamese Input**: fcitx5-unikey (auto-configured with Super+Space trigger)
-- **Display (NVIDIA)**: KDE never-blank + monitor-OSD reminder so a DisplayPort wake doesn't collapse to 640x480; known-good EDID staged at `~/.local/share/edid/` for a future suspend auto-recovery. Deep-dive: brain `4db7e40bc653`.
+- **Display (NVIDIA)**: KDE never-blank + monitor-OSD reminder so a DisplayPort wake doesn't collapse to 640x480; plus a `systemd-sleep` hook (`scripts/display/nvidia-dp-edid.sleep.sh`) that pre-sets the debugfs `edid_override` before sleep and nudges KWin on resume if the EDID came back broken — for the system-suspend case. Self-logs to `/var/log/nvidia-dp-edid.log`. Deep-dive: brain `4db7e40bc653`.
 
 ## Post-Setup Steps
 
