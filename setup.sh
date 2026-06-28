@@ -38,6 +38,7 @@ INSTALL_EASYEFFECTS=true
 INSTALL_DNS=true
 INSTALL_VSCODE=true
 INSTALL_REMOTE=true
+INSTALL_DISPLAY=true
 
 # Optional components (Do not run by default)
 INSTALL_ONEDRIVE=false
@@ -70,6 +71,7 @@ show_help() {
 
     echo "  --vscode            Visual Studio Code setup"
     echo "  --remote            Remote access setup (Tailscale, Mosh, SSH, WoL)"
+    echo "  --display           NVIDIA DisplayPort EDID-loss fix (KDE never-blank + EDID)"
 
     echo ""
     echo "Skip Flags (For Default Mode):"
@@ -82,6 +84,7 @@ show_help() {
     echo "  --skip-dns          Skip DNS setup"
 
     echo "  --skip-vscode       Skip VS Code setup"
+    echo "  --skip-display      Skip display/NVIDIA setup"
 
     echo ""
     echo "Examples:"
@@ -99,7 +102,7 @@ show_help() {
 EXCLUSIVE_MODE=false
 for arg in "$@"; do
     case $arg in
-        --terminal|--agent|--qdrant|--godot|--apps|--easyeffects|--dns|--onedrive|--vietnamese|--vscode|--remote)
+        --terminal|--agent|--qdrant|--godot|--apps|--easyeffects|--dns|--onedrive|--vietnamese|--vscode|--remote|--display)
             EXCLUSIVE_MODE=true
             break
             ;;
@@ -121,6 +124,7 @@ if $EXCLUSIVE_MODE; then
 
     INSTALL_VSCODE=false
     INSTALL_REMOTE=false
+    INSTALL_DISPLAY=false
 
 fi
 
@@ -140,6 +144,7 @@ for arg in "$@"; do
             INSTALL_VIETNAMESE=true
             INSTALL_VSCODE=true
             INSTALL_REMOTE=true
+            INSTALL_DISPLAY=true
 
             ;;
         --terminal)           INSTALL_TERMINAL=true ;;
@@ -153,6 +158,7 @@ for arg in "$@"; do
         --vietnamese)         INSTALL_VIETNAMESE=true ;;
         --vscode)             INSTALL_VSCODE=true ;;
         --remote)             INSTALL_REMOTE=true ;;
+        --display)            INSTALL_DISPLAY=true ;;
 
         # Skip Flags
         --skip-terminal)      INSTALL_TERMINAL=false ;;
@@ -164,6 +170,7 @@ for arg in "$@"; do
         --skip-dns)           INSTALL_DNS=false ;;
         --skip-vscode)        INSTALL_VSCODE=false ;;
         --skip-remote)        INSTALL_REMOTE=false ;;
+        --skip-display)       INSTALL_DISPLAY=false ;;
 
         # Other
         --help|-h)            show_help ;;
@@ -281,6 +288,14 @@ if $INSTALL_REMOTE; then
     bash "$SCRIPTS_DIR/remote_access_setup.sh"
 elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping remote access setup"
+fi
+
+# 12. Display / NVIDIA DisplayPort EDID-loss mitigation
+if $INSTALL_DISPLAY; then
+    log_section "Running Display Setup..."
+    bash "$SCRIPTS_DIR/display_setup.sh"
+elif ! $EXCLUSIVE_MODE; then
+    log_warn "Skipping display setup"
 fi
 
 # =============================================================================

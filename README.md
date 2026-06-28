@@ -28,6 +28,7 @@ Automated workstation setup for Nobara 42 / Fedora — terminal, dev tools, apps
 - **Audio Processing**: EasyEffects with pre-tuned presets
 - **DNS**: Cloudflare Block Malware configuration
 - **Vietnamese Input**: fcitx5-unikey for Vietnamese typing
+- **Display (NVIDIA)**: DisplayPort EDID-loss mitigation — stops the post-sleep 640x480 collapse (KDE never-blank + monitor-OSD reminder + known-good EDID staged for recovery)
 
 ## Quick Start
 
@@ -84,6 +85,8 @@ Options:
   --vietnamese        Install Vietnamese input method
   --remote            Remote access (Tailscale, SSH, WoL)
   --skip-remote       Skip remote access setup
+  --display           NVIDIA DisplayPort EDID-loss fix (KDE never-blank + EDID)
+  --skip-display      Skip display/NVIDIA setup
   --help              Show help message
 
 Exclusive Mode (Run ONLY specific components):
@@ -130,7 +133,8 @@ Examples:
     ├── dns_setup.sh            # DNS configuration
     ├── input_setup.sh          # Vietnamese input method
     ├── agent_setup.sh          # Agent Hub setup (clones from GitHub)
-    └── remote_access_setup.sh  # Remote access (Tailscale, SSH, WoL)
+    ├── remote_access_setup.sh  # Remote access (Tailscale, SSH, WoL)
+    └── display_setup.sh        # NVIDIA DisplayPort EDID-loss mitigation
 ```
 
 ## What Gets Installed
@@ -248,6 +252,7 @@ sudo shutdown -h now
 - **EasyEffects**: Audio presets for speakers/headsets
 - **DNS**: Cloudflare Block Malware (1.1.1.2/1.0.0.2)
 - **Vietnamese Input**: fcitx5-unikey (auto-configured with Super+Space trigger)
+- **Display (NVIDIA)**: KDE never-blank + monitor-OSD reminder so a DisplayPort wake doesn't collapse to 640x480; known-good EDID staged at `~/.local/share/edid/` for a future suspend auto-recovery. Deep-dive: brain `4db7e40bc653`.
 
 ## Post-Setup Steps
 
