@@ -23,11 +23,17 @@ elif [[ -f ~/.local/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlig
     source ~/.local/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 fi
 
-if [[ -f /usr/share/zsh-autocomplete/zsh-autocomplete.plugin.zsh ]]; then
-    source /usr/share/zsh-autocomplete/zsh-autocomplete.plugin.zsh
-elif [[ -f ~/.local/share/zsh/plugins/zsh-autocomplete/zsh-autocomplete.plugin.zsh ]]; then
-    source ~/.local/share/zsh/plugins/zsh-autocomplete/zsh-autocomplete.plugin.zsh
-fi
+# zsh-autocomplete — DISABLED 2026-06-29. Its async zpty worker segfaults on
+# teardown under zsh 5.9 (SIGSEGV in zexit→zshexit→private param scope; ~1×/week,
+# 5 crashes May–Jun 2026). Upstream bug, not a config error. Its only unique
+# feature (live dropdown) is redundant here: autosuggestions + compinit menu-select
+# + Atuin (Ctrl-R) + fzf already cover it, and it fought Atuin over the up-arrow.
+# To re-enable: uncomment + verify the zsh 5.9 crash is fixed upstream first.
+# if [[ -f /usr/share/zsh-autocomplete/zsh-autocomplete.plugin.zsh ]]; then
+#     source /usr/share/zsh-autocomplete/zsh-autocomplete.plugin.zsh
+# elif [[ -f ~/.local/share/zsh/plugins/zsh-autocomplete/zsh-autocomplete.plugin.zsh ]]; then
+#     source ~/.local/share/zsh/plugins/zsh-autocomplete/zsh-autocomplete.plugin.zsh
+# fi
 
 # -----------------------------------------------------------------------------
 # Atuin (Shell History)
