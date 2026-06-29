@@ -1,5 +1,6 @@
 ---
 name: validate
+model: haiku
 description: "Dry-run prerequisite check for system setup"
 disable-model-invocation: false
 argument-hint: "[component name]"

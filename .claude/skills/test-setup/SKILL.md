@@ -1,5 +1,6 @@
 ---
 name: test-setup
+model: haiku
 description: "Dry-run trace of setup.sh execution"
 disable-model-invocation: false
 argument-hint: "[--terminal|--godot|component]"

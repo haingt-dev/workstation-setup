@@ -1,6 +1,6 @@
 [user]
 	name = haint
-	email = thanhhai9x98@gmail.com
+	email = hai@haingt.dev
 [filter "lfs"]
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
