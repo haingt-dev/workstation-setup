@@ -243,6 +243,13 @@ tmux new -s work           # Start persistent session
 sudo shutdown -h now
 ```
 
+**Trip protocol — smart-plug boot (PC default OFF, no always-on box)**:
+1. **Boot**: smart-plug app → OFF → wait 5s → ON. BIOS `Restore AC Power Loss = Power On` boots the PC; `sshd` + `tailscaled` are enabled at boot. Wait ~2 min.
+2. **Work**: `ssh haint@100.86.91.49` → `tmux attach -t work || tmux new -s work`.
+3. **Done**: `sudo shutdown -h now` from the SSH session; optionally plug OFF after ~1 min.
+
+Safe from auto-suspend: no autologin → PC idles at the plasmalogin greeter, so PowerDevil (per-user) never starts; logind `IdleAction` is default ignore. Pre-departure drill: run the full cycle once from cellular (wifi off) — verified 2026-07-__.
+
 ### Other Components
 
 - **Qdrant**: Podman container with systemd service at http://localhost:6333
