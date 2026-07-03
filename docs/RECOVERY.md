@@ -138,8 +138,9 @@ every weekly snapshot ballooned to ~1.5GB and — once kept ×4 as weekly — bl
 the B2 free cap (75% alert 2026-06-17, real cause, **not** hidden versions this
 time). Tier3 is now built as a **separate** `recovery-tier3-<date>.tar.gz.gpg`
 artifact pushed to the **PRIMARY remote only**, under `<primary>/tier3/`.
-Retention: `RETAIN_TIER3_WEEKS` (default 8) on primary. The B2 main bundle stays
-uniform (~600MB) regardless of how large Forge outputs grow.
+Retention: `RETAIN_TIER3_WEEKS` (default 8) on primary. Splitting tier3 out keeps
+Forge-output growth off the B2 mirror — but the main bundle still grows on its own
+(conversation history), see §3.3.
 
 DR does **not** auto-restore tier3 (it's regenerable — keeps recovery lean). To
 restore the Forge gallery manually after recovery:
@@ -152,6 +153,31 @@ gpg --decrypt --passphrase-file ~/.config/recovery/bundle.pass \
     --output /tmp/tier3.tar.gz "/tmp/$latest"
 tar xzf /tmp/tier3.tar.gz -C ~/Projects/home-server   # restores forge/data/forge/outputs
 ```
+
+#### 3.3. B2 fallback retention is minimal 1/1/1 (since 2026-07-03)
+
+The main bundle grows **without bound**: it packs `~/.claude/projects/`
+conversation history, which went 832MB→1.2GB in a month (99.96% is low-DR `.jsonl`
+transcripts — a single image-heavy session was 472MB of base64; the DR-critical
+`memory/` auto-memory is only ~500KB). At ~770MB/bundle, the old B2 fallback
+retention 7 daily + 4 weekly + 2 monthly = 13 bundles ≈ 7.5GB and hit the 75% cap
+(3rd occurrence — **not** hidden versions, **not** tier3 this time).
+
+Fix: B2 is only the **secondary** mirror (primary OneDrive 1TB keeps full 7/4/12),
+so `FALLBACK_RETAIN_{DAILY_DAYS,WEEKLY_COUNT,MONTHLY_COUNT}=1` → 3 bundles ≈ 2.3GB.
+Bundle size must ~triple before the cap is at risk again. Manual cleanup uses the
+same commands the cron applies (safe because the remote has `hard_delete=true`):
+
+```bash
+R=b2-recovery:hai-recovery-bundle
+rclone delete "$R/daily/"   --min-age 1d  --include "recovery-bundle-*.tar.gz.gpg"
+rclone delete "$R/weekly/"  --min-age 7d
+rclone delete "$R/monthly/" --min-age 31d
+```
+
+If it recurs (bundle > ~3GB), the deeper fix is the tier3 pattern applied to
+transcripts: split `projects/` `.jsonl` into a separate primary-only artifact,
+keep only `memory/` in the main bundle.
 
 ### 4. First push + install cron
 

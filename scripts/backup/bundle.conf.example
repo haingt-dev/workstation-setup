@@ -24,10 +24,9 @@ RETAIN_WEEKLY_COUNT=4    # 4 weeks of Sunday snapshots
 RETAIN_MONTHLY_COUNT=12  # 12 months of 1st-of-month snapshots
 
 # Fallback remote override — leave unset to mirror primary retention.
-# B2 free tier = 10GB cap. The main bundle is tier3-FREE (~600M each), so
-# 7+4+2=13 bundles ≈ 7.8GB — comfortably under cap, and STAYS there regardless
-# of how large Forge outputs grow (tier3 goes to the primary remote only; see
-# TIER3_FREQUENCY note + docs/RECOVERY.md §3.2).
+# B2 free tier = 10GB cap. B2 is only the SECONDARY mirror (primary OneDrive 1TB
+# keeps full 7/4/12), so keep a MINIMAL 1/1/1 floor here = 3 bundles. The main
+# bundle grows without bound, so a fat fallback retention recurringly blows the cap.
 # GOTCHA #1 (hidden versions): B2 keeps all versions; rclone's retention `delete`
 # only HIDES files unless hard_delete=true, and hidden versions STILL count toward
 # the cap. Without the one-time B2 hardening (hard_delete + lifecycle rule — see
@@ -36,9 +35,14 @@ RETAIN_MONTHLY_COUNT=12  # 12 months of 1st-of-month snapshots
 # GOTCHA #2 (bundle bloat — fixed 2026-06-17): tier3 Forge outputs used to ride
 # inside the main bundle, ballooning Sunday snapshots to ~1.5GB and blowing the
 # cap once kept ×4 as weekly. Tier3 is now a separate primary-only artifact.
-FALLBACK_RETAIN_DAILY_DAYS=7
-FALLBACK_RETAIN_WEEKLY_COUNT=4
-FALLBACK_RETAIN_MONTHLY_COUNT=2
+# GOTCHA #3 (unbounded bundle growth — 2026-07-03): the main bundle itself grows
+# without bound because it packs ~/.claude/projects conversation history (832MB→
+# 1.2GB in a month; a single image-heavy session was 472MB of base64). At ~770M/
+# bundle, the old 7+4+2=13 retention = 7.5GB and hit 75% cap. Fix = 1/1/1 (below):
+# 3 bundles ≈ 2.3GB, and bundle size must ~triple before the cap is at risk again.
+FALLBACK_RETAIN_DAILY_DAYS=1
+FALLBACK_RETAIN_WEEKLY_COUNT=1
+FALLBACK_RETAIN_MONTHLY_COUNT=1
 
 # Tier 3 (Forge outputs) frequency: daily, weekly, or skip.
 # Tier3 is pushed to the PRIMARY remote ONLY (never the B2 fallback) as a
