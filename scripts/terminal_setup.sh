@@ -208,6 +208,8 @@ run_core_setup() {
     # starship config
     link_file ".config/starship/starship.toml" ~/.config/starship/starship.toml
     link_file ".config/starship/starship-catppuccin.toml" ~/.config/starship/starship-catppuccin.toml
+    # remote/mobile prompt (glyph-free) — activated by .zshrc when $SSH_CONNECTION set
+    link_file ".config/starship/starship-remote.toml" ~/.config/starship-remote.toml
 
     # atuin config (config.toml only — install receipt is machine state, not versioned)
     link_file ".config/atuin/config.toml" ~/.config/atuin/config.toml

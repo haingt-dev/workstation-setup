@@ -19,6 +19,17 @@ fi
 # -----------------------------------------------------------------------------
 # Starship Prompt
 # -----------------------------------------------------------------------------
+# Remote/mobile sessions (Termius/Mosh over SSH — $SSH_CONNECTION set for both)
+# use a glyph-free prompt so terminals without Nerd Fonts don't render the
+# powerline/PUA icons as tofu. Local terminals fall through to the default
+# ~/.config/starship.toml (full Catppuccin prompt on the Nerd-Font kitty).
+# Always unset in the local branch so a pane inheriting STARSHIP_CONFIG from a
+# remotely-started tmux server doesn't wrongly keep the plain prompt.
+if [[ -n "$SSH_CONNECTION" && -f "$HOME/.config/starship-remote.toml" ]]; then
+    export STARSHIP_CONFIG="$HOME/.config/starship-remote.toml"
+else
+    unset STARSHIP_CONFIG
+fi
 eval "$(starship init zsh)"
 
 # -----------------------------------------------------------------------------
