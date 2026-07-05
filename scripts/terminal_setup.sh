@@ -8,7 +8,8 @@
 #
 # This script performs complete terminal setup including:
 #   - System packages (zsh, kitty, tmux, podman, etc.)
-#   - Shell configuration (starship, atuin, zsh plugins)
+#   - Shell configuration (starship, atuin, zsh plugins) — incl. a glyph-free
+#     starship-remote.toml prompt auto-selected by .zshrc over SSH/Mosh
 #   - Power tools (zoxide, eza, bat, fzf, ripgrep, fd-find, lazygit, yazi)
 #   - Dotfiles and configs (single enhanced profile)
 #   - Fonts (CaskaydiaCove Nerd Font)

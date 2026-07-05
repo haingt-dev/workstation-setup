@@ -114,7 +114,7 @@ Examples:
 │   ├── .gitconfig              # Git configuration
 │   ├── symlinks.yml            # Declarative cross-project symlink manifest
 │   └── .config/                # App configs
-│       ├── starship/           # Starship prompt config
+│       ├── starship/           # Starship prompts (remote variant → ~/.config/starship-remote.toml)
 │       ├── atuin/              # Atuin config (config.toml)
 │       ├── fastfetch/          # Fastfetch config + logo
 │       ├── kitty/              # Kitty terminal + Catppuccin + background
@@ -181,7 +181,7 @@ Single, full-featured terminal configuration:
 **Shell Tools**:
 - Starship prompt (Gruvbox theme)
 - Atuin (shell history with sync)
-- Zsh plugins: autosuggestions, syntax-highlighting, autocomplete
+- Zsh plugins: autosuggestions, syntax-highlighting (autocomplete disabled 2026-06-29 — segfaults on zsh 5.9)
 
 **Power Tools**:
 - `zoxide` - Smart cd replacement
@@ -198,6 +198,7 @@ Single, full-featured terminal configuration:
 - `kitty.conf` with Catppuccin Mocha theme
 - `tmux.conf` with TPM and Catppuccin theme
 - `starship.toml` with Gruvbox Dark theme
+- `starship-remote.toml` — glyph-free variant, auto-selected over SSH/Mosh
 
 **Aliases Available**:
 ```bash
@@ -220,6 +221,7 @@ iPad Pro M2 as mobile workstation — remote into home PC from anywhere:
 - Wake-on-LAN (ethtool on Realtek 2.5G, persistent via NetworkManager)
 - Mosh (resilient UDP shell — survives roaming / sleep-wake / IP change)
 - tmux for session persistence (survives SSH disconnects) — auto-attaches to session `work` on every remote connect (guard in `assets/.zshrc`)
+- Glyph-free Starship prompt for remote sessions — Termius/non-Nerd-Font clients render the local Catppuccin powerline icons as tofu; `starship-remote.toml` (letters + `…` + `❯` only, same Catppuccin colors) is auto-selected via `STARSHIP_CONFIG` when `$SSH_CONNECTION` is set (`assets/.zshrc`); local terminals keep the full prompt
 
 **Hardware**: ASUS TUF B650M-E WIFI, Ethernet `eno1`
 
@@ -238,7 +240,7 @@ iPad Pro M2 as mobile workstation — remote into home PC from anywhere:
 # From iPad (Termius) — Mosh recommended; survives roaming/sleep
 ssh haint@100.86.91.49     # Tailscale IP — works from anywhere
 # → auto-attaches to tmux session `work` on connect (assets/.zshrc)
-# Detach: Ctrl-b d · reconnecting re-attaches automatically
+# Detach: Ctrl-a d · reconnecting re-attaches automatically
 
 # Shutdown PC remotely when done
 sudo shutdown -h now

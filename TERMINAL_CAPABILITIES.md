@@ -158,7 +158,7 @@ Modifier: `Ctrl+Shift` (referred to as `kitty_mod`)
 ### Plugins
 - `zsh-autosuggestions` — grey inline suggestions (accept with Right Arrow)
 - `zsh-syntax-highlighting` — command validation colors
-- `zsh-autocomplete` — real-time completion menu
+- `zsh-autocomplete` — **disabled 2026-06-29** (segfaults on zsh 5.9)
 - Starship prompt (Gruvbox theme)
 - Atuin shell history (sync/search)
 
@@ -184,6 +184,25 @@ Modifier: `Ctrl+Shift` (referred to as `kitty_mod`)
 
 ### Tmux cwd Sync
 When inside tmux, a `chpwd` hook writes `$PWD` to `/tmp/tmux-main-cwd` on every directory change. The lazygit-pane reads this file to stay in sync.
+
+---
+
+## Remote Sessions (SSH / Mosh)
+
+Connecting from an iPad (Termius) or any SSH/Mosh client, `assets/.zshrc` detects
+the remote session via `$SSH_CONNECTION` (set for both ssh **and** mosh) and adapts:
+
+- **tmux auto-attach** — drops straight into the persistent session `work`
+  (`tmux attach -t work || tmux new -s work`); skipped for local terminals and when
+  already inside tmux (`$TMUX`). Distinct from the local kitty `main` dashboard session.
+- **Mosh** — installed on the host (`remote_access_setup.sh`) for a shell that survives
+  roaming, sleep/wake, and IP changes (UDP over Tailscale; ports covered by the
+  `tailscale0` trusted zone).
+- **Glyph-free prompt** — `STARSHIP_CONFIG` points at `starship-remote.toml` (letters +
+  `…` + `❯` only, Catppuccin colors) because Termius can't render the local prompt's
+  Nerd Font glyphs; local terminals `unset` it and keep the full powerline prompt.
+
+See `README.md` → "Remote Access Setup" for host setup and iPad app steps.
 
 ---
 

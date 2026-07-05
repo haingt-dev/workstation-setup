@@ -242,6 +242,7 @@ keep only `memory/` in the main bundle.
 - ✓ **onedriver auth tokens** (Dev + Personal) → systemd units enabled in Phase 3 → mounts auto-start on next login
 - ✓ **calibre-sync.timer** installed in Phase 6 (daily 22:30 backup local → cloud)
 - ✓ **Calibre Library content** auto-fetched từ cloud nếu local empty (Phase 6 post-hook, prompt-or-auto tuỳ INTERACTIVE flag)
+- ✓ **Remote access stack** (Tailscale + sshd + Mosh + tmux auto-attach to `work` + glyph-free remote Starship prompt) — reinstalled by `./setup.sh` in Phase 1 (idempotent scripts, not bundle content); Tailscale still needs a one-time `sudo tailscale up` re-auth
 
 **Manual after recovery (cannot auto)**:
 1. **Forge models** (~9GB): `cd ~/Projects/home-server && ./scripts/forge-pull-models.sh` (URLs trong forge/models.yml)

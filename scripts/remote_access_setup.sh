@@ -6,6 +6,7 @@
 # Installs and configures:
 # - Tailscale (mesh VPN)
 # - OpenSSH server (enabled + started)
+# - Mosh (resilient UDP shell for iPad/Termius — survives roaming/sleep/IP change)
 # - Wake-on-LAN via ethtool (for Realtek 2.5G LAN)
 #
 # Hardware: ASUS TUF B650M-E WIFI (Realtek 2.5G Ethernet)
@@ -135,7 +136,8 @@ echo ""
 log_info "Services:"
 echo "  SSH:       $(systemctl is-active sshd) (port 22)"
 echo "  Tailscale: $(systemctl is-active tailscaled)"
-echo "  Session:   tmux (use 'tmux new -s work' for persistent sessions)"
+echo "  Mosh:      $(command -v mosh-server >/dev/null 2>&1 && echo installed || echo 'MISSING (dnf install mosh)')"
+echo "  Session:   tmux 'work' — auto-attaches on connect (assets/.zshrc); manual: tmux new -s work"
 echo ""
 
 if ! tailscale status &>/dev/null; then
@@ -156,8 +158,8 @@ echo "  1. Install Tailscale → login same account (keep it ON — a node that"
 echo "     goes offline ~months drops off the tailnet and won't route)"
 echo "  2. Install Termius → host = <tailscale-ip>, user = $(whoami)"
 echo "     → enable Mosh in the host entry (survives 4G↔wifi, sleep, drops)"
-echo "  3. Start persistent session: tmux new -s work"
-echo "  4. Reconnect after drop: tmux attach -t work"
+echo "  3. Connect → auto-attaches to tmux session 'work' (assets/.zshrc)"
+echo "  4. Detach: Ctrl-a d · reconnecting re-attaches automatically"
 echo ""
 if [[ -n "$MAC" ]]; then
     log_info "WoL MAC: $MAC"
