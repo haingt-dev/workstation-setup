@@ -3,6 +3,20 @@
 # =============================================================================
 
 # -----------------------------------------------------------------------------
+# tmux auto-attach for remote sessions (SSH / Mosh)
+# -----------------------------------------------------------------------------
+# On an incoming remote shell, drop straight into the persistent 'work' tmux
+# session so Claude Code / long tasks survive client death & network drops.
+# Guard on $SSH_CONNECTION — set for BOTH ssh AND mosh (mosh inherits it from
+# the ssh handshake; it clears $SSH_TTY, so don't key on that). Skip when already
+# inside tmux ($TMUX) to avoid nesting, and never touch local terminals. No exec:
+# detaching drops back to a normal shell instead of closing the connection.
+# Placed before the heavy interactive setup below so remote connects attach fast.
+if [[ -n "$SSH_CONNECTION" && -z "$TMUX" ]] && command -v tmux >/dev/null 2>&1; then
+    tmux attach -t work 2>/dev/null || tmux new -s work
+fi
+
+# -----------------------------------------------------------------------------
 # Starship Prompt
 # -----------------------------------------------------------------------------
 eval "$(starship init zsh)"

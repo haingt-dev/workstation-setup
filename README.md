@@ -219,7 +219,7 @@ iPad Pro M2 as mobile workstation — remote into home PC from anywhere:
 - Tailscale (mesh VPN — no port forwarding needed)
 - Wake-on-LAN (ethtool on Realtek 2.5G, persistent via NetworkManager)
 - Mosh (resilient UDP shell — survives roaming / sleep-wake / IP change)
-- tmux for session persistence (survives SSH disconnects)
+- tmux for session persistence (survives SSH disconnects) — auto-attaches to session `work` on every remote connect (guard in `assets/.zshrc`)
 
 **Hardware**: ASUS TUF B650M-E WIFI, Ethernet `eno1`
 
@@ -235,10 +235,10 @@ iPad Pro M2 as mobile workstation — remote into home PC from anywhere:
 
 **Usage**:
 ```bash
-# From iPad (Termius)
+# From iPad (Termius) — Mosh recommended; survives roaming/sleep
 ssh haint@100.86.91.49     # Tailscale IP — works from anywhere
-tmux new -s work           # Start persistent session
-# If disconnected → reconnect SSH → tmux attach -t work
+# → auto-attaches to tmux session `work` on connect (assets/.zshrc)
+# Detach: Ctrl-b d · reconnecting re-attaches automatically
 
 # Shutdown PC remotely when done
 sudo shutdown -h now
@@ -246,7 +246,7 @@ sudo shutdown -h now
 
 **Trip protocol — smart-plug boot (PC default OFF, no always-on box)**:
 1. **Boot**: smart-plug app → OFF → wait 5s → ON. BIOS `Restore AC Power Loss = Power On` boots the PC; `sshd` + `tailscaled` are enabled at boot. Wait ~2 min.
-2. **Work**: `ssh haint@100.86.91.49` → `tmux attach -t work || tmux new -s work`.
+2. **Work**: `ssh haint@100.86.91.49` → auto-attaches to tmux `work` (via `assets/.zshrc`; falls back to `tmux new -s work` if none).
 3. **Done**: `sudo shutdown -h now` from the SSH session; optionally plug OFF after ~1 min.
 
 Safe from auto-suspend: no autologin → PC idles at the plasmalogin greeter, so PowerDevil (per-user) never starts; logind `IdleAction` is default ignore. Pre-departure drill: run the full cycle once from cellular (wifi off) — verified 2026-07-__.
