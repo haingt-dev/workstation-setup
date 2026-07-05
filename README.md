@@ -218,6 +218,7 @@ iPad Pro M2 as mobile workstation — remote into home PC from anywhere:
 - OpenSSH server (enabled, port 22)
 - Tailscale (mesh VPN — no port forwarding needed)
 - Wake-on-LAN (ethtool on Realtek 2.5G, persistent via NetworkManager)
+- Mosh (resilient UDP shell — survives roaming / sleep-wake / IP change)
 - tmux for session persistence (survives SSH disconnects)
 
 **Hardware**: ASUS TUF B650M-E WIFI, Ethernet `eno1`
@@ -229,7 +230,7 @@ iPad Pro M2 as mobile workstation — remote into home PC from anywhere:
 
 **iPad Apps**:
 - Tailscale (free) — same account, auto-connects
-- Termius (free) — SSH client + tmux for session persistence
+- Termius (free) — SSH/Mosh client; enable Mosh per host for resilient sessions
 - Working Copy ($25) — Obsidian Git sync + offline code
 
 **Usage**:

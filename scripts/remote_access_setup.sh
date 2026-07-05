@@ -38,6 +38,17 @@ fi
 run_sudo systemctl enable --now sshd
 log_success "SSH server enabled and started"
 
+# Mosh — resilient mobile shell (survives roaming / sleep-wake / IP change).
+# Without mosh-server installed, Termius/iPad clients with "Mosh" enabled
+# authenticate over SSH then drop the session instantly. UDP 60000-61000 is
+# already covered by the tailscale0 trusted zone (all tailnet traffic allowed).
+if ! rpm -q mosh &>/dev/null; then
+    dnf_install mosh
+    log_success "mosh installed (mosh-server available)"
+else
+    log_success "mosh already installed"
+fi
+
 # =============================================================================
 # 2. Tailscale
 # =============================================================================
@@ -141,8 +152,10 @@ echo "  3. Set 'Power On By PCI-E' = Enabled"
 echo "  4. F10 → Save & Exit"
 echo ""
 log_info "iPad setup:"
-echo "  1. Install Tailscale → login same account"
-echo "  2. Install Termius (free) → connect: ssh $(whoami)@<tailscale-ip>"
+echo "  1. Install Tailscale → login same account (keep it ON — a node that"
+echo "     goes offline ~months drops off the tailnet and won't route)"
+echo "  2. Install Termius → host = <tailscale-ip>, user = $(whoami)"
+echo "     → enable Mosh in the host entry (survives 4G↔wifi, sleep, drops)"
 echo "  3. Start persistent session: tmux new -s work"
 echo "  4. Reconnect after drop: tmux attach -t work"
 echo ""
