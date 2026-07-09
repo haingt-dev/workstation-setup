@@ -1,0 +1,11 @@
+[Unit]
+Description=Block auto-suspend while remote (mosh/SSH) sessions are active
+
+[Service]
+Type=exec
+ExecStart=%h/.local/bin/awake-guard.sh
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

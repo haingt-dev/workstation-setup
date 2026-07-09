@@ -8,6 +8,8 @@
 # - OpenSSH server (enabled + started)
 # - Mosh (resilient UDP shell for iPad/Termius — survives roaming/sleep/IP change)
 # - Wake-on-LAN via ethtool (for Realtek 2.5G LAN)
+# - awake-guard: blocks auto-suspend ONLY while remote sessions are open
+#   (KDE default suspend stays; the claude-inhibit hooks guard running tasks)
 #
 # Hardware: ASUS TUF B650M-E WIFI (Realtek 2.5G Ethernet)
 # BIOS manual step: Delete → Advanced → APM Configuration →
@@ -128,6 +130,60 @@ else
 fi
 
 # =============================================================================
+# 4. Awake guard — conditional suspend blocking (remote sessions)
+# =============================================================================
+# Plasma 6 default: suspend after 15 min without LOCAL input. Remote activity
+# (SSH/mosh) does NOT reset the idle timer, so a locally-started session
+# suspends mid-iPad-session and drops off the tailnet — from Termius it looks
+# identical to a crash. Bit twice: 2026-07-07 17:45 + 2026-07-08 23:17
+# (journal: 'systemd-logind: The system will suspend now!').
+#
+# Design: auto-suspend stays at the KDE DEFAULT (PC sleeps normally at home).
+# Three conditional layers keep it awake only when there's a reason:
+#   1. The Claude Code inhibit hooks (~/.claude/hooks/claude-inhibit-*.sh)
+#      hold a sleep inhibitor while a task runs.
+#   2. awake-guard.service holds one while a remote mosh/SSH session is open
+#      (human reading/thinking on iPad — shell idle, but suspend would be rude);
+#      assets/.zshrc kicks it (USR1) on remote login for an instant poll.
+#   3. MOSH_SERVER_NETWORK_TMOUT (assets/.zshenv) reaps stale mosh-servers so
+#      a force-killed Termius can't hold the guard's inhibitor forever.
+# PowerDevil honors systemd block inhibitors (PolicyAgent imports logind
+# inhibitors — verified in Plasma/6.6 source, powerdevilpolicyagent.cpp).
+# Pure-remote boots idle safely at the greeter (per-user PowerDevil not
+# running; logind IdleAction=ignore).
+log_info "Setting up awake-guard (conditional suspend blocking)..."
+
+# Migrate away the interim global fix (2026-07-09): default suspend is desired.
+if check_command kwriteconfig6; then
+    OLD_SUSPEND=$(kreadconfig6 --file powerdevilrc --group AC --group SuspendAndShutdown --key AutoSuspendAction 2>/dev/null || true)
+    if [[ "$OLD_SUSPEND" == "0" ]]; then
+        kwriteconfig6 --file powerdevilrc --group AC --group SuspendAndShutdown --key AutoSuspendAction --delete
+        systemctl --user restart plasma-powerdevil.service 2>/dev/null || true
+        log_success "Migrated: removed interim global auto-suspend disable (back to KDE default)"
+    fi
+fi
+
+# link_file returns 1 on a missing asset — guard the chain so `set -e` can't
+# silently abort the script mid-section, and don't enable a unit whose script
+# failed to link.
+if link_file ".local/bin/awake-guard.sh" ~/.local/bin/awake-guard.sh \
+    && link_file ".config/systemd/user/awake-guard.service" ~/.config/systemd/user/awake-guard.service \
+    && link_file ".zshenv" ~/.zshenv; then
+    if systemctl --user daemon-reload 2>/dev/null \
+        && systemctl --user enable --now awake-guard.service 2>/dev/null; then
+        if systemctl --user is-active --quiet awake-guard.service; then
+            log_success "awake-guard running (inhibits sleep only while remote sessions exist)"
+        else
+            log_warn "awake-guard enabled but not active — check: systemctl --user status awake-guard"
+        fi
+    else
+        log_warn "systemd user manager unavailable — run later: systemctl --user enable --now awake-guard"
+    fi
+else
+    log_warn "awake-guard assets missing — section skipped (incomplete checkout?)"
+fi
+
+# =============================================================================
 # Summary
 # =============================================================================
 echo ""
@@ -138,6 +194,7 @@ echo "  SSH:       $(systemctl is-active sshd) (port 22)"
 echo "  Tailscale: $(systemctl is-active tailscaled)"
 echo "  Mosh:      $(command -v mosh-server >/dev/null 2>&1 && echo installed || echo 'MISSING (dnf install mosh)')"
 echo "  Session:   tmux 'work' — auto-attaches on connect (assets/.zshrc); manual: tmux new -s work"
+echo "  Awake:     $(systemctl --user is-active awake-guard.service 2>/dev/null || echo inactive) — suspend blocked only while remote sessions exist"
 echo ""
 
 if ! tailscale status &>/dev/null; then

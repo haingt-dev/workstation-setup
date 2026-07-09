@@ -222,6 +222,7 @@ iPad Pro M2 as mobile workstation — remote into home PC from anywhere:
 - Mosh (resilient UDP shell — survives roaming / sleep-wake / IP change)
 - tmux for session persistence (survives SSH disconnects) — auto-attaches to session `work` on every remote connect (guard in `assets/.zshrc`)
 - Glyph-free Starship prompt for remote sessions — Termius/non-Nerd-Font clients render the local Catppuccin powerline icons as tofu; `starship-remote.toml` (letters + `…` + `❯` only, same Catppuccin colors) is auto-selected via `STARSHIP_CONFIG` when `$SSH_CONNECTION` is set (`assets/.zshrc`); local terminals keep the full prompt
+- Awake guard — KDE auto-suspend stays at **default** (PC sleeps normally at home); suspend is blocked only when there's a reason, via three conditional layers: the Claude Code inhibit hooks (`~/.claude/hooks/claude-inhibit-*.sh`, wired to UserPromptSubmit + PreToolUse + Stop in `~/.claude/settings.json`) hold a sleep inhibitor while a task runs · `awake-guard.service` (`assets/.local/bin/awake-guard.sh`) holds one while a remote mosh/SSH session is open · `MOSH_SERVER_NETWORK_TMOUT=3600` (`assets/.zshenv`) reaps stale mosh-servers so a force-killed Termius can't hold the inhibitor forever. On remote login `assets/.zshrc` kicks the guard (USR1) for an instant poll, closing the connect-time race against the idle deadline. Background: Plasma's 15-min idle suspend counts only **local** input — remote SSH/mosh activity doesn't reset it, which froze the host mid-iPad-session twice (2026-07-07, 2026-07-08). PowerDevil honors systemd inhibitors with `mode=block` only (PolicyAgent imports logind inhibitors, skips other modes — Plasma/6.6 source). Accepted side effect: while a lock is held, **manual** Sleep is refused too — close the remote session or `systemctl --user stop awake-guard` first
 
 **Hardware**: ASUS TUF B650M-E WIFI, Ethernet `eno1`
 
@@ -251,7 +252,12 @@ sudo shutdown -h now
 2. **Work**: `ssh haint@100.86.91.49` → auto-attaches to tmux `work` (via `assets/.zshrc`; falls back to `tmux new -s work` if none).
 3. **Done**: `sudo shutdown -h now` from the SSH session; optionally plug OFF after ~1 min.
 
-Safe from auto-suspend: no autologin → PC idles at the plasmalogin greeter, so PowerDevil (per-user) never starts; logind `IdleAction` is default ignore. Pre-departure drill: run the full cycle once from cellular (wifi off) — verified 2026-07-__.
+Safe from auto-suspend — layered: (a) pure-remote boots idle at the plasmalogin greeter, where per-user PowerDevil never starts and logind `IdleAction` is default ignore; (b) logged-in sessions suspend normally EXCEPT while a Claude task runs or a remote session is open (see Awake guard in Services). A finished, disconnected session is *allowed* to sleep — that's the design, not a failure. Pre-departure drill: run the full cycle once from cellular (wifi off) — verified 2026-07-__.
+
+**Host unreachable mid-session** (Tailscale dead, was working minutes ago)? Recovery ladder — wake before you cut:
+1. **It may be legitimately asleep** (no remote session + no running task ≥15 min — e.g. mosh reaped after 1h of a force-killed Termius). A WoL magic packet to `eno1` (MAC: `ip link show eno1`; iPad WoL app on home wifi) or a tap on the power button wakes from S3 **losslessly** — tmux, finished task output, everything is still there.
+2. **eWeLink power-cycle = last resort**: RAM is lost → cold boot → tmux session + task output die.
+3. **Post-mortem after reboot**: `journalctl -b -1 -e` — a suspend ends with `systemd-logind: The system will suspend now!`; a real freeze/crash ends with an abrupt log stop instead. Was the guard holding? `journalctl --user -u awake-guard` shows every inhibit ON/OFF transition.
 
 ### Other Components
 

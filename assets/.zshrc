@@ -12,6 +12,12 @@
 # inside tmux ($TMUX) to avoid nesting, and never touch local terminals. No exec:
 # detaching drops back to a normal shell instead of closing the connection.
 # Placed before the heavy interactive setup below so remote connects attach fast.
+# The awake-guard kick MUST come before the (blocking) tmux attach: it closes the
+# connect-time race where PowerDevil's 15-min local-idle deadline lands inside the
+# guard's 15s poll gap — USR1 makes the guard poll immediately instead of napping.
+if [[ -n "$SSH_CONNECTION" ]]; then
+    systemctl --user kill --kill-whom=main --signal=USR1 awake-guard.service 2>/dev/null || true
+fi
 if [[ -n "$SSH_CONNECTION" && -z "$TMUX" ]] && command -v tmux >/dev/null 2>&1; then
     tmux attach -t work 2>/dev/null || tmux new -s work
 fi
