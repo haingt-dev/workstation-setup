@@ -135,7 +135,9 @@ fi
 # Plasma 6 default: suspend after 15 min without LOCAL input. Remote activity
 # (SSH/mosh) does NOT reset the idle timer, so a locally-started session
 # suspends mid-iPad-session and drops off the tailnet — from Termius it looks
-# identical to a crash. Bit twice: 2026-07-07 17:45 + 2026-07-08 23:17
+# identical to a crash. Bit three times: 2026-07-07 17:45 + 2026-07-08 23:17
+# + 2026-07-10 14:07 — the third AFTER guard v1 shipped, because who(1)-based
+# detection is blind to mosh on Fedora 43 (see awake-guard.sh header).
 # (journal: 'systemd-logind: The system will suspend now!').
 #
 # Design: auto-suspend stays at the KDE DEFAULT (PC sleeps normally at home).
@@ -144,13 +146,16 @@ fi
 #      hold a sleep inhibitor while a task runs.
 #   2. awake-guard.service holds one while a remote mosh/SSH session is open
 #      (human reading/thinking on iPad — shell idle, but suspend would be rude);
+#      detection is by live processes (mosh-server / sshd-session), NOT
+#      who/utmp — blind to mosh on Fedora 43 (see awake-guard.sh header);
 #      assets/.zshrc kicks it (USR1) on remote login for an instant poll.
 #   3. MOSH_SERVER_NETWORK_TMOUT (assets/.zshenv) reaps stale mosh-servers so
 #      a force-killed Termius can't hold the guard's inhibitor forever.
 # PowerDevil honors systemd block inhibitors (PolicyAgent imports logind
 # inhibitors — verified in Plasma/6.6 source, powerdevilpolicyagent.cpp).
-# Pure-remote boots idle safely at the greeter (per-user PowerDevil not
-# running; logind IdleAction=ignore).
+# NOTE: this box autologs into Plasma on every boot (plasmalogin-autologin —
+# no idle-safe greeter), so a remotely-booted host suspends ~15 min after
+# power-on unless a remote session connects first. Connect promptly.
 log_info "Setting up awake-guard (conditional suspend blocking)..."
 
 # Migrate away the interim global fix (2026-07-09): default suspend is desired.
