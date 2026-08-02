@@ -26,11 +26,14 @@ log_success "EasyEffects installed"
 # =============================================================================
 log_section "Linking EasyEffects presets..."
 
-EASYEFFECTS_BACKUP="$BACKUP_DIR/.config/easyeffects"
-EASYEFFECTS_TARGET="$HOME/.config/easyeffects"
+# EasyEffects >= 8.0 (Qt rewrite): presets/autoload live in ~/.local/share/easyeffects;
+# ~/.config/easyeffects only holds the db/ state files. Autoload filenames now use the
+# route DESCRIPTION ("Analog Output"), not the port name ("analog-output").
+EASYEFFECTS_BACKUP="$BACKUP_DIR/.local/share/easyeffects"
+EASYEFFECTS_TARGET="$HOME/.local/share/easyeffects"
 
 # Symlink preset files individually (NOT the whole dir): EasyEffects writes its
-# own state into ~/.config/easyeffects/, so only the user-authored presets are
+# own state into the target dir, so only the user-authored presets are
 # linked back to the repo. Editing a preset in the GUI then writes through to git.
 if [[ -d "$EASYEFFECTS_BACKUP" ]]; then
     for preset in "$EASYEFFECTS_BACKUP"/output/*.json \

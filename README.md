@@ -113,14 +113,15 @@ Examples:
 │   ├── .bashrc                 # Bash configuration
 │   ├── .gitconfig              # Git configuration
 │   ├── symlinks.yml            # Declarative cross-project symlink manifest
-│   └── .config/                # App configs
+│   ├── .config/                # App configs
 │       ├── starship/           # Starship prompts (remote variant → ~/.config/starship-remote.toml)
 │       ├── atuin/              # Atuin config (config.toml)
 │       ├── fastfetch/          # Fastfetch config + logo
 │       ├── kitty/              # Kitty terminal + Catppuccin + background
 │       ├── tmux/               # Tmux + TPM plugins
-│       ├── fish/               # fish conf.d
-│       └── easyeffects/        # Audio presets (G560/G435)
+│       └── fish/               # fish conf.d
+│   └── .local/share/
+│       └── easyeffects/        # Audio presets (G560/G435) — EE >= 8.0 layout
 │   # fonts downloaded on-demand; Godot/VS Code/Claude state → backup bundle
 └── scripts/
     ├── common.sh               # Shared utilities
