@@ -8,7 +8,7 @@
 - **Nobara/Fedora first** — All solutions should target Fedora-based systems. Don't assume Ubuntu/Debian conventions
 
 ### Boundaries
-- NEVER run `rm -rf` on system directories or dotfiles without explicit approval
-- NEVER modify `/etc/` files without explaining consequences
+- Get explicit approval before `rm -rf` on system directories or dotfiles
+- Explain consequences before modifying `/etc/` files
 - Prefer `dnf` over manual installations. Prefer Flatpak for GUI apps when available
 - Test scripts in dry-run mode when possible before live execution
