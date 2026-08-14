@@ -8,7 +8,7 @@
 #   note: optional context for humans
 
 links:
-  # chimera (The Ninth Bride) keeps its GDD in-repo (docs/*.md) — no vault symlink.
+  # Godot projects keep their GDD in-repo (docs/*.md) — no vault symlink.
   # Add cross-project links here as the workspace grows.
 
   # Examples (uncomment when applicable):

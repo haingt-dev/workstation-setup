@@ -186,62 +186,52 @@ if [[ -d "$HS" && -d "$HS_BUNDLE" ]]; then
     fi
 fi
 
-# Hook: chimera dev env
-CHIMERA="$PROJECTS/chimera"
-CHIMERA_BUNDLE="$STAGING/chimera"
-if [[ -d "$CHIMERA" && -d "$CHIMERA_BUNDLE" ]]; then
-    log_info "  chimera dev env"
+# Hook: Godot dev env
+GODOT_PROJECT="$PROJECTS/broodkeeper"
+GODOT_BUNDLE="$STAGING/godot-dev"
+# Bundles written before 2026-08-14 stage this under chimera/ — accept both.
+[[ -d "$GODOT_BUNDLE" ]] || GODOT_BUNDLE="$STAGING/chimera"
+if [[ -d "$GODOT_PROJECT" && -d "$GODOT_BUNDLE" ]]; then
+    log_info "  godot dev env"
 
     # Godot version
-    if [[ -f "$CHIMERA_BUNDLE/godot-version.txt" && -x "$SCRIPT_DIR/godot_setup.sh" ]]; then
+    if [[ -f "$GODOT_BUNDLE/godot-version.txt" && -x "$SCRIPT_DIR/godot_setup.sh" ]]; then
         log_info "    Installing Godot via project pin"
-        $DRY_RUN || "$SCRIPT_DIR/godot_setup.sh" --from-project "$CHIMERA" || log_warn "    Godot install failed (manual install needed)"
+        $DRY_RUN || "$SCRIPT_DIR/godot_setup.sh" --from-project "$GODOT_PROJECT" || log_warn "    Godot install failed (manual install needed)"
     fi
 
     # Godot user config
-    if [[ -f "$CHIMERA_BUNDLE/godot-user-config.tar.gz" ]]; then
+    if [[ -f "$GODOT_BUNDLE/godot-user-config.tar.gz" ]]; then
         if $DRY_RUN; then
             log_info "    [DRY-RUN] extract godot-user-config.tar.gz"
         else
             mkdir -p "$HOME/.config"
-            tar xzf "$CHIMERA_BUNDLE/godot-user-config.tar.gz" -C "$HOME/.config"
+            tar xzf "$GODOT_BUNDLE/godot-user-config.tar.gz" -C "$HOME/.config"
             log_success "    Godot user config"
         fi
     fi
 
     # VS Code User
-    if [[ -f "$CHIMERA_BUNDLE/vscode-user.tar.gz" ]]; then
+    if [[ -f "$GODOT_BUNDLE/vscode-user.tar.gz" ]]; then
         if $DRY_RUN; then
             log_info "    [DRY-RUN] extract vscode-user.tar.gz"
         else
             mkdir -p "$HOME/.config/Code"
-            tar xzf "$CHIMERA_BUNDLE/vscode-user.tar.gz" -C "$HOME/.config/Code"
+            tar xzf "$GODOT_BUNDLE/vscode-user.tar.gz" -C "$HOME/.config/Code"
             log_success "    VS Code User"
         fi
     fi
 
-    # Aseprite config (prefs, keybindings, brushes, layouts, palettes, scripts,
-    # extensions). Extensions auto-load on next launch — no GUI re-add needed.
-    if [[ -f "$CHIMERA_BUNDLE/aseprite-config.tar.gz" ]]; then
-        if $DRY_RUN; then
-            log_info "    [DRY-RUN] extract aseprite-config.tar.gz"
-        else
-            mkdir -p "$HOME/.config"
-            tar xzf "$CHIMERA_BUNDLE/aseprite-config.tar.gz" -C "$HOME/.config"
-            log_success "    Aseprite config"
-        fi
-    fi
-
     # VS Code extensions
-    if [[ -f "$CHIMERA_BUNDLE/vscode-extensions.txt" ]] && command -v code >/dev/null; then
+    if [[ -f "$GODOT_BUNDLE/vscode-extensions.txt" ]] && command -v code >/dev/null; then
         log_info "    Installing VS Code extensions"
         if $DRY_RUN; then
-            log_info "    [DRY-RUN] $(wc -l < $CHIMERA_BUNDLE/vscode-extensions.txt) extensions"
+            log_info "    [DRY-RUN] $(wc -l < $GODOT_BUNDLE/vscode-extensions.txt) extensions"
         else
             while IFS= read -r ext; do
                 [[ -z "$ext" || "$ext" == \#* ]] && continue
                 code --install-extension "$ext" --force >/dev/null 2>&1 && log_success "      $ext" || log_warn "      Failed: $ext"
-            done < "$CHIMERA_BUNDLE/vscode-extensions.txt"
+            done < "$GODOT_BUNDLE/vscode-extensions.txt"
         fi
     fi
 fi

@@ -12,7 +12,7 @@
 #   - ~/.claude/ state (CLAUDE.md, plans, projects, plugins/cache, config)
 #   - secrets (~/.ssh, ~/.gnupg, gh token)
 #   - .env files from 6 critical repos
-#   - chimera dev state (Godot config, VS Code User, Aseprite config, extensions list)
+#   - godot dev state (Godot config, VS Code User, extensions list)
 #   - crontab snapshot
 #
 # Usage:
@@ -100,7 +100,7 @@ WORK=$(mktemp -d -t recovery-bundle.XXXXXX)
 trap '/bin/rm -rf "$WORK"' EXIT
 
 STAGE="$WORK/recovery-bundle"
-mkdir -p "$STAGE"/{secrets,claude,envs,home-server,chimera,brain,crontabs}
+mkdir -p "$STAGE"/{secrets,claude,envs,home-server,godot-dev,brain,crontabs}
 
 # Set in Section 5 when tier3 is built. Tier3 is a SEPARATE artifact (outside
 # $STAGE) so it never enters the main bundle — see Section 5 rationale.
@@ -235,7 +235,7 @@ CRITICAL_REPOS=(
     "digital-identity"
     "home-server"
     "Idea_Vault"
-    "chimera"
+    "broodkeeper"
     "workstation-setup"
 )
 
@@ -362,28 +362,28 @@ if [[ -d "$HS" ]]; then
 fi
 
 # ─────────────────────────────────────────────────────────────
-# Section 6: chimera dev environment
+# Section 6: Godot dev environment
 # ─────────────────────────────────────────────────────────────
 log ""
-log "=== Section 6: chimera dev env ==="
+log "=== Section 6: godot dev env ==="
 
-CHIMERA_DST="$STAGE/chimera"
+GODOT_DST="$STAGE/godot-dev"
 
-# Godot version pin (read from project)
-if [[ -f "$HOME/Projects/chimera/.godot-version" ]]; then
-    /bin/cp "$HOME/Projects/chimera/.godot-version" "$CHIMERA_DST/godot-version.txt"
+# Godot version pin (read from the primary Godot project)
+if [[ -f "$HOME/Projects/broodkeeper/.godot-version" ]]; then
+    /bin/cp "$HOME/Projects/broodkeeper/.godot-version" "$GODOT_DST/godot-version.txt"
     success "  godot-version.txt"
 fi
 
 # Godot user config
 if [[ -d "$HOME/.config/godot" ]]; then
-    tar czf "$CHIMERA_DST/godot-user-config.tar.gz" -C "$HOME/.config" godot 2>/dev/null
+    tar czf "$GODOT_DST/godot-user-config.tar.gz" -C "$HOME/.config" godot 2>/dev/null
     success "  godot-user-config.tar.gz"
 fi
 
 # VS Code User (settings, keybindings, snippets)
 if [[ -d "$HOME/.config/Code/User" ]]; then
-    tar czf "$CHIMERA_DST/vscode-user.tar.gz" -C "$HOME/.config/Code" \
+    tar czf "$GODOT_DST/vscode-user.tar.gz" -C "$HOME/.config/Code" \
         --exclude='User/globalStorage' \
         --exclude='User/workspaceStorage' \
         --exclude='User/History' \
@@ -394,22 +394,9 @@ fi
 
 # VS Code extensions list
 if command -v code >/dev/null; then
-    code --list-extensions > "$CHIMERA_DST/vscode-extensions.txt"
-    cnt=$(wc -l < "$CHIMERA_DST/vscode-extensions.txt")
+    code --list-extensions > "$GODOT_DST/vscode-extensions.txt"
+    cnt=$(wc -l < "$GODOT_DST/vscode-extensions.txt")
     success "  vscode-extensions.txt ($cnt extensions)"
-fi
-
-# Aseprite config (pixel-art tool for chimera sprites): prefs, keybindings,
-# brushes, layouts, custom palettes, user Lua scripts, installed extensions.
-# Exclude volatile/regenerable state: sessions/ (crash-recovery backups, ~1MB),
-# files/ (per-document UI cache keyed by file path), Aseprite.log.
-if [[ -d "$HOME/.config/aseprite" ]]; then
-    tar czf "$CHIMERA_DST/aseprite-config.tar.gz" -C "$HOME/.config" \
-        --exclude='aseprite/sessions' \
-        --exclude='aseprite/files' \
-        --exclude='aseprite/Aseprite.log' \
-        aseprite
-    success "  aseprite-config.tar.gz ($(du -h "$CHIMERA_DST/aseprite-config.tar.gz" | cut -f1))"
 fi
 
 # ─────────────────────────────────────────────────────────────

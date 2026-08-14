@@ -56,7 +56,7 @@ except: print('[]')
     "home_server_env_sha": "$(sha256_file "$HOME/Projects/home-server/.env")",
     "home_server_dashboard_sha": "$(sha256_file "$HOME/Projects/home-server/dashboard/.env")",
     "home_server_media_sha": "$(sha256_file "$HOME/Projects/home-server/media/.env")",
-    "chimera_env_sha": "$(sha256_file "$HOME/Projects/chimera/.env")",
+    "broodkeeper_env_sha": "$(sha256_file "$HOME/Projects/broodkeeper/.env")",
     "idea_vault_env_sha": "$(sha256_file "$HOME/Projects/Idea_Vault/.env")"
   },
 
@@ -65,7 +65,7 @@ except: print('[]')
     "digital_identity_head": "$(cd $HOME/Projects/digital-identity 2>/dev/null && git rev-parse --short HEAD 2>/dev/null || echo none)",
     "home_server_head": "$(cd $HOME/Projects/home-server 2>/dev/null && git rev-parse --short HEAD 2>/dev/null || echo none)",
     "idea_vault_head": "$(cd $HOME/Projects/Idea_Vault 2>/dev/null && git rev-parse --short HEAD 2>/dev/null || echo none)",
-    "chimera_head": "$(cd $HOME/Projects/chimera 2>/dev/null && git rev-parse --short HEAD 2>/dev/null || echo none)",
+    "broodkeeper_head": "$(cd $HOME/Projects/broodkeeper 2>/dev/null && git rev-parse --short HEAD 2>/dev/null || echo none)",
     "workstation_setup_head": "$(cd $HOME/Projects/workstation-setup 2>/dev/null && git rev-parse --short HEAD 2>/dev/null || echo none)"
   },
 

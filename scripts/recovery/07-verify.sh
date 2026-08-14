@@ -36,7 +36,7 @@ check "gh auth status"                            "gh auth status"
 check "GPG secret keys present"                   "gpg --list-secret-keys 2>/dev/null | grep -q sec"
 
 # Repos
-for repo in agent digital-identity home-server Idea_Vault chimera workstation-setup; do
+for repo in agent digital-identity home-server Idea_Vault broodkeeper workstation-setup; do
     check "Repo cloned: $repo"                    "[[ -d $HOME/Projects/$repo/.git ]]"
 done
 
@@ -67,9 +67,9 @@ if [[ -d "$HOME/Projects/home-server" ]]; then
     fi
 fi
 
-if [[ -d "$HOME/Projects/chimera" && -x "$(command -v godot)" ]]; then
+if [[ -d "$HOME/Projects/broodkeeper" && -x "$(command -v godot)" ]]; then
     current_godot=$(godot --version 2>/dev/null | head -1)
-    pinned=$(cat "$HOME/Projects/chimera/.godot-version" 2>/dev/null || echo "n/a")
+    pinned=$(cat "$HOME/Projects/broodkeeper/.godot-version" 2>/dev/null || echo "n/a")
     log_info "  Godot: installed=$current_godot, pinned=$pinned"
 fi
 
@@ -85,7 +85,7 @@ Manual steps remaining (cannot automate):
   1. Forge models (~9GB): cd ~/Projects/home-server && ./scripts/forge-pull-models.sh
      - Civitai LoRAs need modelVersionId in forge/models.yml (pre-disaster homework)
   2. HuggingFace CLI login (if gated models): huggingface-cli login
-  3. chimera: open Godot once → reimport assets (5-30 min, one-time)
+  3. broodkeeper: open Godot once → reimport assets (5-30 min, one-time)
   4. home-server: ./scripts/up.sh all (verify all 4 sections come up)
   5. Optional: bring up media stack — AirVPN keys already in media/.env from bundle
 
