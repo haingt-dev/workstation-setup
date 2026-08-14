@@ -294,17 +294,18 @@ HS_DST="$STAGE/home-server"
 
 if [[ -d "$HS" ]]; then
     # Tier 1: secrets
-    log "  Tier 1: secrets (.env × 4)"
+    log "  Tier 1: secrets (.env × 5)"
     tar czf "$HS_DST/tier1-secrets.tar.gz" -C "$HS" \
-        .env dashboard/.env media/.env ebooks/.env 2>/dev/null || true
+        .env dashboard/.env media/.env ebooks/.env asf/.env 2>/dev/null || true
     success "    tier1-secrets.tar.gz"
 
     # Tier 2: state (configs + DBs + extensions; STOP relevant podman sections briefly)
     log "  Tier 2: state (configs + DBs)"
 
     NEED_RESTART=()
-    # Stop dashboard + media + ebooks for SQLite consistency (if running)
-    for section in dashboard media ebooks; do
+    # Stop dashboard + media + ebooks + asf for SQLite consistency (if running)
+    # asf: ASF.db + bot DB are SQLite; brief stop = one Steam relog per backup, harmless
+    for section in dashboard media ebooks asf; do
         if podman ps --format '{{.Names}}' 2>/dev/null | grep -qE "home-${section}|${section}_"; then
             log "    Stopping $section briefly for SQLite snapshot..."
             (cd "$HS" && ./scripts/down.sh "$section" >/dev/null 2>&1) || true
@@ -332,6 +333,7 @@ if [[ -d "$HS" ]]; then
         dashboard/data \
         dashboard/backups \
         ebooks/data/config \
+        asf/data/config \
         2>/dev/null || true
     sz=$(du -h "$HS_DST/tier2-state.tar.gz" | cut -f1)
     success "    tier2-state.tar.gz ($sz)"

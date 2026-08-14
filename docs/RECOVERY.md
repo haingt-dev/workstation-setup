@@ -55,7 +55,7 @@ Recovery cần **bundle passphrase** (lưu password manager). Bộ recover.sh h�
 | `claude/` | CLAUDE.md, core-memory, brains, settings.json, hooks (Claude Code lifecycle hooks), **dot-claude.json (global MCP)**, plans, projects.tar.gz (conv history), plugins.tar.gz (cache + marketplaces) |
 | `envs/` | All .env files via **manifest.txt** (sequential `env-N.bin` + path mapping — handles dashes in dirnames correctly) |
 | `brain/` | brain.db (sqlite `.backup` WAL-safe snapshot) |
-| `home-server/` | tier1 (.env × 4 incl. ebooks), tier2 (configs+DBs + ebooks/data/config). **tier3 (Forge outputs) is NOT here** — separate primary-only artifact, see §3.2 |
+| `home-server/` | tier1 (.env × 5 incl. ebooks, asf), tier2 (configs+DBs + ebooks/data/config + asf/data/config — gồm Steam bot config, maFile 2FA, ASF DBs). **tier3 (Forge outputs) is NOT here** — separate primary-only artifact, see §3.2 |
 | `godot-dev/` | Godot version pin (from broodkeeper), ~/.config/godot, VS Code User, extensions list. Bundles trước 2026-08-14 stage phần này dưới `chimera/` — recovery đọc được cả hai. |
 | `crontabs/` | Snapshot user crontab |
 | `manifest.txt + repos.txt` | Bundle metadata + auto-generated repo list with remotes |
