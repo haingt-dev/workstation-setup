@@ -39,6 +39,7 @@ INSTALL_DNS=true
 INSTALL_VSCODE=true
 INSTALL_REMOTE=true
 INSTALL_DISPLAY=true
+INSTALL_DESKTOP=true
 
 # Optional components (Do not run by default)
 INSTALL_ONEDRIVE=false
@@ -72,6 +73,7 @@ show_help() {
     echo "  --vscode            Visual Studio Code setup"
     echo "  --remote            Remote access setup (Tailscale, Mosh, SSH, WoL)"
     echo "  --display           NVIDIA DisplayPort EDID-loss fix (KDE never-blank + EDID)"
+    echo "  --desktop           Desktop rice (Catppuccin Mocha theme + video wallpaper)"
 
     echo ""
     echo "Skip Flags (For Default Mode):"
@@ -85,6 +87,7 @@ show_help() {
 
     echo "  --skip-vscode       Skip VS Code setup"
     echo "  --skip-display      Skip display/NVIDIA setup"
+    echo "  --skip-desktop      Skip desktop rice"
 
     echo ""
     echo "Examples:"
@@ -102,7 +105,7 @@ show_help() {
 EXCLUSIVE_MODE=false
 for arg in "$@"; do
     case $arg in
-        --terminal|--agent|--qdrant|--godot|--apps|--easyeffects|--dns|--onedrive|--vietnamese|--vscode|--remote|--display)
+        --terminal|--agent|--qdrant|--godot|--apps|--easyeffects|--dns|--onedrive|--vietnamese|--vscode|--remote|--display|--desktop)
             EXCLUSIVE_MODE=true
             break
             ;;
@@ -125,6 +128,7 @@ if $EXCLUSIVE_MODE; then
     INSTALL_VSCODE=false
     INSTALL_REMOTE=false
     INSTALL_DISPLAY=false
+    INSTALL_DESKTOP=false
 
 fi
 
@@ -145,6 +149,7 @@ for arg in "$@"; do
             INSTALL_VSCODE=true
             INSTALL_REMOTE=true
             INSTALL_DISPLAY=true
+            INSTALL_DESKTOP=true
 
             ;;
         --terminal)           INSTALL_TERMINAL=true ;;
@@ -159,6 +164,7 @@ for arg in "$@"; do
         --vscode)             INSTALL_VSCODE=true ;;
         --remote)             INSTALL_REMOTE=true ;;
         --display)            INSTALL_DISPLAY=true ;;
+        --desktop)            INSTALL_DESKTOP=true ;;
 
         # Skip Flags
         --skip-terminal)      INSTALL_TERMINAL=false ;;
@@ -171,6 +177,7 @@ for arg in "$@"; do
         --skip-vscode)        INSTALL_VSCODE=false ;;
         --skip-remote)        INSTALL_REMOTE=false ;;
         --skip-display)       INSTALL_DISPLAY=false ;;
+        --skip-desktop)       INSTALL_DESKTOP=false ;;
 
         # Other
         --help|-h)            show_help ;;
@@ -296,6 +303,14 @@ if $INSTALL_DISPLAY; then
     bash "$SCRIPTS_DIR/display_setup.sh"
 elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping display setup"
+fi
+
+# 13. Desktop Rice (Catppuccin Mocha + video wallpaper)
+if $INSTALL_DESKTOP; then
+    log_section "Running Desktop Rice Setup..."
+    bash "$SCRIPTS_DIR/desktop_setup.sh"
+elif ! $EXCLUSIVE_MODE; then
+    log_warn "Skipping desktop rice setup"
 fi
 
 # =============================================================================

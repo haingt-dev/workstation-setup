@@ -41,6 +41,9 @@ cd ~/Projects/home-server && ./scripts/forge-pull-models.sh
   1. Forge models ~9GB: cd ~/Projects/home-server && ./scripts/forge-pull-models.sh
   2. broodkeeper: open Godot first time → reimport 5-30 min one-time
   3. home-server stack: cd ~/Projects/home-server && ./scripts/up.sh all
+  4. KDE rice: after first graphical login → ./setup.sh --desktop
+     (phase 8 restores files; wallpaper videos re-download per
+      assets/desktop/wallpapers.manifest into ~/Videos/wallpapers)
 
 ───────────────────────────────────────────────────────────────
   IF SOMETHING BREAKS:

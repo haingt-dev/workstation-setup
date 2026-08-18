@@ -1,6 +1,12 @@
 *.deb
 .chromium-browser-snapshots/
 
+# Wallpaper videos live in ~/Videos/wallpapers, never in the repo (100s of MB).
+# assets/desktop/wallpapers.manifest documents the sources instead.
+assets/desktop/wallpapers/
+*.mp4
+*.webm
+
 # VS Code project settings
 .vscode/
 

@@ -30,6 +30,13 @@ Automated workstation setup for Nobara 42 / Fedora — terminal, dev tools, apps
 - **Vietnamese Input**: fcitx5-unikey for Vietnamese typing
 - **Display (NVIDIA)**: DisplayPort EDID-loss mitigation — monitor-OSD reminder + known-good EDID staged + suspend/resume auto-recovery hook (KDE never-blank layer retired 2026-08-18: normal screen-off restored; occasional 640x480 hit is fixed by power-cycling the monitor)
 
+### Desktop Rice (KDE Plasma)
+- **Theme**: Catppuccin Mocha (Mauve accent) everywhere — global theme, Breeze decoration with native rounded corners, Papirus icons, Inter UI font, custom `catppuccin-glass` Plasma style (generated, 40%-opacity glass widget cards)
+- **Video wallpaper**: Smart Video Wallpaper Reborn with `PauseMode=MaximizedOrFullScreen` — zero perf cost while gaming (HW decode via NVDEC; H.264/VP9 only, never AV1)
+- **Sci-fi HUD**: Reactor HUD (patched: portable scriptPath + hybrid glass/shadow contrast), Kurve CAVA audio visualizer (accent bars), glassy desktop clock; panel clock = time-only
+- **Panel**: vertical dock styled by Panel Colorizer — accent widget islands, dark translucent glass, presets auto-switch on maximized/fullscreen
+- All applied by idempotent `scripts/desktop/` stages; KDE state backed up (bundle Section 9) and restored by recovery phase 8 + `./setup.sh --desktop`
+
 ## Quick Start
 
 ```bash
@@ -61,9 +68,10 @@ be regenerated:
 - **`scripts/backup/daily-bundle.sh`** — bundles non-git state (SSH/GPG keys, `.env` files,
   brain DB, `~/.claude` state, VS Code/Godot config, home-server data) into one GPG-encrypted
   tarball pushed to OneDrive + optional Backblaze B2 (cron via `scripts/backup/install-cron.sh`).
-- **`recover.sh`** — 7-phase disaster recovery: runs `setup.sh` (dotfiles via symlink), then
-  restores secrets/brain/Claude/repos from the latest bundle. See `docs/RECOVERY.md` and
-  `DISASTER-CARD.txt`.
+- **`recover.sh`** — 8-phase disaster recovery: runs `setup.sh` (dotfiles via symlink), then
+  restores secrets/brain/Claude/repos from the latest bundle, and finally the KDE rice
+  (phase 8; wallpaper videos re-download per `assets/desktop/wallpapers.manifest`). See
+  `docs/RECOVERY.md` and `DISASTER-CARD.txt`.
 
 ## Usage
 
@@ -87,6 +95,8 @@ Options:
   --skip-remote       Skip remote access setup
   --display           NVIDIA DisplayPort EDID-loss fix (EDID staging + sleep hook)
   --skip-display      Skip display/NVIDIA setup
+  --desktop           Desktop rice (Catppuccin Mocha theme + video wallpaper + HUD widgets)
+  --skip-desktop      Skip desktop rice
   --help              Show help message
 
 Exclusive Mode (Run ONLY specific components):

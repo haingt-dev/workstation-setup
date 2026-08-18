@@ -100,7 +100,7 @@ WORK=$(mktemp -d -t recovery-bundle.XXXXXX)
 trap '/bin/rm -rf "$WORK"' EXIT
 
 STAGE="$WORK/recovery-bundle"
-mkdir -p "$STAGE"/{secrets,claude,envs,home-server,godot-dev,brain,crontabs}
+mkdir -p "$STAGE"/{secrets,claude,envs,home-server,godot-dev,brain,crontabs,kde-rice}
 
 # Set in Section 5 when tier3 is built. Tier3 is a SEPARATE artifact (outside
 # $STAGE) so it never enters the main bundle — see Section 5 rationale.
@@ -408,6 +408,65 @@ log ""
 log "=== Section 7: Crontab ==="
 crontab -l > "$STAGE/crontabs/user-crontab.txt" 2>/dev/null || echo "# no crontab" > "$STAGE/crontabs/user-crontab.txt"
 success "  user-crontab.txt"
+
+# ─────────────────────────────────────────────────────────────
+# Section 9: KDE Plasma desktop rice
+# ─────────────────────────────────────────────────────────────
+# (Numbered 9 = added after 1-8; runs BEFORE Section 8 on purpose so the
+# manifest's content listing includes kde-rice/.)
+# The rice is applied by setup.sh --desktop (commands, not vendored rc files),
+# so this bundle is the ONLY copy of the applied KDE state. Restore path:
+# recovery phase 08 copies these back, then the user re-runs setup.sh --desktop.
+# Excluded on purpose: wallpaper VIDEO files (regenerable third-party content —
+# wallpaper-videos.txt + assets/desktop/wallpapers.manifest are the record),
+# Papirus icons (dnf-restorable), icon-cache, kwinoutputconfig.json (hardware).
+log ""
+log "=== Section 9: KDE desktop rice ==="
+
+KDE_DST="$STAGE/kde-rice"
+
+# 9a. Config files (tiny plain text; -L dereferences any symlinks)
+KDE_CONFIGS=(
+    kdeglobals kdedefaults kwinrc kwinrulesrc plasmarc plasmashellrc
+    plasma-org.kde.plasma.desktop-appletsrc kscreenlockerrc ksplashrc
+    kcminputrc plasmanotifyrc kglobalshortcutsrc konsolerc dolphinrc
+    gtk-3.0 gtk-4.0 gtkrc gtkrc-2.0 kcmfonts
+    environment.d/50-video-wallpaper.conf
+)
+for item in "${KDE_CONFIGS[@]}"; do
+    src="$HOME/.config/$item"
+    if [[ -e "$src" ]]; then
+        mkdir -p "$KDE_DST/$(dirname "$item")" 2>/dev/null || true
+        /bin/cp -rL "$src" "$KDE_DST/$item" && success "  .config/$item"
+    fi
+done
+
+# 9b. Locally-installed theme artefacts (catppuccin/kde output, ~5-15 MB).
+#     Carried because catppuccin/kde could move/break on a future Plasma.
+for d in color-schemes plasma/look-and-feel plasma/plasmoids plasma/desktoptheme aurorae/themes konsole; do
+    if [[ -d "$HOME/.local/share/$d" ]]; then
+        tar czf "$KDE_DST/local-$(echo "$d" | tr / -).tar.gz" -C "$HOME/.local/share" "$d" 2>/dev/null
+        success "  ~/.local/share/$d"
+    fi
+done
+# Cursors: only the catppuccin sets (Papirus is 100+MB and dnf-restorable)
+if compgen -G "$HOME/.local/share/icons/catppuccin-*" >/dev/null 2>&1; then
+    (cd "$HOME/.local/share/icons" && tar czf "$KDE_DST/local-cursors.tar.gz" catppuccin-*) 2>/dev/null \
+        && success "  ~/.local/share/icons/catppuccin-* cursors"
+fi
+
+# 9c. Manifests — make disaster recovery diagnosable
+{
+    echo "ColorScheme=$(kreadconfig6 --file kdeglobals --group General --key ColorScheme 2>/dev/null)"
+    echo "PlasmaStyle=$(kreadconfig6 --file plasmarc --group Theme --key name 2>/dev/null)"
+    echo "Decoration=$(kreadconfig6 --file kwinrc --group org.kde.kdecoration2 --key theme 2>/dev/null)"
+    echo "Cursor=$(kreadconfig6 --file kcminputrc --group Mouse --key cursorTheme 2>/dev/null)"
+    echo "Icons=$(kreadconfig6 --file kdeglobals --group Icons --key Theme 2>/dev/null)"
+    echo "Splash=$(kreadconfig6 --file ksplashrc --group KSplash --key Theme 2>/dev/null)"
+} > "$KDE_DST/applied-state.txt" 2>/dev/null || true
+ls -1 "$HOME/Videos/wallpapers" > "$KDE_DST/wallpaper-videos.txt" 2>/dev/null || true
+[[ -f /etc/plasmalogin.conf ]] && /bin/cp /etc/plasmalogin.conf "$KDE_DST/etc-plasmalogin.conf"
+success "  applied-state.txt + wallpaper-videos.txt"
 
 # ─────────────────────────────────────────────────────────────
 # Section 8: Manifest + repos.txt

@@ -1,0 +1,6 @@
+# Wallpaper video manifest — one line per video in ~/Videos/wallpapers/
+# Format: filename | source | codec | resolution | license/notes
+# Recovery: re-download (or regenerate) each entry, then run:
+#   bash scripts/desktop/60-wallpaper.sh
+wanderer-snowy-mountain-moewalls-com.mp4 | https://moewalls.com (search "wanderer snowy mountain") | h264 | 2560x1440@60 | moewalls free wallpaper, no audio track
+catppuccin-gradient.webm | GENERATED: ffmpeg -f lavfi -i "gradients=s=2560x1440:c0=#1e1e2e:c1=#45475a:c2=#313244:c3=#585b70:n=4:speed=0.01:d=30" -pix_fmt yuv420p -c:v libvpx-vp9 -b:v 4M -deadline good -cpu-used 4 -an ~/Videos/wallpapers/catppuccin-gradient.webm | vp9 | 2560x1440 | self-generated, Catppuccin Mocha palette

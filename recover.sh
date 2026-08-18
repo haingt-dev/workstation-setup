@@ -67,6 +67,7 @@ declare -a PHASES=(
     "5|Agent + Brain restore|05-restore-agent-brain.sh|3-5 min"
     "6|Project repos + post-hooks|06-clone-repos.sh|15-25 min"
     "7|Verify + report|07-verify.sh|1 min"
+    "8|KDE rice restore|08-restore-kde-rice.sh|1 min"
 )
 
 # ─────────────────────────────────────────────────────────────
