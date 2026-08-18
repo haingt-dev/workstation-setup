@@ -28,7 +28,7 @@ Automated workstation setup for Nobara 42 / Fedora — terminal, dev tools, apps
 - **Audio Processing**: EasyEffects with pre-tuned presets
 - **DNS**: Cloudflare Block Malware configuration
 - **Vietnamese Input**: fcitx5-unikey for Vietnamese typing
-- **Display (NVIDIA)**: DisplayPort EDID-loss mitigation — stops the post-sleep 640x480 collapse (KDE never-blank + monitor-OSD reminder + known-good EDID staged for recovery)
+- **Display (NVIDIA)**: DisplayPort EDID-loss mitigation — monitor-OSD reminder + known-good EDID staged + suspend/resume auto-recovery hook (KDE never-blank layer retired 2026-08-18: normal screen-off restored; occasional 640x480 hit is fixed by power-cycling the monitor)
 
 ## Quick Start
 
@@ -85,7 +85,7 @@ Options:
   --vietnamese        Install Vietnamese input method
   --remote            Remote access (Tailscale, SSH, WoL)
   --skip-remote       Skip remote access setup
-  --display           NVIDIA DisplayPort EDID-loss fix (KDE never-blank + EDID)
+  --display           NVIDIA DisplayPort EDID-loss fix (EDID staging + sleep hook)
   --skip-display      Skip display/NVIDIA setup
   --help              Show help message
 
@@ -269,7 +269,7 @@ Auto-suspend reality check: **every boot autologs into a full Plasma session** (
 - **EasyEffects**: Audio presets for speakers/headsets
 - **DNS**: Cloudflare Block Malware (1.1.1.2/1.0.0.2)
 - **Vietnamese Input**: fcitx5-unikey (auto-configured with Super+Space trigger)
-- **Display (NVIDIA)**: KDE never-blank + monitor-OSD reminder so a DisplayPort wake doesn't collapse to 640x480; plus a `systemd-sleep` hook (`scripts/display/nvidia-dp-edid.sleep.sh`) that pre-sets the debugfs `edid_override` before sleep and nudges KWin on resume if the EDID came back broken — for the system-suspend case. Self-logs to `/var/log/nvidia-dp-edid.log`. Deep-dive: brain `4db7e40bc653`.
+- **Display (NVIDIA)**: monitor-OSD reminder + a `systemd-sleep` hook (`scripts/display/nvidia-dp-edid.sleep.sh`) that pre-sets the debugfs `edid_override` before sleep and nudges KWin on resume if the EDID came back broken. The old KDE never-blank layer was retired 2026-08-18 (kept the display at full power all day); the script now removes that override if present. If the screen drops to 640x480, power-cycle the monitor. Self-logs to `/var/log/nvidia-dp-edid.log`. Deep-dive: brain `4db7e40bc653`.
 
 ## Post-Setup Steps
 

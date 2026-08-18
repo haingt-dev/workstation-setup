@@ -18,11 +18,14 @@
 #   Adding nvidia-suspend/resume systemd services would be HARMFUL (Nobara uses
 #   kernel suspend notifiers — NVreg_UseKernelSuspendNotifiers=1).
 #
-# WHAT THIS SCRIPT DOES (the two zero-risk layers that kill the frequent case):
+# WHAT THIS SCRIPT DOES:
 #   Layer 1 (hardware — REMINDER only, cannot be scripted): monitor OSD
 #           "Auto Power OFF: OFF" so the panel keeps its DDC bus alive.
-#   Layer 2 (automated): KDE "turn off screen" -> never, so the display is never
-#           DPMS-blanked on idle -> the wake race never fires.
+#   Layer 2 — RETIRED 2026-08-18 (Hải's call): the "never DPMS-blank" override
+#           kept the monitor at full power all day; normal power management is
+#           worth more than avoiding the occasional 640x480 hit, which a manual
+#           monitor power-cycle fixes. This script now REMOVES the old override
+#           if present so restores return to stock KDE screen-off behavior.
 #   Layer 3 (needs root): a systemd-sleep hook that pre-sets the connector's
 #         debugfs edid_override before sleep and nudges KWin on resume if the
 #         EDID still came back broken — for the system-suspend case. Source:
@@ -30,7 +33,7 @@
 #         the one injection path that has a hook on nvidia-drm (drm.edid_firmware
 #         is a no-op there). Efficacy self-logs to /var/log/nvidia-dp-edid.log.
 #
-# Idempotent. Layers 1-2 + EDID need no sudo; Layer 3 install uses sudo if
+# Idempotent. Layer 2 cleanup + EDID need no sudo; Layer 3 install uses sudo if
 # available (skipped with manual instructions otherwise).
 # =============================================================================
 
@@ -41,9 +44,8 @@ source "$SCRIPT_DIR/common.sh"
 
 check_not_root
 
-# Effectively-never idle time, in seconds (~3.17 years). The KDE GUI shows this
-# as a large minute value; to make it read literally "Never", toggle once in
-# System Settings -> Power Management -> Energy Saving -> Turn off screen.
+# Retired Layer 2 sentinel — the old override value this script used to write.
+# Kept only so the cleanup below can recognize and remove it.
 NEVER_IDLE=100000000
 EDID_REPO="$BACKUP_DIR/edid/dp3-gigabyte-m27q.bin"   # committed known-good EDID
 EDID_RUNTIME="$HOME/.local/share/edid/dp3-good.bin"  # where a future Layer 3 reads
@@ -60,23 +62,16 @@ fi
 log_info "NVIDIA GPU detected — applying DisplayPort EDID-loss mitigation."
 
 # -----------------------------------------------------------------------------
-# Layer 2 — KDE: never DPMS-blank the screen (AC profile). Idempotent.
+# Layer 2 (RETIRED) — remove the old "never DPMS-blank" override if present so
+# the stock KDE screen-off timeout applies. Idempotent: no-op once clean.
 # -----------------------------------------------------------------------------
 if check_command kwriteconfig6; then
     PM_FILE="powermanagementprofilesrc"
     CUR="$(kreadconfig6 --file "$PM_FILE" --group AC --group DPMSControl --key idleTime 2>/dev/null || echo "")"
 
     if [[ "$CUR" == "$NEVER_IDLE" ]]; then
-        log_success "KDE screen-blank already disabled (idleTime=$CUR)"
-    else
-        # Back up the live config once before mutating it.
-        LIVE="$HOME/.config/$PM_FILE"
-        if [[ -f "$LIVE" ]]; then
-            cp -f "$LIVE" "$LIVE.pre-display-setup.$(date +%Y%m%d-%H%M%S).bak"
-            log_info "Backed up $PM_FILE (was idleTime='${CUR:-default}')"
-        fi
-        kwriteconfig6 --file "$PM_FILE" --group AC --group DPMSControl --key idleTime "$NEVER_IDLE"
-        log_success "KDE 'turn off screen' set to never (idleTime=$NEVER_IDLE)"
+        kwriteconfig6 --file "$PM_FILE" --group AC --group DPMSControl --key idleTime --delete
+        log_success "Removed retired Layer 2 override (screen-off back to KDE default)"
 
         # Apply live without a re-login if powerdevil is running.
         if check_command qdbus && qdbus org.kde.Solid.PowerManagement >/dev/null 2>&1; then
@@ -86,9 +81,11 @@ if check_command kwriteconfig6; then
         else
             log_info "powerdevil not reachable — change applies on next login"
         fi
+    else
+        log_success "No retired Layer 2 override present (idleTime='${CUR:-default}')"
     fi
 else
-    log_warn "kwriteconfig6 not found — not a KDE session? Skipping Layer 2."
+    log_warn "kwriteconfig6 not found — not a KDE session? Skipping Layer 2 cleanup."
 fi
 
 # -----------------------------------------------------------------------------
