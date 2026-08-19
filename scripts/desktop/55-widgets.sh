@@ -242,7 +242,14 @@ for (const t in byType) {
 }
 
 // Panel: ensure Colorizer present + clock shows TIME ONLY (narrow vertical bar;
-// the date lives on the desktop clock) — Hải 2026-08-19
+// the date lives on the desktop clock) — Hải 2026-08-19.
+// autoFontAndSize STAYS true: in a vertical panel the clock uses
+// Text.HorizontalFit against the applet width (DigitalClock.qml state
+// "verticalPanel"), so a fixed fontSize can't make it bigger — only wider.
+// Clock size is governed by panel thickness (50-panel.sh, 42px), the theme
+// panel-background margin override (20-theme.sh), and the Colorizer Dock
+// preset's panel margin/padding (57-panel-style.sh disables them).
+// Measured on 2026-08-19: fixed 13-24pt all rendered identically.
 for (const p of panels()) {
     if (p.widgets("luisbocanegra.panel.colorizer").length === 0) {
         p.addWidget("luisbocanegra.panel.colorizer");
@@ -250,6 +257,7 @@ for (const p of panels()) {
     for (const pc of p.widgets("org.kde.plasma.digitalclock")) {
         pc.currentConfigGroup = ["Appearance"];
         pc.writeConfig("showDate", false);
+        pc.writeConfig("autoFontAndSize", true);
     }
 }
 

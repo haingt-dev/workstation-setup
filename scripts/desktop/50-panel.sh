@@ -19,11 +19,16 @@ log_section "Desktop 50: panel (floating centered dock)"
 plasma_script '
 for (const p of panels()) {
     p.floating   = true;
-    p.height     = 44;
+    // 42 (Hải 2026-08-19, after two rounds): the vertical clock auto-font
+    // fills the applet width, so content width is everything. The theme SVG
+    // content margins are collapsed to 1px by our panel-background override
+    // (20-theme.sh) and the Dock preset margins are off (57-panel-style.sh),
+    // so 42px thickness = 40px of content — big clock AND a slim dock.
+    p.height     = 42;
     p.opacity    = "translucent";   // lets the KWin blur show through
     p.lengthMode = "fit";           // shrink to content -> dock look
     p.alignment  = "center";
     p.hiding     = "none";
 }' >/dev/null
 
-log_success "Panel: floating, 44px, translucent, fit-content, centered (applied live)"
+log_success "Panel: floating, 42px, translucent, fit-content, centered (applied live)"

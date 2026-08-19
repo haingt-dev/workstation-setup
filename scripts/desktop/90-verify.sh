@@ -37,6 +37,13 @@ else
     log_error "glass theme SVG missing or wrong opacity: $GLASS_SVG"
     FAIL=1
 fi
+PANEL_SVG="$HOME/.local/share/plasma/desktoptheme/catppuccin-glass/widgets/panel-background.svg"
+if grep -qs 'hint-left-margin' "$PANEL_SVG"; then
+    log_success "panel-background override present (slim content margins)"
+else
+    log_error "panel-background override missing: $PANEL_SVG (dock content gets inset ~16px)"
+    FAIL=1
+fi
 chk "decoration lib" "org.kde.breeze"       "$(rd kwinrc org.kde.kdecoration2 library)"
 chk "cursor theme"   "catppuccin-mocha-mauve-cursors" "$(rd kcminputrc Mouse cursorTheme)"
 chk "icon theme"     "Papirus-Dark"         "$(rd kdeglobals Icons Theme)"
@@ -66,6 +73,7 @@ if QD="$(qdbus_cmd)"; then
     for (const p of panels()) for (const c of p.widgets("org.kde.plasma.digitalclock")) {
         c.currentConfigGroup = ["Appearance"];
         if (String(c.readConfig("showDate", true)) !== "false") dateless = 0;
+        if (String(c.readConfig("autoFontAndSize", true)) !== "true") dateless = 0;
     }
     print([d.widgets("com.socrates.reactorhud").length,
            d.widgets("luisbocanegra.audio.visualizer").length,
@@ -78,7 +86,7 @@ if QD="$(qdbus_cmd)"; then
         chk "Reactor HUD widget" "1" "${N_REACTOR:-}"
     fi
     chk "Kurve visualizer"      "1" "${N_KURVE:-}"
-    chk "panel clock time-only" "1" "${CLOCK_OK:-}"
+    chk "panel clock time-only+auto-font" "1" "${CLOCK_OK:-}"
 else
     log_warn "qdbus unreachable — widget checks skipped"
 fi

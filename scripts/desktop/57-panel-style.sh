@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# 57-panel-style.sh - Panel Colorizer: accent islands + state-aware presets
+# 57-panel-style.sh - Panel Colorizer: Dock preset, no state auto-switching
 # =============================================================================
 # Styles the vertical dock via Panel Colorizer (installed by 55-widgets.sh).
 #
@@ -8,22 +8,26 @@
 #   - The whole style lives in ONE config key `globalSettings` (JSON string);
 #     applying a preset = writing the preset's settings.json globalSettings
 #     into that key + setting `lastPreset` to the preset DIRECTORY path.
-#   - `presetAutoloading` (JSON string) switches presets by panel state; keys
-#     (priority order in code/utils.js): fullscreenWindow, maximized,
-#     touchingWindow, activeWindow, visibleWindows, floating, activity,
-#     normal. Values = preset directory paths.
+#   - The widget reads/writes its config in group [Configuration][General] —
+#     scripting MUST set currentConfigGroup = ["General"]. The first version
+#     of this script wrote with currentConfigGroup = [] which lands in the
+#     [Configuration] root: those keys are ignored by the widget at runtime
+#     (stale copies may linger there; harmless).
 #
-# Chosen style (Hải 2026-08-19, deep-research vòng 3):
-#   normal      -> "Outline Accent" — accent-outlined widget islands; the
-#                  accent IS Mocha Mauve (kdeglobals), so it theme-syncs free
-#   maximized   -> "Solid" — calm readable bar while a window is maximized
-#   fullscreen  -> "Transparent" — panel is covered anyway; zero visual noise
+# Chosen style (Hải 2026-08-19, revised same day):
+#   preset "Dock" (patched: panel margin/padding off — see GLOBAL_JSON below),
+#   presetAutoloading DISABLED.
+#   History: v1 shipped Outline Accent + state-aware autoload (Solid on
+#   maximized, Transparent on fullscreen). Hải then picked "Dock" in the GUI
+#   and the autoloader kept clobbering it back on every window-state change —
+#   that IS what autoload does, but it means the GUI preset choice never
+#   sticks. Verdict: one preset always, GUI stays source of truth.
 #
 # CONVERGE POLICY: config is applied only when `lastPreset` is unset/foreign
 # (fresh install or reset). After that the GUI (right-click panel -> Configure
 # Panel Colorizer) is the source of truth for style tweaks — appletsrc is in
-# backup Section 9a, so tweaks survive recovery. Delete the `lastPreset` key
-# (or run with FORCE_PANEL_STYLE=1) to re-apply the declared style.
+# backup Section 9a, so tweaks survive recovery. Run with FORCE_PANEL_STYLE=1
+# to re-apply the declared style.
 # =============================================================================
 
 set -e
@@ -31,40 +35,28 @@ DESKTOP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$DESKTOP_DIR/../common.sh"
 source "$DESKTOP_DIR/lib.sh"
 
-log_section "Desktop 57: panel style (Colorizer islands)"
+log_section "Desktop 57: panel style (Colorizer Dock preset)"
 
 PC_ID="luisbocanegra.panel.colorizer"
 PRESET_ROOT="$HOME/.local/share/plasma/plasmoids/$PC_ID/contents/ui/presets"
-BASE_PRESET="$PRESET_ROOT/Outline Accent"
-MAX_PRESET="$PRESET_ROOT/Solid"
-FS_PRESET="$PRESET_ROOT/Transparent"
+BASE_PRESET="$PRESET_ROOT/Dock"
 
-for d in "$BASE_PRESET" "$MAX_PRESET" "$FS_PRESET"; do
-    [[ -d "$d" ]] || { log_error "Preset missing: $d (Panel Colorizer not installed?)"; exit 1; }
-done
+[[ -d "$BASE_PRESET" ]] || { log_error "Preset missing: $BASE_PRESET (Panel Colorizer not installed?)"; exit 1; }
 
-# Compact JSON payloads (python handles the JS-string-literal escaping layer).
-# PATCH over the stock preset (Hải 2026-08-19: stock "Outline Accent" disables
-# the native panel background -> the vertical bar went washed-white over the
-# bright wallpaper): keep the accent widget islands, but paint the panel a
-# dark Mocha translucent glass (custom #1e1e2e @ 0.85) with blur behind.
+# Dock preset PATCHED: panel margin (4px) + padding (2px) disabled.
+# In a vertical panel the clock auto-font fills the applet width; the theme
+# SVG already eats ~16px of the 56px thickness, and Dock's own insets took
+# another 12px, shrinking the clock to ~28px (unreadable — Hải 2026-08-19).
+# Margins off -> clock gets 40px, matching how other presets render it.
+# python handles the JS-string-literal escaping layer (double json.dumps).
 GLOBAL_JSON="$(python3 -c '
 import json,sys
 with open(sys.argv[1]) as f: data=json.load(f)
 g = data["globalSettings"]
-p = g["panel"]["normal"]
-p["enabled"] = True
-p["blurBehind"] = True
-bc = p["backgroundColor"]
-bc.update({"enabled": True, "sourceType": 0, "custom": "#1e1e2e", "alpha": 0.85})
+g["panel"]["normal"]["margin"]["enabled"] = False
+g["panel"]["normal"]["padding"]["enabled"] = False
 print(json.dumps(json.dumps(g, separators=(",",":"))))
 ' "$BASE_PRESET/settings.json")"
-
-AUTOLOAD_JSON="$(python3 -c '
-import json,sys
-cfg={"enabled":True,"normal":sys.argv[1],"maximized":sys.argv[2],"fullscreenWindow":sys.argv[3]}
-print(json.dumps(json.dumps(cfg, separators=(",",":"))))
-' "$BASE_PRESET" "$MAX_PRESET" "$FS_PRESET")"
 
 RESULT="$(plasma_script '
 const FORCE = '"${FORCE_PANEL_STYLE:-0}"' === 1;
@@ -73,21 +65,21 @@ for (const p of panels()) {
     const ws = p.widgets("luisbocanegra.panel.colorizer");
     if (ws.length === 0) continue;
     const w = ws[0];
-    w.currentConfigGroup = [];
+    w.currentConfigGroup = ["General"];
     const cur = w.readConfig("lastPreset", "");
-    if (!FORCE && cur === "'"$BASE_PRESET"'") { out = "already"; continue; }
+    if (!FORCE && cur !== "") { out = "already"; continue; }
     w.writeConfig("isEnabled", true);
     w.writeConfig("globalSettings", '"$GLOBAL_JSON"');
     w.writeConfig("lastPreset", "'"$BASE_PRESET"'");
-    w.writeConfig("presetAutoloading", '"$AUTOLOAD_JSON"');
+    w.writeConfig("presetAutoloading", "{\"enabled\":false}");
     out = "applied";
 }
 print(out);
 ')"
 
 case "$RESULT" in
-    applied)      log_success "Panel style applied: Outline Accent + state-aware autoload (Solid/Transparent)" ;;
-    already)      log_success "OK  panel style already applied (GUI is source of truth for tweaks)" ;;
+    applied)      log_success "Panel style applied: Dock preset, autoload off" ;;
+    already)      log_success "OK  panel has a preset (GUI is source of truth; FORCE_PANEL_STYLE=1 to reset to Dock)" ;;
     no-colorizer) log_warn "Panel Colorizer widget not found in any panel — run 55-widgets.sh first"; exit 1 ;;
     *)            log_warn "Unexpected result: $RESULT" ;;
 esac

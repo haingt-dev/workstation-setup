@@ -112,6 +112,40 @@ EOF
     log_success "Generated catppuccin-glass theme (glass $GLASS_OPACITY, frame $GLASS_FRAME)"
 fi
 
+# Second override: widgets/panel-background.svg with margin hints collapsed to
+# 1px. The default theme's 4px (+8px thick) margins inset panel CONTENT on
+# every side — on the 42px vertical dock they ate ~16px, shrinking icons and
+# the auto-fit clock (Hải 2026-08-19: "width hơi lớn dù icon nhỏ"). Shadow
+# hints are kept (they don't affect content size). Visuals come from Panel
+# Colorizer anyway; the native bg is translucent behind it.
+PANEL_SVG="$GLASS_DIR/widgets/panel-background.svg"
+PANEL_SRC="/usr/share/plasma/desktoptheme/default/widgets/panel-background.svgz"
+if [[ -f "$PANEL_SVG" ]] && python3 - "$PANEL_SVG" <<'EOF'
+import re,sys
+s=open(sys.argv[1]).read()
+ok=all(m.group(0).count('width="1"') for m in re.finditer(r'<rect[^>]*id="[^"]*hint-[a-z]+-margin"[^>]*>', s)
+       if 'shadow' not in m.group(0))
+sys.exit(0 if ok else 1)
+EOF
+then
+    log_success "OK  panel-background override present (1px content margins)"
+else
+    zcat "$PANEL_SRC" | python3 -c "
+import sys,re
+s=sys.stdin.read()
+def shrink(m):
+    r=m.group(0)
+    rid=re.search(r'id=\"([^\"]+)\"', r)
+    if rid and 'margin' in rid.group(1) and 'shadow' not in rid.group(1):
+        r=re.sub(r'width=\"[^\"]+\"','width=\"1\"',r)
+        r=re.sub(r'height=\"[^\"]+\"','height=\"1\"',r)
+    return r
+sys.stdout.write(re.sub(r'<rect[^>]*>', shrink, s))
+" > "$PANEL_SVG"
+    rm -rf "$HOME/.cache/plasma-svgelements"* "$HOME/.cache/plasma_theme_"* 2>/dev/null || true
+    log_success "Generated panel-background override (1px content margins) — needs plasmashell restart"
+fi
+
 CUR_STYLE="$(kreadconfig6 --file plasmarc --group Theme --key name 2>/dev/null || true)"
 if [[ "$CUR_STYLE" == "catppuccin-glass" ]]; then
     log_success "OK  Plasma style already 'catppuccin-glass'"

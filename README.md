@@ -34,7 +34,7 @@ Automated workstation setup for Nobara 42 / Fedora — terminal, dev tools, apps
 - **Theme**: Catppuccin Mocha (Mauve accent) everywhere — global theme, Breeze decoration with native rounded corners, Papirus icons, Inter UI font, custom `catppuccin-glass` Plasma style (generated, 40%-opacity glass widget cards)
 - **Video wallpaper**: Smart Video Wallpaper Reborn with `PauseMode=MaximizedOrFullScreen` — zero perf cost while gaming (HW decode via NVDEC; H.264/VP9 only, never AV1)
 - **Sci-fi HUD**: Reactor HUD (patched: portable scriptPath + hybrid glass/shadow contrast), Kurve CAVA audio visualizer (accent bars), glassy desktop clock; panel clock = time-only
-- **Panel**: vertical dock styled by Panel Colorizer — accent widget islands, dark translucent glass, presets auto-switch on maximized/fullscreen
+- **Panel**: slim 42px vertical dock styled by Panel Colorizer (Dock preset, GUI = source of truth) — theme panel-background margins collapsed so icons/clock get the full width
 - All applied by idempotent `scripts/desktop/` stages; KDE state backed up (bundle Section 9) and restored by recovery phase 8 + `./setup.sh --desktop`
 
 ## Quick Start
