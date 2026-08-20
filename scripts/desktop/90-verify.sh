@@ -91,11 +91,26 @@ else
     log_warn "qdbus unreachable — widget checks skipped"
 fi
 
-# Panel Colorizer style (soft: GUI may legitimately change the preset later)
-if grep -qs 'lastPreset=' "$HOME/.config/plasma-org.kde.plasma.desktop-appletsrc"; then
-    log_success "Panel Colorizer has a preset applied"
+# Panel Colorizer: declared user presets (hard — 57-panel-style.sh artefacts)
+PC_PRESETS="$HOME/.config/panel-colorizer/presets"
+if python3 -c "
+import json,sys
+slim=json.load(open('$PC_PRESETS/Dock Slim/settings.json'))
+solid=json.load(open('$PC_PRESETS/Dock Solid/settings.json'))
+bc=solid['globalSettings']['panel']['normal']['backgroundColor']
+sys.exit(0 if bc['alpha']==1 and bc['sourceType']==0 else 1)
+" 2>/dev/null; then
+    log_success "Colorizer user presets present ('Dock Slim' + opaque 'Dock Solid')"
 else
-    log_warn "Panel Colorizer preset not yet in appletsrc (needs flush/restart or 57-panel-style.sh)"
+    log_error "Colorizer user presets missing/wrong under $PC_PRESETS — run 57-panel-style.sh"
+    FAIL=1
+fi
+
+# Panel Colorizer autoload (soft: GUI may legitimately re-point presets later)
+if grep -qs 'presetAutoloading=.*maximized' "$HOME/.config/plasma-org.kde.plasma.desktop-appletsrc"; then
+    log_success "Panel Colorizer autoload set (normal/maximized)"
+else
+    log_warn "Colorizer autoload not in appletsrc (needs flush/restart or 57-panel-style.sh)"
 fi
 
 # Video wallpaper (soft when no videos yet)

@@ -432,6 +432,7 @@ KDE_CONFIGS=(
     kcminputrc plasmanotifyrc kglobalshortcutsrc konsolerc dolphinrc
     gtk-3.0 gtk-4.0 gtkrc gtkrc-2.0 kcmfonts
     environment.d/50-video-wallpaper.conf
+    panel-colorizer
 )
 for item in "${KDE_CONFIGS[@]}"; do
     src="$HOME/.config/$item"
