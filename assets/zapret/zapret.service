@@ -1,0 +1,17 @@
+[Unit]
+Description=zapret nfqws - ISP DPI (SNI-RST) bypass via TCP ClientHello multisplit
+Documentation=https://github.com/bol-van/zapret
+After=network-pre.target firewalld.service
+Wants=network-pre.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/zapret/nfqws.conf
+ExecStartPre=/usr/sbin/nft -f /etc/zapret/zapret.nft
+ExecStart=/usr/local/bin/nfqws $NFQWS_OPTS
+ExecStopPost=-/usr/sbin/nft delete table inet zapret
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

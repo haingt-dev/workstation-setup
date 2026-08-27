@@ -27,6 +27,7 @@ Automated workstation setup for Nobara 42 / Fedora — terminal, dev tools, apps
 - **OneDrive**: Multi-account Files-On-Demand via `jstaf/onedriver` (FUSE, drop-and-go upload, on-demand download)
 - **Audio Processing**: EasyEffects with pre-tuned presets
 - **DNS**: Cloudflare Block Malware configuration
+- **DPI Bypass**: zapret/nfqws — reach SNI-blocked sites (Steam store, Medium, Luật Khoa) without VPN
 - **Vietnamese Input**: fcitx5-unikey for Vietnamese typing
 - **Display (NVIDIA)**: DisplayPort EDID-loss mitigation — monitor-OSD reminder + known-good EDID staged + suspend/resume auto-recovery hook (KDE never-blank layer retired 2026-08-18: normal screen-off restored; occasional 640x480 hit is fixed by power-cycling the monitor)
 
@@ -89,6 +90,8 @@ Options:
   --skip-apps         Skip additional apps
   --skip-easyeffects  Skip EasyEffects audio setup
   --skip-dns          Skip DNS setup
+  --dpi               ISP DPI bypass (zapret/nfqws)
+  --skip-dpi          Skip DPI bypass setup
   --onedrive          Setup onedriver Files-On-Demand (Dev + Personal accounts)
   --vietnamese        Install Vietnamese input method
   --remote            Remote access (Tailscale, SSH, WoL)
@@ -142,6 +145,7 @@ Examples:
     ├── onedrive_setup.sh       # onedriver Files-On-Demand setup (Dev + Personal mounts)
     ├── easyeffects_setup.sh    # EasyEffects audio presets
     ├── dns_setup.sh            # DNS configuration
+    ├── dpi_bypass_setup.sh     # ISP DPI bypass (zapret/nfqws build + service)
     ├── input_setup.sh          # Vietnamese input method
     ├── agent_setup.sh          # Agent Hub setup (clones from GitHub)
     ├── remote_access_setup.sh  # Remote access (Tailscale, SSH, WoL)
@@ -278,6 +282,7 @@ Auto-suspend reality check: **every boot autologs into a full Plasma session** (
 - **OneDrive**: `onedriver` FUSE mounts at `~/Data/OneDrive/{Dev,Personal}` (Files-On-Demand). Calibre Library lives separately at `~/Data/Calibre Library/` with daily rclone backup (`calibre-sync.timer`).
 - **EasyEffects**: Audio presets for speakers/headsets
 - **DNS**: Cloudflare Block Malware (1.1.1.2/1.0.0.2)
+- **DPI Bypass** (`dpi_bypass_setup.sh`): FPT Telecom's DPI sits at the international gateway, reads the TLS SNI and injects RST — `store.steampowered.com`, `medium.com`, `luatkhoa.net` die instantly while DNS/TCP/no-SNI TLS all work (diagnosed 2026-08-27). DNS changes don't help (Cloudflare/Quad9 lack ECS → Akamai hands out international edges; Google/OpenDNS happen to fix Steam only via FPT's domestic Akamai edge, and nothing on Cloudflare-hosted sites). Fix = [zapret](https://github.com/bol-van/zapret) `nfqws`, built from a pinned commit into `/usr/local/bin/nfqws`; `zapret.service` loads an `inet zapret` nft table that queues the first 6 packets of each outbound TCP 80/443 flow on physical NICs only (`meta oiftype ether` → Tailscale/AirVPN tunnels untouched) and nfqws splits the ClientHello (`multisplit`, pos `1,midsld`) so the DPI can't see the hostname. Verified strategy in `assets/zapret/nfqws.conf`; `fake+badseq` does NOT work on FPT. Toggle: `sudo systemctl stop|start zapret`; remove: `./scripts/dpi_bypass_setup.sh --uninstall`. VPN (`vpn on`) stays only for IP-level blocks.
 - **Vietnamese Input**: fcitx5-unikey (auto-configured with Super+Space trigger)
 - **Display (NVIDIA)**: monitor-OSD reminder + a `systemd-sleep` hook (`scripts/display/nvidia-dp-edid.sleep.sh`) that pre-sets the debugfs `edid_override` before sleep and nudges KWin on resume if the EDID came back broken. The old KDE never-blank layer was retired 2026-08-18 (kept the display at full power all day); the script now removes that override if present. If the screen drops to 640x480, power-cycle the monitor. Self-logs to `/var/log/nvidia-dp-edid.log`. Deep-dive: brain `4db7e40bc653`.
 

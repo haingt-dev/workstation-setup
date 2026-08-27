@@ -36,6 +36,7 @@ INSTALL_GODOT=true
 INSTALL_APPS=true
 INSTALL_EASYEFFECTS=true
 INSTALL_DNS=true
+INSTALL_DPI=true
 INSTALL_VSCODE=true
 INSTALL_REMOTE=true
 INSTALL_DISPLAY=true
@@ -67,6 +68,7 @@ show_help() {
     echo "  --apps              Additional apps (Chrome, Flatpaks)"
     echo "  --easyeffects       EasyEffects audio setup"
     echo "  --dns               DNS setup (Cloudflare Block Malware)"
+    echo "  --dpi               ISP DPI bypass (zapret/nfqws — Steam store, Medium... without VPN)"
     echo "  --onedrive          OneDrive setup (supports multiple accounts)"
     echo "  --vietnamese        Vietnamese input setup (fcitx5-unikey)"
 
@@ -105,7 +107,7 @@ show_help() {
 EXCLUSIVE_MODE=false
 for arg in "$@"; do
     case $arg in
-        --terminal|--agent|--qdrant|--godot|--apps|--easyeffects|--dns|--onedrive|--vietnamese|--vscode|--remote|--display|--desktop)
+        --terminal|--agent|--qdrant|--godot|--apps|--easyeffects|--dns|--dpi|--onedrive|--vietnamese|--vscode|--remote|--display|--desktop)
             EXCLUSIVE_MODE=true
             break
             ;;
@@ -122,6 +124,7 @@ if $EXCLUSIVE_MODE; then
     INSTALL_APPS=false
     INSTALL_EASYEFFECTS=false
     INSTALL_DNS=false
+    INSTALL_DPI=false
     INSTALL_ONEDRIVE=false
     INSTALL_VIETNAMESE=false
 
@@ -144,6 +147,7 @@ for arg in "$@"; do
             INSTALL_APPS=true
             INSTALL_EASYEFFECTS=true
             INSTALL_DNS=true
+            INSTALL_DPI=true
             INSTALL_ONEDRIVE=true
             INSTALL_VIETNAMESE=true
             INSTALL_VSCODE=true
@@ -159,6 +163,7 @@ for arg in "$@"; do
         --apps)               INSTALL_APPS=true ;;
         --easyeffects)        INSTALL_EASYEFFECTS=true ;;
         --dns)                INSTALL_DNS=true ;;
+        --dpi)                INSTALL_DPI=true ;;
         --onedrive)           INSTALL_ONEDRIVE=true ;;
         --vietnamese)         INSTALL_VIETNAMESE=true ;;
         --vscode)             INSTALL_VSCODE=true ;;
@@ -174,6 +179,7 @@ for arg in "$@"; do
         --skip-apps)          INSTALL_APPS=false ;;
         --skip-easyeffects)   INSTALL_EASYEFFECTS=false ;;
         --skip-dns)           INSTALL_DNS=false ;;
+        --skip-dpi)           INSTALL_DPI=false ;;
         --skip-vscode)        INSTALL_VSCODE=false ;;
         --skip-remote)        INSTALL_REMOTE=false ;;
         --skip-display)       INSTALL_DISPLAY=false ;;
@@ -263,6 +269,14 @@ if $INSTALL_DNS; then
     bash "$SCRIPTS_DIR/dns_setup.sh"
 elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping DNS setup"
+fi
+
+# 7b. ISP DPI Bypass (zapret/nfqws)
+if $INSTALL_DPI; then
+    log_section "Running DPI Bypass Setup..."
+    bash "$SCRIPTS_DIR/dpi_bypass_setup.sh"
+elif ! $EXCLUSIVE_MODE; then
+    log_warn "Skipping DPI bypass setup"
 fi
 
 # 8. Vietnamese Input Method
