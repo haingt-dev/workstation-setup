@@ -9,8 +9,11 @@ import "."
 Item {
     id: compact
 
-    readonly property real worstPercent: root.worstPercent
-    readonly property color ringColor: worstPercent >= 0 ? Tokens.severityColor(worstPercent) : Tokens.outline
+    // The ring tracks the 5-hour session window (see main.qml ringPercent);
+    // the mini-bars below still carry every window, each in its own severity
+    // colour, so the weekly limits never drop out of sight.
+    readonly property real ringPercent: root.ringPercent
+    readonly property color ringColor: ringPercent >= 0 ? Tokens.severityColor(ringPercent) : Tokens.outline
     readonly property bool dim: root.stale || !root.hasData
 
     Layout.minimumWidth: 32
@@ -40,7 +43,7 @@ Item {
                 // colour) — no looping animation, no per-frame repaint.
                 Connections {
                     target: compact
-                    function onWorstPercentChanged() { ring.requestPaint(); }
+                    function onRingPercentChanged() { ring.requestPaint(); }
                     function onRingColorChanged() { ring.requestPaint(); }
                 }
                 onWidthChanged: requestPaint()
@@ -62,8 +65,8 @@ Item {
                     ctx.strokeStyle = Tokens.surfaceContainerHigh;
                     ctx.stroke();
 
-                    const pct = Math.max(0, Math.min(100, compact.worstPercent));
-                    if (compact.worstPercent >= 0 && pct > 0) {
+                    const pct = Math.max(0, Math.min(100, compact.ringPercent));
+                    if (compact.ringPercent >= 0 && pct > 0) {
                         ctx.beginPath();
                         ctx.arc(cx, cy, r, start, start + (pct / 100) * 2 * Math.PI);
                         ctx.strokeStyle = compact.ringColor;
@@ -74,7 +77,7 @@ Item {
 
             Text {
                 anchors.centerIn: parent
-                text: compact.worstPercent >= 0 ? Math.round(compact.worstPercent).toString() : "—"
+                text: compact.ringPercent >= 0 ? Math.round(compact.ringPercent).toString() : "—"
                 font.bold: true
                 font.pixelSize: Math.max(9, ringHolder.ringSize * 0.34)
                 color: Tokens.fgSurface

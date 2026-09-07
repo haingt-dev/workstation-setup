@@ -26,11 +26,34 @@ PlasmoidItem {
         for (const l of limits) w = Math.max(w, l.percent);
         return w;
     }
+
+    // What the RING shows: the 5-hour session window. Hải's call 2026-09-07 —
+    // it is the limit that actually stops work mid-session, and it resets in
+    // hours, so it is the one a glance can act on. The weekly windows still
+    // reach the eye through the mini-bars, the tooltip and the popup, and the
+    // attention state below is still driven by the WORST window, so a weekly
+    // wall flags the dock icon even while the ring reads comfortable.
+    readonly property var sessionLimit: {
+        for (const l of limits) if (l.id === "session" || l.id === "five_hour") return l;
+        return null;
+    }
+    // No session window on this plan/response: fall back to the worst one
+    // rather than showing nothing.
+    readonly property int ringPercent: sessionLimit ? sessionLimit.percent : worstPercent
+    readonly property string ringLabel: sessionLimit ? sessionLimit.label : "Cao nhất"
+
     readonly property bool hasData: limits.length > 0
 
     Plasmoid.status: worstPercent >= 90 ? PlasmaCore.Types.RequiresAttentionStatus : PlasmaCore.Types.ActiveStatus
 
-    toolTipMainText: "Claude Code" + (plan ? " · " + plan : "")
+    // Lead with what the ring shows, then the worst window if it is a different
+    // one — so hovering never hides a weekly wall behind a calm 5-hour number.
+    toolTipMainText: {
+        if (!hasData) return "Claude Code" + (plan ? " · " + plan : "");
+        let head = "Claude Code · " + ringPercent + "% " + (sessionLimit ? "5h" : "");
+        if (worstPercent > ringPercent) head += "  (cao nhất " + worstPercent + "%)";
+        return head.trim();
+    }
     toolTipSubText: {
         if (!hasData) return errorText || "Chưa có dữ liệu";
         let lines = limits.map(l => l.label + ": " + l.percent + "%" + (l.active ? " (active)" : ""));
