@@ -1,118 +1,53 @@
 # Terminal Capabilities Guide
 
-Kitty + tmux + Zsh development environment with auto-dashboard layout, Catppuccin theming, and power tools.
+Kitty + Zsh development environment: a two-pane startup layout, power tools, and colours
+that come from the same generated palette as the desktop.
 
 ---
 
-## Dashboard Layout
+## Startup Layout
 
-Kitty launches maximized and auto-creates a tmux session `main` with a 3-pane dashboard:
+Kitty opens maximized and splits into two panes (`assets/.config/kitty/startup.conf`):
 
 ```
-┌─────────────────────┬───────────────────────┐
-│  fastfetch → btop   │                       │
-│  (system monitor)   │    Shell (focused)     │
-├─────────────────────┤                       │
-│  lazygit-pane       │                       │
-│  (auto cwd sync)    │                       │
-└─────────────────────┴───────────────────────┘
+┌──────────────────────────┬──────────────────────────┐
+│  digital-identity        │                          │
+│  claude --continue       │   Shell (~/Projects)     │
+│  (falls back to a shell  │                          │
+│   when the session ends) │                          │
+└──────────────────────────┴──────────────────────────┘
 ```
 
-- **Top-left** (pane 1.1): fastfetch system info, then transitions to btop
-- **Bottom-left** (pane 1.2): lazygit-pane — auto-restarts and follows shell's cwd
-- **Right** (pane 1.3): Interactive shell (default focus)
+Left pane resumes the Claude Code session in `~/Projects/digital-identity`; the right pane
+is a plain shell in `~/Projects`. Splits are managed by kitty itself — `enabled_layouts
+splits,stack`, `Ctrl+Shift+Z` zooms a pane.
 
-### lazygit-pane
-
-Wrapper script at `~/.local/bin/lazygit-pane`:
-- Reads target directory from `/tmp/tmux-main-cwd` (written by zsh `chpwd` hook)
-- When lazygit quits (`q`), re-reads the file and restarts in the new directory
-- If not in a git repo, displays a waiting message and polls for directory change
-- Trigger manual resync: `prefix + g` (sends `q` to lazygit pane, causing restart)
-
-### Fastfetch Profiles
-
-Three configs under `~/.config/fastfetch/`:
-
-| Config | Usage | Logo |
-|:---|:---|:---|
-| `kitty.jsonc` | Direct kitty launch (no tmux) | Image (jedi.png via kitty protocol) |
-| `tmux.jsonc` | Dashboard pane (inside tmux) | Text (Jedi builtin) |
-| `generic.jsonc` | Other terminals | Text (Jedi builtin) |
-
----
-
-## Tmux
-
-**Prefix**: `Ctrl+a` (not default `Ctrl+b`)
-
-### Pane & Window Management
-
-| Action | Shortcut |
-|:---|:---|
-| Split vertical | `prefix + \|` |
-| Split horizontal | `prefix + -` |
-| Navigate panes | `prefix + h/j/k/l` |
-| Resize panes | `prefix + H/J/K/L` (hold shift) |
-| Zoom pane | `prefix + z` |
-| Kill pane | `prefix + x` |
-| Kill window | `prefix + X` |
-| New window | `prefix + c` |
-| Next/prev window | `prefix + Ctrl+l / Ctrl+h` |
-| Swap window left/right | `prefix + < / >` |
-| Last window | `prefix + Space` |
-| Sync panes (toggle) | `prefix + S` |
-
-### Session & Navigation Popups
-
-| Action | Shortcut |
-|:---|:---|
-| Switch session (fzf popup) | `prefix + s` |
-| Switch window (fzf popup) | `prefix + w` |
-| Yazi file manager (popup) | `prefix + y` |
-| Resync lazygit pane | `prefix + g` |
-| New session | `prefix + N` |
-
-### Copy Mode (Vi-style)
-
-| Action | Shortcut |
-|:---|:---|
-| Enter copy mode | `prefix + [` |
-| Begin selection | `v` |
-| Rectangle selection | `Ctrl+v` |
-| Yank (copy) | `y` |
-| Paste | `prefix + ]` |
-| Cancel | `Escape` |
-
-### Plugins (TPM)
-
-- `tmux-sensible` — sensible defaults
-- `catppuccin/tmux` v2.1.0 — Mocha theme
-- `tmux-resurrect` — save/restore sessions
-- `tmux-continuum` — auto-save every 15min (auto-restore **off** — .zshrc handles layout)
-- `tmux-yank` — system clipboard integration
-
-Install plugins: `prefix + I` | Save: `prefix + Ctrl+s` | Restore: `prefix + Ctrl+r`
-
-### Technical Settings
-
-- `allow-passthrough on` — enables kitty graphics protocol in tmux (fastfetch image logo)
-- `extended-keys always` + `csi-u` format — configured for extended key support
-- Note: Ctrl+Enter forwarding is configured but **not functional in practice**. Use Alt+Enter for newline in applications that need it.
+> **Retired 2026-09-07**: this used to be a three-pane tmux dashboard (`main` session,
+> fastfetch → btop, an auto-syncing lazygit pane), plus a `work` session that remote
+> connections auto-attached to. tmux went out with the iPad remote stack — see the Awake
+> guard section in `README.md`. `Ctrl+Shift+G` still opens lazygit as an overlay.
 
 ---
 
 ## Kitty
 
-GPU-accelerated terminal emulator with Catppuccin Mocha theme.
-
 ### Key Settings
 
-- Font: CaskaydiaCove Nerd Font 14pt with ligatures
-- Background: 85% opacity with 32px blur
-- Cursor: Block with trail effect
-- Startup: Maximized via `startup.conf`, launches zsh
-- Remote control: socket-only (`unix:/tmp/kitty`)
+| Setting | Value |
+|:---|:---|
+| Font | CaskaydiaCove Nerd Font 14pt, ligatures on |
+| Background | opaque, drawing a crop of the wallpaper (`background_image`) |
+| Colours | `firewatchdusk.kitty.conf`, generated from the wallpaper |
+| Cursor | block, with trail |
+| Startup | maximized, two panes (above) |
+| Remote control | socket-only (`unix:/tmp/kitty`) |
+
+The window is **not** translucent on purpose. It was, at 0.85 with blur — but the
+wallpaper is nearly black, so the glass showed no picture and plenty of whatever window
+happened to sit underneath. It now draws a fixed crop of that same wallpaper instead,
+rendered by `scripts/desktop/60-wallpaper.sh` with the parameters in
+`assets/desktop/palette/palette.toml` under `[terminal]`. `dynamic_background_opacity` is
+still on, so `Ctrl+Shift+A` then `m`/`l`/`1`/`d` brings the glass back at any time.
 
 ### Keyboard Shortcuts
 
@@ -125,16 +60,20 @@ Modifier: `Ctrl+Shift` (referred to as `kitty_mod`)
 | New tab (cwd) | `kitty_mod + t` |
 | Close window / tab | `kitty_mod + w / q` |
 | Next/prev tab | `kitty_mod + Right / Left` |
-| Font size +/- | `kitty_mod + = / -` |
-| Reset font | `kitty_mod + Backspace` |
-| Fullscreen | `kitty_mod + F11` |
+| Navigate panes | `Alt + h/j/k/l` |
+| Resize panes | `Alt+Shift + h/j/k/l`, reset `Alt+Shift+r` |
+| Zoom pane (stack layout) | `kitty_mod + z` |
+| Next layout | `kitty_mod + l` |
+| Font size +/- / reset | `kitty_mod + = / -` / `Backspace` |
+| Fullscreen / maximize | `kitty_mod + F11 / F10` |
 | Scrollback buffer | `kitty_mod + h` |
 | URL hints | `kitty_mod + e` |
 | Path/line/word hints | `kitty_mod + p` then `f/l/w` |
-| Opacity +/- | `kitty_mod + a` then `m/l` |
+| Open line in nvim | `kitty_mod + p` then `g` |
+| Opacity +/- / opaque / default | `kitty_mod + a` then `m/l/1/d` |
 | Unicode input | `kitty_mod + u` |
-| Open line in nvim | `Ctrl+Shift + g` |
-| Ctrl+Enter (CSI-u) | `Ctrl+Enter` → sends `\x1b[13;5u` |
+| Overlays: lazygit / yazi / btop | `kitty_mod + g / y / o` |
+| Reload / edit config | `kitty_mod + F5 / F2` |
 
 ---
 
@@ -144,8 +83,8 @@ Modifier: `Ctrl+Shift` (referred to as `kitty_mod`)
 |:---|:---|:---|:---|
 | zoxide | `cd` | `z <name>` | Smart directory jumping, learns from usage |
 | eza | `ls` | `ls`, `ll`, `la`, `lt` | Icons, git status, tree view |
-| bat | `cat` | `cat`, `catp` (paging) | Syntax highlighting, Catppuccin theme |
-| fzf | `find` | `Ctrl+T/R`, `Alt+C` | Fuzzy finder with Catppuccin theme, fd backend |
+| bat | `cat` | `cat`, `catp` (paging) | Syntax highlighting |
+| fzf | `find` | `Ctrl+T/R`, `Alt+C` | Fuzzy finder, fd backend |
 | ripgrep | `grep` | `rg` | Fast regex search |
 | fd-find | `find` | `fd` | Fast file finder |
 | lazygit | git CLI | `lg` | Terminal UI for git |
@@ -159,7 +98,7 @@ Modifier: `Ctrl+Shift` (referred to as `kitty_mod`)
 - `zsh-autosuggestions` — grey inline suggestions (accept with Right Arrow)
 - `zsh-syntax-highlighting` — command validation colors
 - `zsh-autocomplete` — **disabled 2026-06-29** (segfaults on zsh 5.9)
-- Starship prompt (Gruvbox theme)
+- Starship prompt
 - Atuin shell history (sync/search)
 
 ### Key Aliases
@@ -182,35 +121,17 @@ Modifier: `Ctrl+Shift` (referred to as `kitty_mod`)
 - `Ctrl+R` — fuzzy history search
 - `Alt+C` — fuzzy directory navigation
 
-### Tmux cwd Sync
-When inside tmux, a `chpwd` hook writes `$PWD` to `/tmp/tmux-main-cwd` on every directory change. The lazygit-pane reads this file to stay in sync.
-
----
-
-## Remote Sessions (SSH / Mosh)
-
-Connecting from an iPad (Termius) or any SSH/Mosh client, `assets/.zshrc` detects
-the remote session via `$SSH_CONNECTION` (set for both ssh **and** mosh) and adapts:
-
-- **tmux auto-attach** — drops straight into the persistent session `work`
-  (`tmux attach -t work || tmux new -s work`); skipped for local terminals and when
-  already inside tmux (`$TMUX`). Distinct from the local kitty `main` dashboard session.
-- **Mosh** — installed on the host (`remote_access_setup.sh`) for a shell that survives
-  roaming, sleep/wake, and IP changes (UDP over Tailscale; ports covered by the
-  `tailscale0` trusted zone).
-- **Glyph-free prompt** — `STARSHIP_CONFIG` points at `starship-remote.toml` (letters +
-  `…` + `❯` only, Catppuccin colors) because Termius can't render the local prompt's
-  Nerd Font glyphs; local terminals `unset` it and keep the full powerline prompt.
-
-See `README.md` → "Remote Access Setup" for host setup and iPad app steps.
-
 ---
 
 ## Theme
 
-Catppuccin Mocha across the stack:
-- **Kitty**: `catppuccin-mocha.conf` include
-- **Tmux**: `catppuccin/tmux` plugin, Mocha flavor
-- **FZF**: Custom color scheme via `FZF_DEFAULT_OPTS`
-- **Bat**: `BAT_THEME="Catppuccin-mocha"`
-- **Starship**: Gruvbox Dark theme (intentional contrast with Catppuccin terminal)
+One palette, generated from the wallpaper — see `assets/desktop/palette/` and the *One
+derived palette* bullet in `README.md`. Nothing in this stack carries its own colours:
+
+- **Kitty**: `include firewatchdusk.kitty.conf` (generated), plus the backdrop crop
+- **Starship**: a generated `[palettes.rice]` block spliced into `starship.toml`
+- **Bat**: `BAT_THEME=ansi` — follows the terminal
+- **FZF**: `FZF_DEFAULT_OPTS` uses ANSI indices and `-1`, so it follows too
+
+Change the look in one place: edit `assets/desktop/palette/palette.toml`, run
+`bash scripts/desktop/gen-palette.sh`, review the diff, commit.

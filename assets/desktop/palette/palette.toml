@@ -2,7 +2,7 @@
 #
 # Change something here, run `bash scripts/desktop/gen-palette.sh`, review the
 # diff, commit. Every generated artefact next to this file (KDE colour scheme,
-# Konsole/kitty themes, tmux status colours, QML tokens, shell tokens) is
+# Konsole/kitty themes, QML tokens, shell tokens) is
 # derived from these values and is what the setup stages actually install —
 # nothing recomputes at runtime. The generator also splices a palette block
 # into assets/.config/starship/starship.toml, between its own markers.

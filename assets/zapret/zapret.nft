@@ -3,8 +3,8 @@
 # into NFQUEUE 200, where nfqws splits the TLS ClientHello / HTTP request so the
 # ISP's SNI-sniffing DPI can't read the hostname (FPT Telecom injects RST otherwise).
 #
-# - `meta oiftype ether`  : physical ethernet/wifi only. Tunnels (tailscale0,
-#                           WireGuard/AirVPN) are link/none → untouched, VPN unaffected.
+# - `meta oiftype ether`  : physical ethernet/wifi only. Tunnels (WireGuard/AirVPN)
+#                           are link/none → untouched, VPN unaffected.
 # - `mark & 0x40000000`   : packets nfqws re-injects carry this mark → not re-queued.
 # - `ct original packets 1-6` : only the first few packets of a flow, ~zero overhead after.
 # - `bypass`              : if nfqws is down, packets pass normally instead of being dropped.

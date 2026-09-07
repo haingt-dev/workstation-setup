@@ -6,9 +6,8 @@ Automated workstation setup for Nobara 42 / Fedora — terminal, dev tools, apps
 
 ### Terminal & Shell
 - **Shell Environment**: Zsh, Starship prompt, Atuin history, Fastfetch
-- **Terminal**: Kitty GPU-accelerated terminal with Catppuccin theme
+- **Terminal**: Kitty GPU-accelerated terminal, themed from the desktop palette
 - **Fonts**: CaskaydiaCove Nerd Font
-- **Tmux**: Multiplexer with TPM plugins, session persistence, Catppuccin theme
 - **Power Tools**: zoxide, eza, bat, fzf, ripgrep, fd-find, lazygit, yazi
 
 ### Agent System
@@ -32,7 +31,7 @@ Automated workstation setup for Nobara 42 / Fedora — terminal, dev tools, apps
 - **Display (NVIDIA)**: DisplayPort EDID-loss mitigation — monitor-OSD reminder + known-good EDID staged + suspend/resume auto-recovery hook (KDE never-blank layer retired 2026-08-18: normal screen-off restored; occasional 640x480 hit is fixed by power-cycling the monitor)
 
 ### Desktop Rice (KDE Plasma)
-- **One derived palette**: a single source colour in `assets/desktop/palette/palette.toml` is expanded by `gen-palette.py` (Material You) into the KDE colour scheme, Konsole and kitty themes, the tmux status palette, the starship prompt palette, QML tokens for our widgets and shell tokens for the Claude Code statusline. `bat` and `fzf` are set to follow the terminal's own ANSI colours, so they need no generated file at all. Generated once and committed — setup only installs the files, so the desktop cannot drift between runs. Change the look: edit the toml, run `bash scripts/desktop/gen-palette.sh`, review the diff, commit.
+- **One derived palette**: a single source colour in `assets/desktop/palette/palette.toml` is expanded by `gen-palette.py` (Material You) into the KDE colour scheme, Konsole and kitty themes (colours and the backdrop crop), the starship prompt palette, QML tokens for our widgets and shell tokens for the Claude Code statusline. `bat` and `fzf` are set to follow the terminal's own ANSI colours, so they need no generated file at all. Generated once and committed — setup only installs the files, so the desktop cannot drift between runs. Change the look: edit the toml, run `bash scripts/desktop/gen-palette.sh`, review the diff, commit.
 - **Static wallpaper**: the picture the palette came from (`assets/desktop/wallpapers/`), installed as a proper wallpaper package. Two more crops are generated from it: a blurred+darkened one for the lock screen and the plasmalogin greeter, and a zoomed one that kitty draws as its background (opaque — a translucent terminal over a near-black picture showed nothing but whatever window sat underneath). Crop and tint live in `palette.toml` under `[terminal]`. Zero GPU, and none of the video plugin's failure modes.
 - **Own widgets**: `dev.haint.dashboard` on the desktop (clock + date, CPU/RAM/GPU/Disk cards, HCMC weather from Open-Meteo) and `dev.haint.claudequota` in the dock (ring gauge of the worst Claude Code rate-limit window, popup with every window and its reset time — including the per-model weekly limit that nothing else exposes). Both read the generated tokens, so they match everything else by construction.
 - **Zero cost while gaming** (hard rule): both widgets share `GameGuard.qml`, which watches `TasksModel`/`IsFullScreen` plus `gamemoded -s` (for borderless-windowed games) and stops every timer, sensor subscription and helper process while a game is on screen.
@@ -52,7 +51,7 @@ cd workstation-setup
 
 ## Philosophy
 
-- **Symlink, don't copy**: User-authored configs (zsh, kitty, starship, tmux, …) are
+- **Symlink, don't copy**: User-authored configs (zsh, kitty, starship, …) are
   **symlinked** from `assets/` into `$HOME` — the repo is the source of truth and editing
   either side is the same file (zero drift, full git history). First link of an existing
   real file backs it up to `<path>.pre-symlink.<ts>.bak`.
@@ -60,7 +59,7 @@ cd workstation-setup
   history) is **not** vendored here — it's captured by the encrypted backup pipeline
   (below) and restored by `recover.sh`. Fonts are downloaded on-demand.
 - **One profile**: Single, full-featured terminal configuration (no "core" vs "enhanced")
-- **Opinionated**: Curated, clean configs with Catppuccin theming throughout
+- **Opinionated**: Curated, clean configs; one palette, generated from the wallpaper, across the desktop and the terminal
 
 ## Backup & Recovery
 
@@ -95,8 +94,6 @@ Options:
   --skip-dpi          Skip DPI bypass setup
   --onedrive          Setup onedriver Files-On-Demand (Dev + Personal accounts)
   --vietnamese        Install Vietnamese input method
-  --remote            Remote access (Tailscale, SSH, WoL)
-  --skip-remote       Skip remote access setup
   --display           NVIDIA DisplayPort EDID-loss fix (EDID staging + sleep hook)
   --skip-display      Skip display/NVIDIA setup
   --desktop           Desktop rice (generated palette + static wallpaper + dashboard/quota widgets)
@@ -128,11 +125,10 @@ Examples:
 │   ├── .gitconfig              # Git configuration
 │   ├── symlinks.yml            # Declarative cross-project symlink manifest
 │   ├── .config/                # App configs
-│       ├── starship/           # Starship prompts (remote variant → ~/.config/starship-remote.toml)
+│       ├── starship/           # Starship prompt (palette spliced in by gen-palette.py)
 │       ├── atuin/              # Atuin config (config.toml)
 │       ├── fastfetch/          # Fastfetch config + logo
-│       ├── kitty/              # Kitty terminal + generated theme + background
-│       ├── tmux/               # Tmux + TPM plugins
+│       ├── kitty/              # Kitty terminal (theme + backdrop are generated)
 │       └── fish/               # fish conf.d
 │   ├── .local/share/
 │   │   ├── easyeffects/        # Audio presets (G560/G435) — EE >= 8.0 layout
@@ -153,8 +149,8 @@ Examples:
     ├── dns_setup.sh            # DNS configuration
     ├── dpi_bypass_setup.sh     # ISP DPI bypass (zapret/nfqws build + service)
     ├── input_setup.sh          # Vietnamese input method
-    ├── agent_setup.sh          # Agent Hub setup (clones from GitHub)
-    ├── remote_access_setup.sh  # Remote access (Tailscale, SSH, WoL)
+    ├── agent_setup.sh          # Agent Hub setup (clones from GitHub) + awake-guard
+    ├── retire_remote_stack.sh  # One-shot: removes the retired iPad remote stack
     └── display_setup.sh        # NVIDIA DisplayPort EDID-loss mitigation
 ```
 
@@ -197,10 +193,9 @@ Single, full-featured terminal configuration:
 - zsh, git, curl, wget, util-linux-user, fastfetch
 - kitty (GPU-accelerated terminal)
 - podman, podman-compose
-- tmux
 
 **Shell Tools**:
-- Starship prompt (Gruvbox theme)
+- Starship prompt
 - Atuin (shell history with sync)
 - Zsh plugins: autosuggestions, syntax-highlighting (autocomplete disabled 2026-06-29 — segfaults on zsh 5.9)
 
@@ -208,7 +203,7 @@ Single, full-featured terminal configuration:
 - `zoxide` - Smart cd replacement
 - `eza` - Modern ls with icons and git status
 - `bat` - Cat with syntax highlighting
-- `fzf` - Fuzzy finder with Catppuccin theme
+- `fzf` - Fuzzy finder (follows the terminal's ANSI colours)
 - `ripgrep` - Fast grep alternative
 - `fd-find` - Fast find alternative
 - `lazygit` - Terminal UI for git
@@ -216,10 +211,8 @@ Single, full-featured terminal configuration:
 
 **Configs Installed**:
 - `.zshrc` with all tool integrations
-- `kitty.conf` with Catppuccin Mocha theme
-- `tmux.conf` with TPM and Catppuccin theme
-- `starship.toml` with Gruvbox Dark theme
-- `starship-remote.toml` — glyph-free variant, auto-selected over SSH/Mosh
+- `kitty.conf` — colours and backdrop come from the desktop rice's palette
+- `starship.toml` — prompt layout, with a generated `[palettes.rice]` block
 
 **Aliases Available**:
 ```bash
@@ -232,53 +225,34 @@ y   → yazi                      # File manager (cd on exit)
 z   → zoxide                    # Smart directory jumping
 ```
 
-### Remote Access Setup (`remote_access_setup.sh`)
+### Awake guard (`agent_setup.sh`)
 
-iPad Pro M2 as mobile workstation — remote into home PC from anywhere:
+Plasma suspends after 15 minutes without **local** input, so reading a long answer,
+thinking between prompts, or driving a session from the phone through Claude Code's
+Remote Control all look like an idle machine. Two layers keep it awake only when
+there is a reason, and the KDE auto-suspend setting stays at its default:
 
-**Services**:
-- OpenSSH server (enabled, port 22)
-- Tailscale (mesh VPN — no port forwarding needed)
-- Wake-on-LAN (ethtool on Realtek 2.5G, persistent via NetworkManager)
-- Mosh (resilient UDP shell — survives roaming / sleep-wake / IP change)
-- tmux for session persistence (survives SSH disconnects) — auto-attaches to session `work` on every remote connect (guard in `assets/.zshrc`)
-- Glyph-free Starship prompt for remote sessions — Termius/non-Nerd-Font clients render the local Catppuccin powerline icons as tofu; `starship-remote.toml` (letters + `…` + `❯` only, same Catppuccin colors) is auto-selected via `STARSHIP_CONFIG` when `$SSH_CONNECTION` is set (`assets/.zshrc`); local terminals keep the full prompt
-- Awake guard — KDE auto-suspend stays at **default** (PC sleeps normally at home); suspend is blocked only when there's a reason, via three conditional layers: the Claude Code inhibit hooks (`~/.claude/hooks/claude-inhibit-*.sh`, wired to UserPromptSubmit + PreToolUse + Stop in `~/.claude/settings.json`) hold a sleep inhibitor while a task runs · `awake-guard.service` (`assets/.local/bin/awake-guard.sh`) holds one while a remote mosh/SSH session is open — detected by **live processes** (`mosh-server`, `sshd-session: user [priv]`/`user@pts`), NOT by `who`/utmp: on Fedora 43 `who` (coreutils ≥9.4, Y2038 utmp deprecation) reads logind sessions and **never lists mosh** (its SSH bootstrap session is TTY-less and closes instantly), which is how the who-based guard v1 went blind · `MOSH_SERVER_NETWORK_TMOUT=3600` (`assets/.zshenv`) reaps stale mosh-servers so a force-killed Termius can't hold the inhibitor forever. On remote login `assets/.zshrc` kicks the guard (USR1) for an instant poll, closing the connect-time race against the idle deadline. Background: Plasma's 15-min idle suspend counts only **local** input — remote SSH/mosh activity doesn't reset it, which froze the host mid-iPad-session three times (2026-07-07, 2026-07-08, 2026-07-10 — the third *after* guard v1 shipped, exposing the `who` trap). PowerDevil honors systemd inhibitors with `mode=block` only (PolicyAgent imports logind inhibitors, skips other modes — Plasma/6.6 source). Accepted side effect: while a lock is held, **manual** Sleep is refused too — close the remote session or `systemctl --user stop awake-guard` first
+- the Claude Code inhibit hooks (`~/.claude/hooks/claude-inhibit-*.sh`, wired to
+  UserPromptSubmit + PreToolUse + Stop in `~/.claude/settings.json`) hold a sleep
+  inhibitor while a turn **runs**;
+- `awake-guard.service` (`assets/.local/bin/awake-guard.sh`) holds one while a session
+  is merely **in use** — it polls transcript mtimes under `~/.claude/projects` and keeps
+  the lock while anything was written in the last 20 minutes.
 
-**Hardware**: ASUS TUF B650M-E WIFI, Ethernet `eno1`
+PowerDevil imports logind inhibitors with `mode=block` only (PolicyAgent skips other
+modes — Plasma/6.6 source), which is what both layers use. Accepted side effect: while a
+lock is held a **manual** Sleep is refused too; `systemctl --user stop awake-guard` is the
+escape hatch. Check it with `journalctl --user -u awake-guard` — it logs every ON/OFF.
 
-**BIOS Setup** (manual, one-time):
-- Delete → Advanced → APM Configuration
-- `Restore AC Power Loss` = Power On (for smart plug remote boot)
-- `Power On By PCI-E` = Enabled (for Wake-on-LAN)
-
-**iPad Apps**:
-- Tailscale (free) — same account, auto-connects
-- Termius (free) — SSH/Mosh client; enable Mosh per host for resilient sessions
-- Working Copy ($25) — Obsidian Git sync + offline code
-
-**Usage**:
-```bash
-# From iPad (Termius) — Mosh recommended; survives roaming/sleep
-ssh haint@100.86.91.49     # Tailscale IP — works from anywhere
-# → auto-attaches to tmux session `work` on connect (assets/.zshrc)
-# Detach: Ctrl-a d · reconnecting re-attaches automatically
-
-# Shutdown PC remotely when done
-sudo shutdown -h now
-```
-
-**Trip protocol — smart-plug boot (PC default OFF, no always-on box)**:
-1. **Boot**: smart-plug app → OFF → wait 5s → ON. BIOS `Restore AC Power Loss = Power On` boots the PC; `sshd` + `tailscaled` are enabled at boot. Wait ~2 min.
-2. **Work**: `ssh haint@100.86.91.49` → auto-attaches to tmux `work` (via `assets/.zshrc`; falls back to `tmux new -s work` if none).
-3. **Done**: `sudo shutdown -h now` from the SSH session; optionally plug OFF after ~1 min.
-
-Auto-suspend reality check: **every boot autologs into a full Plasma session** (`plasmalogin-autologin` — there is NO idle greeter on this box), so PowerDevil's 15-min suspend timer runs from power-on even when nobody is home. A remotely-booted host therefore **suspends ~15 min after power-on unless a remote session connects first** — connect promptly after an eWeLink boot; once mosh/SSH is in, the guard holds it awake. Logged-in sessions suspend normally EXCEPT while a Claude task runs or a remote session is open (see Awake guard in Services). A finished, disconnected session is *allowed* to sleep — that's the design, not a failure. Pre-departure drill: run the full cycle once from cellular (wifi off) — verified 2026-07-__.
-
-**Host unreachable mid-session** (Tailscale dead, was working minutes ago)? Recovery ladder — wake before you cut:
-1. **It may be legitimately asleep** (no remote session + no running task ≥15 min — e.g. mosh reaped after 1h of a force-killed Termius, or a fresh boot nobody connected to). A WoL magic packet to `eno1` (MAC: `ip link show eno1`) or a tap on the power button wakes from S3 **losslessly** — tmux, finished task output, everything is still there. **WoL works from the home LAN only**: it's an ethernet broadcast, and a suspended host's tailscaled is asleep too, so nothing can carry it over the tailnet from outside. Away from home, a suspended host leaves only step 2.
-2. **eWeLink power-cycle = last resort**: RAM is lost → cold boot → tmux session + task output die.
-3. **Post-mortem after reboot**: `journalctl -b -1 -e` — a suspend ends with `systemd-logind: The system will suspend now!`; a real freeze/crash ends with an abrupt log stop instead. Was the guard holding? `journalctl --user -u awake-guard` shows every inhibit ON/OFF transition.
+**Retired 2026-09-07 — the iPad remote stack.** From July 2026 this box was reachable
+from an iPad: Tailscale, sshd + mosh, tmux session `work` with auto-attach, Wake-on-LAN
+and a smart plug for power, a glyph-free `starship-remote.toml` for Termius. Claude Code's
+Remote Control (`/rc`, session driven from claude.ai or the phone app) replaced the whole
+lane, and the iPad had been off the tailnet for weeks. `scripts/retire_remote_stack.sh`
+removes the machine state (services, packages, firewall rule, WoL, leftover symlinks);
+the repo side went with the same commit. There is no SSH into this machine any more —
+outbound SSH, and so git, is untouched. Everything is in git history if it is ever needed
+back, but the intent is to start from what is actually needed then.
 
 ### Other Components
 
@@ -288,7 +262,7 @@ Auto-suspend reality check: **every boot autologs into a full Plasma session** (
 - **OneDrive**: `onedriver` FUSE mounts at `~/Data/OneDrive/{Dev,Personal}` (Files-On-Demand). Calibre Library lives separately at `~/Data/Calibre Library/` with daily rclone backup (`calibre-sync.timer`).
 - **EasyEffects**: Audio presets for speakers/headsets
 - **DNS**: Cloudflare Block Malware (1.1.1.2/1.0.0.2)
-- **DPI Bypass** (`dpi_bypass_setup.sh`): FPT Telecom's DPI sits at the international gateway, reads the TLS SNI and injects RST — `store.steampowered.com`, `medium.com`, `luatkhoa.net` die instantly while DNS/TCP/no-SNI TLS all work (diagnosed 2026-08-27). DNS changes don't help (Cloudflare/Quad9 lack ECS → Akamai hands out international edges; Google/OpenDNS happen to fix Steam only via FPT's domestic Akamai edge, and nothing on Cloudflare-hosted sites). Fix = [zapret](https://github.com/bol-van/zapret) `nfqws`, built from a pinned commit into `/usr/local/bin/nfqws`; `zapret.service` loads an `inet zapret` nft table that queues the first 6 packets of each outbound TCP 80/443 flow on physical NICs only (`meta oiftype ether` → Tailscale/AirVPN tunnels untouched) and nfqws splits the ClientHello (`multisplit`, pos `1,midsld`) so the DPI can't see the hostname. Verified strategy in `assets/zapret/nfqws.conf`; `fake+badseq` does NOT work on FPT. Toggle: `sudo systemctl stop|start zapret`; remove: `./scripts/dpi_bypass_setup.sh --uninstall`. VPN (`vpn on`) stays only for IP-level blocks.
+- **DPI Bypass** (`dpi_bypass_setup.sh`): FPT Telecom's DPI sits at the international gateway, reads the TLS SNI and injects RST — `store.steampowered.com`, `medium.com`, `luatkhoa.net` die instantly while DNS/TCP/no-SNI TLS all work (diagnosed 2026-08-27). DNS changes don't help (Cloudflare/Quad9 lack ECS → Akamai hands out international edges; Google/OpenDNS happen to fix Steam only via FPT's domestic Akamai edge, and nothing on Cloudflare-hosted sites). Fix = [zapret](https://github.com/bol-van/zapret) `nfqws`, built from a pinned commit into `/usr/local/bin/nfqws`; `zapret.service` loads an `inet zapret` nft table that queues the first 6 packets of each outbound TCP 80/443 flow on physical NICs only (`meta oiftype ether` → VPN tunnels untouched) and nfqws splits the ClientHello (`multisplit`, pos `1,midsld`) so the DPI can't see the hostname. Verified strategy in `assets/zapret/nfqws.conf`; `fake+badseq` does NOT work on FPT. Toggle: `sudo systemctl stop|start zapret`; remove: `./scripts/dpi_bypass_setup.sh --uninstall`. VPN (`vpn on`) stays only for IP-level blocks.
 - **Vietnamese Input**: fcitx5-unikey (auto-configured with Super+Space trigger)
 - **Display (NVIDIA)**: monitor-OSD reminder + a `systemd-sleep` hook (`scripts/display/nvidia-dp-edid.sleep.sh`) that pre-sets the debugfs `edid_override` before sleep and nudges KWin on resume if the EDID came back broken. The old KDE never-blank layer was retired 2026-08-18 (kept the display at full power all day); the script now removes that override if present. If the screen drops to 640x480, power-cycle the monitor. Self-logs to `/var/log/nvidia-dp-edid.log`. Deep-dive: brain `4db7e40bc653`.
 
@@ -296,9 +270,7 @@ Auto-suspend reality check: **every boot autologs into a full Plasma session** (
 
 1. **Log out and log back in** (for shell change to take effect)
 
-2. **Install tmux plugins**: Open tmux and press `Ctrl+a` then `I`
-
-3. **Start using power tools**:
+2. **Start using power tools**:
    - `z` learns your directories automatically
    - `Ctrl+R` for fuzzy history search (fzf + atuin)
    - `Ctrl+T` for fuzzy file search

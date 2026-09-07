@@ -3,39 +3,12 @@
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# tmux auto-attach for remote sessions (SSH / Mosh)
-# -----------------------------------------------------------------------------
-# On an incoming remote shell, drop straight into the persistent 'work' tmux
-# session so Claude Code / long tasks survive client death & network drops.
-# Guard on $SSH_CONNECTION — set for BOTH ssh AND mosh (mosh inherits it from
-# the ssh handshake; it clears $SSH_TTY, so don't key on that). Skip when already
-# inside tmux ($TMUX) to avoid nesting, and never touch local terminals. No exec:
-# detaching drops back to a normal shell instead of closing the connection.
-# Placed before the heavy interactive setup below so remote connects attach fast.
-# The awake-guard kick MUST come before the (blocking) tmux attach: it closes the
-# connect-time race where PowerDevil's 15-min local-idle deadline lands inside the
-# guard's 15s poll gap — USR1 makes the guard poll immediately instead of napping.
-if [[ -n "$SSH_CONNECTION" ]]; then
-    systemctl --user kill --kill-whom=main --signal=USR1 awake-guard.service 2>/dev/null || true
-fi
-if [[ -n "$SSH_CONNECTION" && -z "$TMUX" ]] && command -v tmux >/dev/null 2>&1; then
-    tmux attach -t work 2>/dev/null || tmux new -s work
-fi
-
-# -----------------------------------------------------------------------------
 # Starship Prompt
 # -----------------------------------------------------------------------------
-# Remote/mobile sessions (Termius/Mosh over SSH — $SSH_CONNECTION set for both)
-# use a glyph-free prompt so terminals without Nerd Fonts don't render the
-# powerline/PUA icons as tofu. Local terminals fall through to the default
-# ~/.config/starship.toml (full Catppuccin prompt on the Nerd-Font kitty).
-# Always unset in the local branch so a pane inheriting STARSHIP_CONFIG from a
-# remotely-started tmux server doesn't wrongly keep the plain prompt.
-if [[ -n "$SSH_CONNECTION" && -f "$HOME/.config/starship-remote.toml" ]]; then
-    export STARSHIP_CONFIG="$HOME/.config/starship-remote.toml"
-else
-    unset STARSHIP_CONFIG
-fi
+# One prompt, one config: ~/.config/starship.toml (symlinked from
+# assets/.config/starship/). Its colour palette is generated from the wallpaper
+# — see assets/desktop/palette/gen-palette.py, which splices a [palettes.rice]
+# block into that file between its own markers.
 eval "$(starship init zsh)"
 
 # -----------------------------------------------------------------------------

@@ -1,44 +1,41 @@
 #!/bin/bash
 # =============================================================================
-# awake-guard.sh — block auto-suspend while remote (mosh/SSH) sessions exist
+# awake-guard.sh — block auto-suspend while Claude Code is being used
 # =============================================================================
 #
-# Why: Plasma 6 PowerDevil suspends after 15 min without LOCAL input — remote
-# SSH/mosh activity does NOT reset the idle timer, so the host sleeps under
-# your fingers mid-iPad-session and drops off the tailnet (looks identical to
-# a crash from Termius). Bit three times: 2026-07-07 + 2026-07-08, then
-# 2026-07-10 AGAIN because v1 of this guard detected sessions via who(1) and
-# went blind to mosh (see Detection below).
+# Why: Plasma 6 PowerDevil suspends after 15 min without LOCAL input. Reading a
+# long answer, thinking between prompts, or driving a session from the phone via
+# Claude Code's Remote Control all look like an idle machine to it — the host
+# sleeps mid-conversation and the session goes offline.
 #
 # Division of labor (each layer covers a distinct gap):
-#   - The Claude Code inhibit hooks (~/.claude/hooks/claude-inhibit-*.sh) hold
-#     a sleep inhibitor while a task RUNS.
-#   - THIS guard holds one while a remote session is OPEN (reading/thinking/
-#     between prompts — shell idle but human active).
-#   - MOSH_SERVER_NETWORK_TMOUT (assets/.zshenv) reaps stale mosh-servers so
-#     a force-killed Termius can't hold the inhibitor forever.
-# When neither applies, the PC auto-suspends normally (desired at home).
+#   - The Claude Code inhibit hooks (~/.claude/hooks/claude-inhibit-*.sh) hold a
+#     sleep inhibitor while a turn RUNS. They cover the loud part.
+#   - THIS guard holds one while a session is merely IN USE — the quiet part:
+#     between turns, while you read, while the phone is in your hand.
 #
-# Detection is PROCESS-based: a live mosh-server = an open mosh session; an
-# OpenSSH >=9.8 "sshd-session: user [priv]" monitor = a live SSH connection.
-# Do NOT detect via who(1)/utmp: on Fedora 43 `who` (coreutils >=9.4, Y2038
-# utmp deprecation) reads logind sessions instead of /run/utmp — a mosh
-# session NEVER appears there (its SSH bootstrap logind session is TTY-less
-# and goes State=closing the moment mosh-server is spawned; the mosh pty
-# lives only in deprecated utmp). Plain SSH *does* show up in who, which is
-# how the who-based v1 passed its ssh-only E2E test yet suspended the host
-# mid-mosh on 2026-07-10 14:07.
-# Poll is 15s; on remote login assets/.zshrc sends USR1 for an instant poll,
-# closing the race where PowerDevil's idle deadline falls inside the nap.
+# Detection is by TRANSCRIPT MTIME: Claude Code appends to
+# ~/.claude/projects/<project>/<session>.jsonl on every message and tool result,
+# so a file touched in the last WINDOW_MIN minutes means a live session. `find
+# -print -quit` stops at the first hit — 3ms across 2200 files, cheap enough to
+# poll. Nothing else on this box writes there.
 #
-# PowerDevil honors systemd inhibitors with mode=block ONLY: PolicyAgent
-# imports logind inhibitors, skipping anything where mode != "block" —
-# 'sleep' lock → InterruptSession policy (Plasma/6.6 source,
-# daemon/powerdevilpolicyagent.cpp, checkLogindInhibitions). So --mode=block
-# is required here; block-weak would be ignored. Side effect (accepted):
-# while the lock is held, a MANUAL suspend (KDE menu / systemctl suspend) is
-# also refused. Escape hatch: close the remote session, or
+# Accepted side effect: the machine stays awake for up to WINDOW_MIN minutes
+# after the last Claude activity, and while the lock is held a MANUAL suspend
+# (KDE menu / systemctl suspend) is refused too. Escape hatch:
 # `systemctl --user stop awake-guard`.
+#
+# PowerDevil honors systemd inhibitors with mode=block ONLY: PolicyAgent imports
+# logind inhibitors, skipping anything where mode != "block" — 'sleep' lock →
+# InterruptSession policy (Plasma/6.6 source, daemon/powerdevilpolicyagent.cpp,
+# checkLogindInhibitions). block-weak would be ignored.
+#
+# History: v1-v3 (2026-07) watched for remote mosh/SSH sessions, because the box
+# was driven from an iPad over Tailscale. That stack was retired 2026-09-07 —
+# Claude Code's own Remote Control replaced it — so the signal moved to the
+# thing that is actually in use. The old who(1) trap is gone with it: v2 read
+# logind sessions and never saw mosh at all (Fedora 43 coreutils >=9.4 dropped
+# utmp), which is how it slept the host mid-session on 2026-07-10.
 #
 # Runs as a systemd user service (awake-guard.service, Restart=on-failure).
 # Fail direction: if the guard dies, the machine may sleep (fail-open) — the
@@ -46,29 +43,14 @@
 # (default cgroup kill on stop).
 # =============================================================================
 
-POLL_SEC=15
+POLL_SEC=30
+WINDOW_MIN=20
+CLAUDE_PROJECTS="$HOME/.claude/projects"
 INHIBIT_PID=""
-REMOTE_KIND=""
 
-remote_active() {
-    # mosh: a live mosh-server IS an open session. MOSH_SERVER_NETWORK_TMOUT
-    # (assets/.zshenv) reaps abandoned servers, so this signal self-clears.
-    if pgrep -x mosh-server >/dev/null 2>&1; then
-        REMOTE_KIND="mosh"
-        return 0
-    fi
-    # ssh: OpenSSH >=9.8 keeps one root "sshd-session: <user> [priv]" monitor
-    # per live connection — incl. exec-channel (scp/rsync), which spawns NO
-    # "user@..." titled process (verified on 10.0p1). Interactive sessions
-    # add "sshd-session: user@pts/N"; match either. Pre-auth probes title as
-    # "unknown [priv]" and can false-positive for ≤LoginGraceTime — accepted:
-    # port 22 is tailnet/LAN-only and the guard fails toward staying awake.
-    if pgrep -f '^sshd-session: .* \[priv\]' >/dev/null 2>&1 \
-        || pgrep -f '^sshd-session: .*@' >/dev/null 2>&1; then
-        REMOTE_KIND="ssh"
-        return 0
-    fi
-    return 1
+claude_active() {
+    [[ -d "$CLAUDE_PROJECTS" ]] || return 1
+    [[ -n "$(find "$CLAUDE_PROJECTS" -name '*.jsonl' -mmin "-$WINDOW_MIN" -print -quit 2>/dev/null)" ]]
 }
 
 release() {
@@ -76,29 +58,24 @@ release() {
         kill "$INHIBIT_PID" 2>/dev/null
         wait "$INHIBIT_PID" 2>/dev/null
         INHIBIT_PID=""
-        echo "inhibit OFF (no remote sessions)"
+        echo "inhibit OFF (no Claude activity for ${WINDOW_MIN}m)"
     fi
 }
 
 trap 'release; exit 0' TERM INT
-trap 'true' USR1   # login kick from assets/.zshrc: interrupt the nap, poll now
 
 while true; do
-    if remote_active; then
+    if claude_active; then
         if [[ -z "$INHIBIT_PID" ]] || ! kill -0 "$INHIBIT_PID" 2>/dev/null; then
             systemd-inhibit --what=sleep --mode=block \
                 --who="awake-guard" \
-                --why="Remote session (mosh/SSH) active" \
+                --why="Claude Code session in use" \
                 sleep infinity &
             INHIBIT_PID=$!
-            echo "inhibit ON ($REMOTE_KIND session detected)"
+            echo "inhibit ON (claude activity within ${WINDOW_MIN}m)"
         fi
     else
         release
     fi
-    # Interruptible nap: USR1 (or any trapped signal) cuts it short so a fresh
-    # remote login is noticed immediately instead of after up to POLL_SEC.
-    sleep "$POLL_SEC" &
-    NAP_PID=$!
-    wait "$NAP_PID" 2>/dev/null || { kill "$NAP_PID"; wait "$NAP_PID"; } 2>/dev/null
+    sleep "$POLL_SEC"
 done

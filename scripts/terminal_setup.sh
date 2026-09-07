@@ -7,13 +7,15 @@
 #   ./terminal_setup.sh    # Run full terminal setup
 #
 # This script performs complete terminal setup including:
-#   - System packages (zsh, kitty, tmux, podman, etc.)
-#   - Shell configuration (starship, atuin, zsh plugins) — incl. a glyph-free
-#     starship-remote.toml prompt auto-selected by .zshrc over SSH/Mosh
+#   - System packages (zsh, kitty, podman, etc.)
+#   - Shell configuration (starship, atuin, zsh plugins)
 #   - Power tools (zoxide, eza, bat, fzf, ripgrep, fd-find, lazygit, yazi)
 #   - Dotfiles and configs (single enhanced profile)
 #   - Fonts (CaskaydiaCove Nerd Font)
-#   - Catppuccin themes for kitty, tmux, fzf
+#
+# Colours are NOT set here. Every palette in this stack — kitty's theme include,
+# the starship prompt, bat and fzf — comes from the desktop rice's generated
+# palette (assets/desktop/palette/, installed by scripts/desktop/15-palette.sh).
 #
 # Note: User-authored configs are SYMLINKED from assets/ into $HOME — the repo is
 # the source of truth and editing either side is the same file (zero drift).
@@ -124,7 +126,6 @@ run_core_setup() {
         kitty
         podman
         podman-compose
-        tmux
         gh
         gnupg2
         rclone
@@ -161,13 +162,24 @@ run_core_setup() {
     fi
 
     # 5. Install Node.js + Claude Code CLI
+    # Node stays (MCP servers and tooling want it). Claude Code itself comes
+    # from the NATIVE installer, not `npm install -g`: the global npm prefix
+    # here is /usr/lib/node_modules, so that install needed root and failed
+    # with EACCES on every run — which, under `set -e`, aborted this whole
+    # stage before it linked a single dotfile (found 2026-09-07). The native
+    # installer puts versions under ~/.local/share/claude and symlinks
+    # ~/.local/bin/claude, and Claude Code updates itself from there.
     log_section "Installing Claude Code CLI..."
     dnf_install nodejs
-    if command -v npm &>/dev/null; then
-        npm install -g @anthropic-ai/claude-code
-        log_success "Claude Code CLI installed"
+    if check_command claude; then
+        log_success "Claude Code CLI already installed ($(claude --version 2>/dev/null | head -1))"
     else
-        log_warn "npm not found, skipping Claude Code CLI"
+        log_info "Installing Claude Code via the native installer..."
+        if curl -fsSL https://claude.ai/install.sh | bash; then
+            log_success "Claude Code CLI installed"
+        else
+            log_warn "Claude Code install failed — install manually: https://claude.ai/install.sh"
+        fi
     fi
 
     # 6. Install Zsh Plugins
@@ -212,8 +224,6 @@ run_core_setup() {
     # actually saw was an untracked file (found 2026-09-07). Its colour palette
     # is generated: see assets/desktop/palette/gen-palette.py.
     link_file ".config/starship/starship.toml" ~/.config/starship.toml
-    # remote/mobile prompt (glyph-free) — activated by .zshrc when $SSH_CONNECTION set
-    link_file ".config/starship/starship-remote.toml" ~/.config/starship-remote.toml
 
     # atuin config (config.toml only — install receipt is machine state, not versioned)
     link_file ".config/atuin/config.toml" ~/.config/atuin/config.toml
@@ -224,17 +234,15 @@ run_core_setup() {
     # fish config (only conf.d — fish writes its own state into ~/.config/fish/)
     link_dir ".config/fish/conf.d" ~/.config/fish/conf.d
 
-    # kitty config (per-file — kitty never writes here; background.jpg is versioned)
-    link_file ".config/kitty/kitty.conf"            ~/.config/kitty/kitty.conf
-    link_file ".config/kitty/catppuccin-mocha.conf" ~/.config/kitty/catppuccin-mocha.conf
-    link_file ".config/kitty/startup.conf"          ~/.config/kitty/startup.conf
-    link_file ".config/kitty/background.jpg"        ~/.config/kitty/background.jpg
+    # kitty config (per-file — kitty never writes here). The colour theme it
+    # includes is a generated file installed by scripts/desktop/15-palette.sh,
+    # and the picture it draws is rendered by scripts/desktop/60-wallpaper.sh —
+    # neither belongs to this stage.
+    link_file ".config/kitty/kitty.conf"   ~/.config/kitty/kitty.conf
+    link_file ".config/kitty/startup.conf" ~/.config/kitty/startup.conf
 
     # Configure GNOME Kitty shortcut (Ctrl+Space)
     configure_gnome_kitty_shortcut
-
-    # tmux config
-    link_file ".config/tmux/tmux.conf" ~/.config/tmux/tmux.conf
 
     # 8. Install Nerd Font (downloaded on-demand; not vendored in git)
     log_section "Installing CaskaydiaCove Nerd Font..."
@@ -342,37 +350,25 @@ install_power_tools() {
         log_success "Yazi installed"
     fi
 
-    # 4. Install Tmux Plugin Manager (TPM)
-    log_section "Installing Tmux Plugin Manager..."
-    TPM_DIR="$HOME/.tmux/plugins/tpm"
-    if [[ -d "$TPM_DIR" ]]; then
-        log_success "TPM already installed"
-    else
-        log_info "Cloning TPM..."
-        git clone https://github.com/tmux-plugins/tpm "$TPM_DIR"
-        log_success "TPM installed"
-    fi
-
     # 5. Copy additional tool configs
     log_section "Installing tool configurations..."
 
     # Copy yazi config
-    restore_dir ".config/yazi" ~/.config/yazi
+    # Both are optional: neither tool's config is vendored (yazi runs on its
+    # defaults, bat follows the terminal's ANSI colours via BAT_THEME). `|| true`
+    # because restore_dir returns 1 when the asset is absent, and `set -e` then
+    # killed this stage before it linked anything (found 2026-09-07).
+    restore_dir ".config/yazi" ~/.config/yazi || true
 
     # Copy bat config
-    restore_dir ".config/bat" ~/.config/bat
+    restore_dir ".config/bat" ~/.config/bat || true
 
     # 6. Post-installation Setup
     log_section "Post-installation setup..."
 
-    # Install Catppuccin Mocha theme for bat and build cache
+    # bat follows the terminal's own ANSI colours (BAT_THEME=ansi in .zshrc),
+    # so there is no theme file to install — only the cache to build.
     if check_command bat; then
-        log_info "Installing Catppuccin Mocha theme for bat..."
-        ensure_dir ~/.config/bat/themes
-        curl -fsSL -o ~/.config/bat/themes/Catppuccin-mocha.tmTheme \
-            "https://raw.githubusercontent.com/catppuccin/bat/main/themes/Catppuccin%20Mocha.tmTheme"
-        log_success "Catppuccin Mocha theme installed for bat"
-        
         log_info "Building bat theme cache..."
         bat cache --build 2>/dev/null || true
         log_success "Bat cache built"
@@ -393,6 +389,5 @@ log_success "Terminal setup complete!"
 echo ""
 echo -e "${CYAN}${BOLD}Next Steps:${NC}"
 echo "1. Log out and log back in (for shell change to take effect)"
-echo "2. Install tmux plugins: Press Ctrl+a then I (capital i) inside tmux"
-echo "3. Enjoy your new terminal environment!"
+echo "2. Enjoy your new terminal environment!"
 echo ""

@@ -9,6 +9,7 @@
 # This script sets up:
 #   - ~/Projects/agent/ (clone from GitHub if not present)
 #   - Shell aliases integration (verifies ~/.zshrc sources shell-aliases.sh)
+#   - awake-guard: keeps the machine awake while a Claude Code session is in use
 #
 # Note: This script complements terminal_setup.sh and should be run AFTER it.
 #
@@ -95,6 +96,42 @@ configure_projects() {
 }
 
 # =============================================================================
+# Awake guard
+# =============================================================================
+# Plasma suspends after 15 min without LOCAL input, and reading an answer,
+# thinking between prompts, or driving a session from the phone through Remote
+# Control all look idle to it. The Claude inhibit hooks
+# (~/.claude/hooks/claude-inhibit-*.sh) cover a turn while it RUNS; this guard
+# covers the quiet time around it, watching transcript mtimes under
+# ~/.claude/projects. Lives here rather than in a remote-access stage because
+# what it protects is a Claude session, not a connection — the iPad/Tailscale
+# stack it was originally written for was retired 2026-09-07.
+
+setup_awake_guard() {
+    log_section "Setting up awake-guard..."
+
+    # link_file returns 1 on a missing asset — guard the chain so `set -e` can't
+    # abort mid-section, and don't enable a unit whose script failed to link.
+    if link_file ".local/bin/awake-guard.sh" ~/.local/bin/awake-guard.sh \
+        && link_file ".config/systemd/user/awake-guard.service" ~/.config/systemd/user/awake-guard.service; then
+        if systemctl --user daemon-reload 2>/dev/null \
+            && systemctl --user enable --now awake-guard.service 2>/dev/null; then
+            # An older version may already be running with the previous script.
+            systemctl --user restart awake-guard.service 2>/dev/null || true
+            if systemctl --user is-active --quiet awake-guard.service; then
+                log_success "awake-guard running (blocks sleep while Claude Code is in use)"
+            else
+                log_warn "awake-guard enabled but not active — check: systemctl --user status awake-guard"
+            fi
+        else
+            log_warn "systemd user manager unavailable — run later: systemctl --user enable --now awake-guard"
+        fi
+    else
+        log_warn "awake-guard assets missing — section skipped (incomplete checkout?)"
+    fi
+}
+
+# =============================================================================
 # Verification
 # =============================================================================
 
@@ -121,8 +158,10 @@ verify_installation() {
         ((ERRORS++))
     fi
 
-    if [[ ! -x "$AGENT_DIR/bootstrap-project.sh" ]]; then
-        log_error "bootstrap-project.sh not executable"
+    # The agent hub moved its scripts under bin/ — this check still pointed at
+    # the old top-level path and failed the whole stage (found 2026-09-07).
+    if [[ ! -x "$AGENT_DIR/bin/bootstrap-project.sh" ]]; then
+        log_error "bin/bootstrap-project.sh not executable"
         ((ERRORS++))
     fi
 
@@ -141,6 +180,7 @@ verify_installation() {
 
 setup_agent_hub
 configure_projects
+setup_awake_guard
 verify_installation
 
 log_success "Agent Hub setup complete!"

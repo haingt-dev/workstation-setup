@@ -38,7 +38,6 @@ INSTALL_EASYEFFECTS=true
 INSTALL_DNS=true
 INSTALL_DPI=true
 INSTALL_VSCODE=true
-INSTALL_REMOTE=true
 INSTALL_DISPLAY=true
 INSTALL_DESKTOP=true
 
@@ -73,7 +72,6 @@ show_help() {
     echo "  --vietnamese        Vietnamese input setup (fcitx5-unikey)"
 
     echo "  --vscode            Visual Studio Code setup"
-    echo "  --remote            Remote access setup (Tailscale, Mosh, SSH, WoL)"
     echo "  --display           NVIDIA DisplayPort EDID-loss fix (KDE never-blank + EDID)"
     echo "  --desktop           Desktop rice (generated palette + dashboard/quota widgets)"
 
@@ -107,7 +105,7 @@ show_help() {
 EXCLUSIVE_MODE=false
 for arg in "$@"; do
     case $arg in
-        --terminal|--agent|--qdrant|--godot|--apps|--easyeffects|--dns|--dpi|--onedrive|--vietnamese|--vscode|--remote|--display|--desktop)
+        --terminal|--agent|--qdrant|--godot|--apps|--easyeffects|--dns|--dpi|--onedrive|--vietnamese|--vscode|--display|--desktop)
             EXCLUSIVE_MODE=true
             break
             ;;
@@ -129,7 +127,6 @@ if $EXCLUSIVE_MODE; then
     INSTALL_VIETNAMESE=false
 
     INSTALL_VSCODE=false
-    INSTALL_REMOTE=false
     INSTALL_DISPLAY=false
     INSTALL_DESKTOP=false
 
@@ -151,8 +148,7 @@ for arg in "$@"; do
             INSTALL_ONEDRIVE=true
             INSTALL_VIETNAMESE=true
             INSTALL_VSCODE=true
-            INSTALL_REMOTE=true
-            INSTALL_DISPLAY=true
+                        INSTALL_DISPLAY=true
             INSTALL_DESKTOP=true
 
             ;;
@@ -167,7 +163,6 @@ for arg in "$@"; do
         --onedrive)           INSTALL_ONEDRIVE=true ;;
         --vietnamese)         INSTALL_VIETNAMESE=true ;;
         --vscode)             INSTALL_VSCODE=true ;;
-        --remote)             INSTALL_REMOTE=true ;;
         --display)            INSTALL_DISPLAY=true ;;
         --desktop)            INSTALL_DESKTOP=true ;;
 
@@ -181,7 +176,6 @@ for arg in "$@"; do
         --skip-dns)           INSTALL_DNS=false ;;
         --skip-dpi)           INSTALL_DPI=false ;;
         --skip-vscode)        INSTALL_VSCODE=false ;;
-        --skip-remote)        INSTALL_REMOTE=false ;;
         --skip-display)       INSTALL_DISPLAY=false ;;
         --skip-desktop)       INSTALL_DESKTOP=false ;;
 
@@ -303,14 +297,6 @@ elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping VS Code setup"
 fi
 
-# 11. Remote Access Setup
-if $INSTALL_REMOTE; then
-    log_section "Running Remote Access Setup..."
-    bash "$SCRIPTS_DIR/remote_access_setup.sh"
-elif ! $EXCLUSIVE_MODE; then
-    log_warn "Skipping remote access setup"
-fi
-
 # 12. Display / NVIDIA DisplayPort EDID-loss mitigation
 if $INSTALL_DISPLAY; then
     log_section "Running Display Setup..."
@@ -360,6 +346,5 @@ if $INSTALL_TERMINAL; then
     echo "  - lg  → lazygit"
     echo "  - y   → yazi (file manager)"
     echo ""
-    log_info "Install tmux plugins: Press Ctrl+a then I inside tmux"
 fi
 

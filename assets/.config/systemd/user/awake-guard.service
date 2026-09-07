@@ -1,5 +1,5 @@
 [Unit]
-Description=Block auto-suspend while remote (mosh/SSH) sessions are active
+Description=Block auto-suspend while a Claude Code session is in use
 
 [Service]
 Type=exec
