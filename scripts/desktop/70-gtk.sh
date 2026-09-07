@@ -3,8 +3,9 @@
 # 70-gtk.sh - GTK3/GTK4 + Flatpak coherence
 # =============================================================================
 # GTK4/libadwaita: NOTHING to theme manually — kde-gtk-config's kded module
-# regenerates ~/.config/gtk-4.0/colors.css from the LIVE KDE color scheme, so
-# after 20-theme.sh those apps are already Mocha. This script only:
+# regenerates ~/.config/gtk-4.0/colors.css from the LIVE KDE colour scheme, so
+# after 15-palette.sh + 20-theme.sh those apps already carry the generated
+# palette for free. This script only:
 #   - GTK3 -> adw-gtk3-dark (maintained; catppuccin/gtk is archived since 2024)
 #   - restarts kded6 so both bridges regenerate NOW instead of next login
 #   - Flatpak overrides so sandboxed apps see themes/cursors/colors
@@ -44,7 +45,7 @@ if check_command flatpak; then
         --filesystem=xdg-data/icons:ro \
         --filesystem="$HOME/.local/share/color-schemes:ro" \
         --env=GTK_THEME=adw-gtk3-dark \
-        --env=XCURSOR_THEME=catppuccin-mocha-mauve-cursors \
+        --env=XCURSOR_THEME=breeze_cursors \
         --env=XCURSOR_SIZE=24
     log_success "Flatpak user overrides set (theme/cursor visible in sandboxes)"
 

@@ -24,7 +24,8 @@
 #   normal    -> user preset "Dock Slim"  = shipped Dock + margin/padding off
 #                (the margins shrank the auto-fit clock — see 20-theme.sh)
 #   maximized -> user preset "Dock Solid" = Dock Slim + opaque Mocha base
-#                (#1e1e2e custom hex, alpha 1, radius off, blur off) so the
+#                (custom hex = the palette's surfaceContainer, which is what
+#                Plasma paints window bodies with; alpha 1, radius off, blur off) so the
 #                dock visually merges with maximized windows instead of
 #                showing the wallpaper next to them.
 #   Custom hex instead of "follow system colors" on purpose: that follow
@@ -58,7 +59,14 @@ BASE_PRESET="$HOME/.local/share/plasma/plasmoids/$PC_ID/contents/ui/presets/Dock
 USER_PRESETS="$HOME/.config/panel-colorizer/presets"
 SLIM_DIR="$USER_PRESETS/Dock Slim"
 SOLID_DIR="$USER_PRESETS/Dock Solid"
-SOLID_HEX="#1e1e2e"   # Catppuccin Mocha base — matches themed window bodies
+# The solid dock colour must equal the window body colour of the live scheme,
+# or a maximised window and the dock read as two different surfaces (the whole
+# point of the maximised preset). Taken from the generated palette rather than
+# typed, so it follows a palette change automatically.
+SOLID_HEX="$(python3 -c '
+import json, sys
+print(json.load(open(sys.argv[1]))["tokens"]["surfaceContainer"])' \
+    "$PROJECT_ROOT/assets/desktop/palette/tokens.json")"
 
 [[ -d "$BASE_PRESET" ]] || { log_error "Preset missing: $BASE_PRESET (Panel Colorizer not installed?)"; exit 1; }
 

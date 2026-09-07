@@ -1,0 +1,22 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Id": "dev.haint.dashboard",
+        "Name": "Dashboard",
+        "Description": "Material 3 desktop dashboard — clock, CPU/RAM/GPU/disk, weather",
+        "Icon": "utilities-system-monitor",
+        "Authors": [
+            {
+                "Name": "Hải Nguyễn"
+            }
+        ],
+        "Version": "1.0.0",
+        "License": "MIT",
+        "Category": "System Information",
+        "EnabledByDefault": true,
+        "FormFactors": [
+            "desktop"
+        ]
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

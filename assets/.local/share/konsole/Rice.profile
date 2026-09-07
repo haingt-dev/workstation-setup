@@ -1,10 +1,10 @@
 [Appearance]
-ColorScheme=Catppuccin-Mocha
+ColorScheme=FirewatchDusk
 Font=JetBrainsMono Nerd Font,11,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
 
 [General]
 Command=/usr/bin/zsh
-Name=Catppuccin
+Name=Rice
 Parent=FALLBACK/
 
 [Scrolling]

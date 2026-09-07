@@ -3,8 +3,11 @@
 # 30-fonts.sh - UI fonts (Inter) + rendering
 # =============================================================================
 # Inter for UI, JetBrainsMono Nerd Font for fixed-width (already installed by
-# terminal_setup). Font string format is Qt's 16-field QFont::toString(); the
-# weight field (5th) is 400=regular / 600=semibold.
+# terminal_setup), Manrope for the dashboard's display figures (used from QML,
+# not a KDE font role — this stage only checks it is actually installed, since
+# a missing family fails silently as a fallback in Qt).
+# Font string format is Qt's 16-field QFont::toString(); the weight field (5th)
+# is 400=regular / 600=semibold.
 # Rendering: explicit subpixel RGB + slight hinting for the Gigabyte M27Q.
 # =============================================================================
 
@@ -32,5 +35,13 @@ kset kdeglobals WM      activeFont           "$UI_FONT,10,-1,5,600,0,0,0,0,0,0,0
 kset kdeglobals General XftAntialias true bool
 kset kdeglobals General XftHintStyle hintslight
 kset kdeglobals General XftSubPixel  rgb
+
+# Manrope is referenced by name from the dashboard plasmoid's QML. Qt falls back
+# silently, so a missing family would just look "slightly off" forever.
+if fc-list | grep -qi "manrope"; then
+    log_success "OK  Manrope present (dashboard display font)"
+else
+    log_warn "Manrope missing — dashboard numbers fall back to Inter (dnf install manrope-fonts)"
+fi
 
 log_success "Fonts set (full effect after re-login; running apps keep old fonts)"

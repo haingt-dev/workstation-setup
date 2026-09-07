@@ -1,14 +1,17 @@
 #!/bin/bash
 # =============================================================================
-# desktop_setup.sh - Desktop rice: Catppuccin Mocha + video wallpaper
+# desktop_setup.sh - Desktop rice: one derived palette + our own widgets
 # =============================================================================
 #
 # Full KDE Plasma 6 customization for Nobara 44 (decided with Hải 2026-08-18):
-#   - Catppuccin Mocha / Mauve everywhere (anchor: terminal was already Mocha)
-#   - Smart Video Wallpaper Reborn, PauseMode=MaximizedOrFullScreen
+#   - One palette, DERIVED from the wallpaper (assets/desktop/palette/) and
+#     applied to Plasma, Konsole, kitty, GTK and our own widgets
+#   - A still wallpaper — zero GPU, and the source of that palette
+#   - Our own dashboard widget (clock + stats + weather) and a Claude quota
+#     gauge in the dock, both silent while a game is fullscreen
 #     (hard requirement: zero perf cost while gaming)
-#   - Floating centered dock panel, Breeze decoration (native rounded corners),
-#     Inter UI font, blur, Night Light, GTK/Flatpak coherence
+#   - Floating dock panel, Breeze decoration (native rounded corners),
+#     Inter UI font, blur, GTK/Flatpak coherence
 #
 # Design notes live at the top of each stage script in scripts/desktop/.
 # All KDE state is applied via kwriteconfig6 / plasma-apply-* / the PlasmaShell
@@ -17,8 +20,8 @@
 #
 # Usage:
 #   ./setup.sh --desktop                 # all stages
-#   bash scripts/desktop/60-wallpaper.sh # any stage standalone (e.g. after
-#                                        # adding videos to ~/Videos/wallpapers)
+#   bash scripts/desktop/60-wallpaper.sh # any stage standalone
+#   bash scripts/desktop/gen-palette.sh  # regenerate colours (dev-time only)
 # =============================================================================
 
 set -e
@@ -28,7 +31,7 @@ source "$SCRIPT_DIR/common.sh"
 
 check_not_root
 
-log_section "Desktop Rice (Catppuccin Mocha + video wallpaper)"
+log_section "Desktop Rice (derived palette + dashboard/quota widgets)"
 
 # Applicability guard: everything here is Plasma-specific and most of it needs
 # a live session bus (plasma-apply-*, evaluateScript). recover.sh may run this
@@ -41,12 +44,14 @@ fi
 
 STAGES=(
     10-packages.sh
+    15-palette.sh
     20-theme.sh
     30-fonts.sh
     40-kwin.sh
     50-panel.sh
     55-widgets.sh
     57-panel-style.sh
+    58-claude-quota.sh
     60-wallpaper.sh
     70-gtk.sh
     80-apps.sh
@@ -58,6 +63,6 @@ for stage in "${STAGES[@]}"; do
 done
 
 log_section "Desktop Rice complete"
-log_info "Live already: colors, panel, blur, wallpaper. Needs re-login: fonts"
-log_info "everywhere, splash screen, plasmalogin wallpaper, HW-decode env vars."
+log_info "Live already: colours, panel, wallpaper, widgets. Needs re-login: fonts"
+log_info "everywhere, splash screen, plasmalogin greeter wallpaper."
 log_info "If the panel/wallpaper looks stale:  kill -TERM \$(pgrep -x plasmashell)"

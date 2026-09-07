@@ -1,0 +1,23 @@
+# Rice palette input — the ONE place a colour decision is made.
+#
+# Change something here, run `bash scripts/desktop/gen-palette.sh`, review the
+# diff, commit. Every generated artefact next to this file (KDE colour scheme,
+# Konsole/kitty themes, QML tokens, shell tokens) is derived from these values
+# and is what the setup stages actually install — nothing recomputes at runtime.
+
+name         = "FirewatchDusk"        # KDE colour-scheme name (no spaces)
+display_name = "Firewatch Dusk"
+wallpaper    = "firewatch-dusk.jpg"   # in ../wallpapers/, used for the desktop + lock screen
+
+# Source colour for the Material You scheme.
+#   auto  -> quantise the wallpaper and score the most usable colour
+#   #hex  -> force it (what we do here: the auto pick was the forest green,
+#            but the picture's SUBJECT is the orange sun — Hải's call 2026-09-07)
+source_color = "#e8931c"
+
+variant       = "tonal_spot"   # tonal_spot | expressive | fidelity | content | vibrant | neutral | monochrome
+contrast      = 0.0            # -1.0 .. 1.0, Material contrast level
+dark          = true
+
+# Card translucency used by our own plasmoids (0 = invisible, 1 = opaque).
+card_alpha    = 0.82

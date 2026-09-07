@@ -2,10 +2,16 @@
 # Phase 8: Restore KDE desktop rice (configs + locally-installed themes)
 #
 # Restores what daily-bundle.sh Section 9 captured: ~/.config KDE rc files and
-# the ~/.local/share theme artefacts (Catppuccin color-schemes/L&F/konsole +
-# cursors). Config files alone don't wake plasmashell — after first graphical
-# login the user must run `./setup.sh --desktop`, which re-applies everything
-# live and re-verifies (it's idempotent over these restored files).
+# the ~/.local/share theme artefacts. Config files alone don't wake plasmashell
+# — after first graphical login the user must run `./setup.sh --desktop`, which
+# re-applies everything live and re-verifies (it's idempotent over these
+# restored files).
+#
+# Since round 6 the REPO is authoritative for everything that has a colour or a
+# pixel in it: the palette, the wallpaper and our own plasmoids are checked in
+# under assets/desktop/ and reinstalled by the setup stages. The bundle copy is
+# a convenience, not the source — if the two disagree, re-running the stages
+# wins, and that is deliberate.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -56,9 +62,12 @@ shopt -u nullglob
 
 # ── Reference copies (not auto-applied) ──────────────────────
 [[ -f "$KDE_SRC/applied-state.txt" ]] && log_info "Applied-state snapshot: $KDE_SRC/applied-state.txt"
+# Rounds 1-5 kept wallpaper VIDEOS outside the bundle and needed a re-download
+# step here. Round 6 uses a still image that lives in the repo, so there is
+# nothing to fetch — the note is kept only for bundles old enough to have it.
 [[ -f "$KDE_SRC/wallpaper-videos.txt" ]] && {
-    log_warn "Wallpaper videos are NOT in the bundle — re-download per assets/desktop/wallpapers.manifest:"
-    sed 's/^/    /' "$KDE_SRC/wallpaper-videos.txt"
+    log_info "This bundle predates round 6 (video wallpaper). The current rice uses"
+    log_info "assets/desktop/wallpapers/ from the repo — nothing to re-download."
 }
 
 log_success "KDE rice files restored"

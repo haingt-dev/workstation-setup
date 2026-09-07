@@ -1,0 +1,15 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Id": "dev.haint.claudequota",
+        "Name": "Claude Code Quota",
+        "Description": "Quota phiên 5h và tuần của Claude Code subscription",
+        "Icon": "speedometer",
+        "Authors": [ { "Name": "Hải Nguyễn" } ],
+        "Version": "1.0.0",
+        "License": "MIT",
+        "Category": "System Information",
+        "EnabledByDefault": true
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

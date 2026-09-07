@@ -1,23 +1,29 @@
 #!/bin/bash
 # =============================================================================
-# 20-theme.sh - Catppuccin Mocha (Mauve) theme core
+# 20-theme.sh - Theme core: global theme, accent, Plasma style, decoration
 # =============================================================================
+# Round 6 removed the Catppuccin dependency. The colours now come from
+# 15-palette.sh (generated from the wallpaper — see assets/desktop/palette/),
+# so this stage's job is only to make Plasma *follow* that scheme everywhere
+# instead of painting its own.
+#
 # Order is LOAD-BEARING:
-#   1. catppuccin/kde installer (fetches cursors too — must exist BEFORE the
-#      look-and-feel apply references them)
-#   2. plasma-apply-lookandfeel (NO --resetLayout: the package ships no
-#      contents/layouts/, so the Nobara panel + applets survive)
-#   3-4. color scheme + accent (belt and braces over the L&F defaults)
-#   5. Plasma style -> `default`. MANDATORY: the `Nobara` and `breeze-dark`
-#      desktop themes ship their own `colors` file which OVERRIDES the color
-#      scheme; `default` follows it.
-#   6. Window decoration -> back to Breeze, OVERRIDING the Aurorae theme the
-#      L&F just set. Why: KWin >=6.5 native rounded corners need a
-#      KDecoration3 decoration (Breeze has it, Aurorae does not), and Breeze
-#      picks up the Catppuccin [WM] colors anyway. Group name is still
-#      `org.kde.kdecoration2` on Plasma 6.7 — do not "fix" it.
-#   7. cursors / icons / splash (L&F upstream writes [KSplash] at top level —
-#      a bug — so the splash must be set explicitly).
+#   1. Look-and-feel FIRST. Applying an L&F rewrites the colour scheme, the
+#      cursor and the splash, so anything set before it is lost. Breeze Dark is
+#      the right base precisely because it carries no opinion of its own.
+#   2. Re-assert our colour scheme (step 1 just clobbered it).
+#   3. Accent from the palette's primary — never wallpaper-derived: Plasma's
+#      own extraction picks a different colour than our generator does, and two
+#      accents in one desktop is exactly the "tông lệch" this round removed.
+#   4. Plasma style -> `rice-glass`, generated from `default`. MANDATORY that
+#      it derives from `default`: the `Nobara` and `breeze-dark` desktop themes
+#      ship a `colors` file that OVERRIDES the colour scheme. Three SVGs are
+#      overridden (cards, panel margins, dialog glass); everything else falls
+#      back to `default`, so Plasma updates keep working.
+#   5. Window decoration -> Breeze. KWin >=6.5 native rounded corners need a
+#      KDecoration3 decoration (Breeze has it, Aurorae themes do not). The
+#      config group is still `org.kde.kdecoration2` on Plasma 6.7 — not a typo.
+#   6. Cursors / icons / splash.
 # =============================================================================
 
 set -e
@@ -25,160 +31,177 @@ DESKTOP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$DESKTOP_DIR/../common.sh"
 source "$DESKTOP_DIR/lib.sh"
 
-log_section "Desktop 20: Catppuccin Mocha theme core"
+log_section "Desktop 20: theme core"
 
-CATPPUCCIN_CACHE="$HOME/.cache/workstation-setup/catppuccin-kde"
-LNF_NAME="Catppuccin-Mocha-Mauve"
-SCHEME_NAME="CatppuccinMochaMauve"
-CURSOR_NAME="catppuccin-mocha-mauve-cursors"
-ACCENT_RGB="203,166,247"   # Mocha Mauve #cba6f7
+PALETTE_DIR="$PROJECT_ROOT/assets/desktop/palette"
+SCHEME_NAME="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["name"])' "$PALETTE_DIR/tokens.json")"
+ACCENT_RGB="$(python3 -c '
+import json, sys
+h = json.load(open(sys.argv[1]))["tokens"]["primary"].lstrip("#")
+print("%d,%d,%d" % tuple(int(h[i:i+2], 16) for i in (0, 2, 4)))' "$PALETTE_DIR/tokens.json")"
 
-# --- 1. Fetch + run the catppuccin/kde installer (idempotent upstream) --------
-if [[ -d "$CATPPUCCIN_CACHE/.git" ]]; then
-    git -C "$CATPPUCCIN_CACHE" pull --ff-only --quiet || log_warn "catppuccin/kde pull failed — using cached copy"
-else
-    ensure_dir "$(dirname "$CATPPUCCIN_CACHE")"
-    git clone --depth=1 https://github.com/catppuccin/kde "$CATPPUCCIN_CACHE"
-fi
+LNF_NAME="org.kde.breezedark.desktop"
+CURSOR_NAME="breeze_cursors"
+STYLE_NAME="rice-glass"
+FOLDER_COLOR="paleorange"   # closest Papirus folder colour to the palette's primary
 
-# install.sh -q 1 4 1 = quiet, Mocha, Mauve accent, Modern window decorations.
-# Installs to ~/.local/share/{color-schemes,plasma/look-and-feel,aurorae/themes}
-# and fetches the matching cursor release into ~/.local/share/icons/.
-if [[ -d "$HOME/.local/share/plasma/look-and-feel/$LNF_NAME" ]] \
-   && [[ -f "$HOME/.local/share/color-schemes/$SCHEME_NAME.colors" ]] \
-   && [[ -d "$HOME/.local/share/icons/$CURSOR_NAME" ]]; then
-    log_success "Catppuccin artefacts already installed (re-run installer with FORCE_CATPPUCCIN=1)"
-    [[ "${FORCE_CATPPUCCIN:-0}" == "1" ]] && (cd "$CATPPUCCIN_CACHE" && ./install.sh -q 1 4 1)
-else
-    (cd "$CATPPUCCIN_CACHE" && ./install.sh -q 1 4 1)
-    log_success "catppuccin/kde installed (Mocha / Mauve / Modern)"
-fi
-
-# --- 2. Global theme (Look and Feel) -----------------------------------------
+# --- 1. Global theme (Look and Feel) ------------------------------------------
 CUR_LNF="$(kreadconfig6 --file kdeglobals --group KDE --key LookAndFeelPackage 2>/dev/null || true)"
 if [[ "$CUR_LNF" == "$LNF_NAME" ]]; then
     log_success "OK  look-and-feel already $LNF_NAME"
 else
+    # No --resetLayout: that would rebuild the panel and drop every applet.
     plasma-apply-lookandfeel --apply "$LNF_NAME"
-    log_success "SET look-and-feel -> $LNF_NAME"
+    log_success "SET look-and-feel '$CUR_LNF' -> $LNF_NAME"
 fi
 
-# --- 3. Color scheme ----------------------------------------------------------
+# --- 2. Re-assert the generated colour scheme ---------------------------------
 CUR_SCHEME="$(kreadconfig6 --file kdeglobals --group General --key ColorScheme 2>/dev/null || true)"
 if [[ "$CUR_SCHEME" == "$SCHEME_NAME" ]]; then
-    log_success "OK  color scheme already $SCHEME_NAME"
+    log_success "OK  colour scheme already $SCHEME_NAME"
 else
-    plasma-apply-colorscheme "$SCHEME_NAME"
-    log_success "SET color scheme -> $SCHEME_NAME"
+    plasma-apply-colorscheme "$SCHEME_NAME" >/dev/null
+    log_success "SET colour scheme '$CUR_SCHEME' -> $SCHEME_NAME (look-and-feel had reset it)"
 fi
 
-# --- 4. Accent (fixed Mauve, never wallpaper-derived) --------------------------
+# --- 3. Accent ----------------------------------------------------------------
 kset kdeglobals General accentColorFromWallpaper false bool
 kset kdeglobals General AccentColor "$ACCENT_RGB"
 
-# --- 5. Plasma style -> catppuccin-glass (derived from `default`) --------------
-# Why derived: `Nobara`/`breeze-dark` ship a `colors` file that overrides the
-# color scheme; `default` follows the scheme but renders widget cards at
-# opacity 0.9 (near-solid). Our theme = default + ONE overridden SVG
-# (widgets/translucentbackground.svg) with the glass opacity below; every
-# other asset falls back to `default`, and no `colors` file means the Mocha
-# scheme still drives all colors. Generated (not vendored): survives Plasma
-# updates by re-running this script.
-GLASS_OPACITY=0.40   # main card opacity — Hải's pick 2026-08-18 (show off the wallpaper)
-GLASS_FRAME=0.8      # frame/edge opacity, raised from 0.6 to compensate contrast
-GLASS_DIR="$HOME/.local/share/plasma/desktoptheme/catppuccin-glass"
-GLASS_SVG="$GLASS_DIR/widgets/translucentbackground.svg"
-GLASS_SRC="/usr/share/plasma/desktoptheme/default/widgets/translucentbackground.svgz"
+# --- 4. Plasma style: rice-glass ----------------------------------------------
+# A derived theme: metadata + three overridden SVGs, everything else inherited
+# from `default` at runtime. Generated rather than vendored so it re-renders
+# against whatever `default` ships after a Plasma update.
+GLASS_CARD=0.40      # widget cards — Hải's pick, round 3 (wallpaper shows through)
+GLASS_FRAME=0.8      # card frame/edge, raised to keep the edge readable at 0.40
+GLASS_DIALOG=0.60    # popups (calendar, tray, notifications) — round 6
+STYLE_DIR="$HOME/.local/share/plasma/desktoptheme/$STYLE_NAME"
+CARD_SVG="$STYLE_DIR/widgets/translucentbackground.svg"
+PANEL_SVG="$STYLE_DIR/widgets/panel-background.svg"
+DIALOG_SVG="$STYLE_DIR/translucent/dialogs/background.svg"
 
-if [[ -f "$GLASS_SVG" ]] && grep -q "opacity:$GLASS_OPACITY" "$GLASS_SVG"; then
-    log_success "OK  catppuccin-glass theme present (opacity $GLASS_OPACITY)"
-else
-    ensure_dir "$GLASS_DIR/widgets"
-    cat > "$GLASS_DIR/metadata.json" <<EOF
+ensure_dir "$STYLE_DIR/widgets"
+ensure_dir "$STYLE_DIR/translucent/dialogs"
+
+if [[ ! -f "$STYLE_DIR/metadata.json" ]]; then
+    cat > "$STYLE_DIR/metadata.json" <<EOF
 {
     "KPlugin": {
-        "Id": "catppuccin-glass",
-        "Name": "Catppuccin Glass",
-        "Description": "default theme + ${GLASS_OPACITY} glass widget cards (generated by workstation-setup)",
+        "Id": "$STYLE_NAME",
+        "Name": "Rice Glass",
+        "Description": "default theme + translucent cards, dialogs and 1px panel margins (generated by workstation-setup)",
         "License": "LGPL-2.1+"
     },
     "X-Plasma-API": "5.0"
 }
 EOF
-    # 0.9 = main 9-patch background layers; 0.6 = frame layer (see plan notes)
-    zcat "$GLASS_SRC" | sed -e "s/opacity:0\.9/opacity:$GLASS_OPACITY/g" \
-                            -e "s/opacity:0\.6/opacity:$GLASS_FRAME/g" > "$GLASS_SVG"
-    rm -rf "$HOME/.cache/plasma-svgelements"* "$HOME/.cache/plasma_theme_"* 2>/dev/null || true
-    log_success "Generated catppuccin-glass theme (glass $GLASS_OPACITY, frame $GLASS_FRAME)"
+    log_success "Generated $STYLE_NAME metadata"
 fi
 
-# Second override: widgets/panel-background.svg with margin hints collapsed to
-# 1px. The default theme's 4px (+8px thick) margins inset panel CONTENT on
-# every side — on the 42px vertical dock they ate ~16px, shrinking icons and
-# the auto-fit clock (Hải 2026-08-19: "width hơi lớn dù icon nhỏ"). Shadow
-# hints are kept (they don't affect content size). Visuals come from Panel
-# Colorizer anyway; the native bg is translucent behind it.
-PANEL_SVG="$GLASS_DIR/widgets/panel-background.svg"
-PANEL_SRC="/usr/share/plasma/desktoptheme/default/widgets/panel-background.svgz"
+THEME_CACHE_DIRTY=0
+
+# 4a. Widget cards
+if [[ -f "$CARD_SVG" ]] && grep -q "opacity:$GLASS_CARD" "$CARD_SVG"; then
+    log_success "OK  card glass present (opacity $GLASS_CARD)"
+else
+    zcat /usr/share/plasma/desktoptheme/default/widgets/translucentbackground.svgz \
+        | sed -e "s/opacity:0\.9/opacity:$GLASS_CARD/g" \
+              -e "s/opacity:0\.6/opacity:$GLASS_FRAME/g" > "$CARD_SVG"
+    THEME_CACHE_DIRTY=1
+    log_success "Generated card glass (card $GLASS_CARD, frame $GLASS_FRAME)"
+fi
+
+# 4b. Dialog/popup glass. The default translucent dialog paints at 0.85, which
+# on a dark scheme reads as a solid black slab — the reason Hải called the dock
+# calendar popup ugly. Only the fill layers are touched; the 0.5 shadow layers
+# stay, or the popup loses its edge.
+if [[ -f "$DIALOG_SVG" ]] && grep -q "opacity:$GLASS_DIALOG" "$DIALOG_SVG"; then
+    log_success "OK  dialog glass present (opacity $GLASS_DIALOG)"
+else
+    zcat /usr/share/plasma/desktoptheme/default/translucent/dialogs/background.svgz \
+        | sed -e "s/opacity:0\.85/opacity:$GLASS_DIALOG/g" > "$DIALOG_SVG"
+    THEME_CACHE_DIRTY=1
+    log_success "Generated dialog glass (opacity $GLASS_DIALOG)"
+fi
+
+# 4c. Panel content margins -> 1px. The default theme insets panel CONTENT by
+# 4px (+8px "thick") on every side; on the 42px vertical dock that ate ~16px of
+# width and shrank the auto-fit clock (found live 2026-08-19). Shadow hints are
+# left alone — they don't affect content size.
 if [[ -f "$PANEL_SVG" ]] && python3 - "$PANEL_SVG" <<'EOF'
-import re,sys
-s=open(sys.argv[1]).read()
-ok=all(m.group(0).count('width="1"') for m in re.finditer(r'<rect[^>]*id="[^"]*hint-[a-z]+-margin"[^>]*>', s)
-       if 'shadow' not in m.group(0))
+import re, sys
+s = open(sys.argv[1]).read()
+ok = all(m.group(0).count('width="1"')
+         for m in re.finditer(r'<rect[^>]*id="[^"]*hint-[a-z]+-margin"[^>]*>', s)
+         if 'shadow' not in m.group(0))
 sys.exit(0 if ok else 1)
 EOF
 then
     log_success "OK  panel-background override present (1px content margins)"
 else
-    zcat "$PANEL_SRC" | python3 -c "
-import sys,re
-s=sys.stdin.read()
+    zcat /usr/share/plasma/desktoptheme/default/widgets/panel-background.svgz | python3 -c "
+import sys, re
+s = sys.stdin.read()
 def shrink(m):
-    r=m.group(0)
-    rid=re.search(r'id=\"([^\"]+)\"', r)
+    r = m.group(0)
+    rid = re.search(r'id=\"([^\"]+)\"', r)
     if rid and 'margin' in rid.group(1) and 'shadow' not in rid.group(1):
-        r=re.sub(r'width=\"[^\"]+\"','width=\"1\"',r)
-        r=re.sub(r'height=\"[^\"]+\"','height=\"1\"',r)
+        r = re.sub(r'width=\"[^\"]+\"', 'width=\"1\"', r)
+        r = re.sub(r'height=\"[^\"]+\"', 'height=\"1\"', r)
     return r
 sys.stdout.write(re.sub(r'<rect[^>]*>', shrink, s))
 " > "$PANEL_SVG"
+    THEME_CACHE_DIRTY=1
+    log_success "Generated panel-background override (1px content margins)"
+fi
+
+if [[ "$THEME_CACHE_DIRTY" == "1" ]]; then
+    # Plasma caches rendered SVG elements; without this the old pixels survive.
     rm -rf "$HOME/.cache/plasma-svgelements"* "$HOME/.cache/plasma_theme_"* 2>/dev/null || true
-    log_success "Generated panel-background override (1px content margins) — needs plasmashell restart"
+    log_info "SVG cache cleared — a plasmashell restart shows the new theme"
 fi
 
 CUR_STYLE="$(kreadconfig6 --file plasmarc --group Theme --key name 2>/dev/null || true)"
-if [[ "$CUR_STYLE" == "catppuccin-glass" ]]; then
-    log_success "OK  Plasma style already 'catppuccin-glass'"
+if [[ "$CUR_STYLE" == "$STYLE_NAME" ]]; then
+    log_success "OK  Plasma style already $STYLE_NAME"
 else
-    plasma-apply-desktoptheme catppuccin-glass
-    log_success "SET Plasma style '$CUR_STYLE' -> 'catppuccin-glass'"
+    plasma-apply-desktoptheme "$STYLE_NAME"
+    log_success "SET Plasma style '$CUR_STYLE' -> $STYLE_NAME"
 fi
 
-# --- 6. Window decoration -> Breeze (AFTER the L&F, so this wins) --------------
+# Retire the round 1-5 derived theme so the style list stays honest.
+if [[ -d "$HOME/.local/share/plasma/desktoptheme/catppuccin-glass" ]]; then
+    rm -rf "$HOME/.local/share/plasma/desktoptheme/catppuccin-glass"
+    log_success "Removed superseded catppuccin-glass Plasma style"
+fi
+
+# --- 5. Window decoration ------------------------------------------------------
 kset kwinrc org.kde.kdecoration2 library org.kde.breeze
 kset kwinrc org.kde.kdecoration2 theme Breeze
 kset kwinrc org.kde.kdecoration2 BorderSize None
 kset kwinrc org.kde.kdecoration2 BorderSizeAuto false bool
 
-# --- 7. Cursors / icons / splash ----------------------------------------------
+# --- 6. Cursors / icons / splash ----------------------------------------------
 CUR_CURSOR="$(kreadconfig6 --file kcminputrc --group Mouse --key cursorTheme 2>/dev/null || true)"
 if [[ "$CUR_CURSOR" == "$CURSOR_NAME" ]]; then
     log_success "OK  cursor theme already $CURSOR_NAME"
 else
     plasma-apply-cursortheme "$CURSOR_NAME" --size 24
-    log_success "SET cursor theme -> $CURSOR_NAME"
+    log_success "SET cursor theme '$CUR_CURSOR' -> $CURSOR_NAME"
 fi
 
 kset kdeglobals Icons Theme Papirus-Dark
 if check_command papirus-folders && sudo -n true 2>/dev/null; then
-    # -l only prints the current-color marker (" > violet") when run as root
+    # -l only marks the active colour with '>' when run as root
     CUR_FOLDERS="$(sudo papirus-folders -l --theme Papirus-Dark 2>/dev/null | grep '>' | tr -d ' >' || true)"
-    if [[ "$CUR_FOLDERS" == "violet" ]]; then
-        log_success "OK  Papirus folders already violet"
+    if [[ "$CUR_FOLDERS" == "$FOLDER_COLOR" ]]; then
+        log_success "OK  Papirus folders already $FOLDER_COLOR"
     else
-        sudo papirus-folders -C violet --theme Papirus-Dark
-        log_success "SET Papirus folders -> violet"
+        sudo papirus-folders -C "$FOLDER_COLOR" --theme Papirus-Dark
+        log_success "SET Papirus folders '$CUR_FOLDERS' -> $FOLDER_COLOR"
     fi
+else
+    log_info "papirus-folders needs sudo — folder colour left as is"
 fi
 
 kset ksplashrc KSplash Engine KSplashQML

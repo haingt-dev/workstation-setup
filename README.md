@@ -32,10 +32,11 @@ Automated workstation setup for Nobara 42 / Fedora — terminal, dev tools, apps
 - **Display (NVIDIA)**: DisplayPort EDID-loss mitigation — monitor-OSD reminder + known-good EDID staged + suspend/resume auto-recovery hook (KDE never-blank layer retired 2026-08-18: normal screen-off restored; occasional 640x480 hit is fixed by power-cycling the monitor)
 
 ### Desktop Rice (KDE Plasma)
-- **Theme**: Catppuccin Mocha (Mauve accent) everywhere — global theme, Breeze decoration with native rounded corners, Papirus icons, Inter UI font, custom `catppuccin-glass` Plasma style (generated, 40%-opacity glass widget cards)
-- **Video wallpaper**: Smart Video Wallpaper Reborn with `PauseMode=MaximizedOrFullScreen` — zero perf cost while gaming (HW decode via NVDEC; H.264/VP9 only, never AV1)
-- **Sci-fi HUD**: Reactor HUD (patched: portable scriptPath + hybrid glass/shadow contrast), Kurve CAVA audio visualizer (accent bars), glassy desktop clock; panel clock = time-only
-- **Panel**: slim 42px vertical dock styled by Panel Colorizer — theme panel-background margins collapsed so icons/clock get the full width; preset autoload switches "Dock Slim" (translucent) ↔ "Dock Solid" (opaque Mocha, merges with maximized windows)
+- **One derived palette**: a single source colour in `assets/desktop/palette/palette.toml` is expanded by `gen-palette.py` (Material You) into the KDE colour scheme, Konsole and kitty themes, QML tokens for our widgets and shell tokens for the Claude Code statusline. Generated once and committed — setup only installs the files, so the desktop cannot drift between runs. Change the look: edit the toml, run `bash scripts/desktop/gen-palette.sh`, review the diff, commit.
+- **Static wallpaper**: the picture the palette came from (`assets/desktop/wallpapers/`), installed as a proper wallpaper package; a blurred+darkened variant is generated for the lock screen and the plasmalogin greeter. Zero GPU, and none of the video plugin's failure modes.
+- **Own widgets**: `dev.haint.dashboard` on the desktop (clock + date, CPU/RAM/GPU/Disk cards, HCMC weather from Open-Meteo) and `dev.haint.claudequota` in the dock (ring gauge of the worst Claude Code rate-limit window, popup with every window and its reset time — including the per-model weekly limit that nothing else exposes). Both read the generated tokens, so they match everything else by construction.
+- **Zero cost while gaming** (hard rule): both widgets share `GameGuard.qml`, which watches `TasksModel`/`IsFullScreen` plus `gamemoded -s` (for borderless-windowed games) and stops every timer, sensor subscription and helper process while a game is on screen.
+- **Panel**: slim 42px vertical dock styled by Panel Colorizer — theme panel-background margins collapsed so icons/clock get the full width; preset autoload switches "Dock Slim" (translucent) ↔ "Dock Solid" (opaque, colour taken from the palette so it merges with maximized windows)
 - All applied by idempotent `scripts/desktop/` stages; KDE state backed up (bundle Section 9) and restored by recovery phase 8 + `./setup.sh --desktop`
 
 ## Quick Start
@@ -98,7 +99,7 @@ Options:
   --skip-remote       Skip remote access setup
   --display           NVIDIA DisplayPort EDID-loss fix (EDID staging + sleep hook)
   --skip-display      Skip display/NVIDIA setup
-  --desktop           Desktop rice (Catppuccin Mocha theme + video wallpaper + HUD widgets)
+  --desktop           Desktop rice (generated palette + static wallpaper + dashboard/quota widgets)
   --skip-desktop      Skip desktop rice
   --help              Show help message
 
@@ -130,11 +131,16 @@ Examples:
 │       ├── starship/           # Starship prompts (remote variant → ~/.config/starship-remote.toml)
 │       ├── atuin/              # Atuin config (config.toml)
 │       ├── fastfetch/          # Fastfetch config + logo
-│       ├── kitty/              # Kitty terminal + Catppuccin + background
+│       ├── kitty/              # Kitty terminal + generated theme + background
 │       ├── tmux/               # Tmux + TPM plugins
 │       └── fish/               # fish conf.d
-│   └── .local/share/
-│       └── easyeffects/        # Audio presets (G560/G435) — EE >= 8.0 layout
+│   ├── .local/share/
+│   │   ├── easyeffects/        # Audio presets (G560/G435) — EE >= 8.0 layout
+│   │   └── konsole/            # Konsole profile (colour scheme is generated)
+│   └── desktop/                # Everything the KDE rice is made of
+│       ├── palette/            # palette.toml + gen-palette.py + generated colour artefacts
+│       ├── wallpapers/         # the wallpaper the palette is derived from
+│       └── plasmoids/          # our own Plasma widgets (dashboard, Claude quota) + shared QML
 │   # fonts downloaded on-demand; Godot/VS Code/Claude state → backup bundle
 └── scripts/
     ├── common.sh               # Shared utilities

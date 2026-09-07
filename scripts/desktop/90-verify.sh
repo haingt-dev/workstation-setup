@@ -3,7 +3,8 @@
 # 90-verify.sh - Assert every rice layer actually applied
 # =============================================================================
 # Read-only. Prints a pass/fail table; exits non-zero if any hard check fails.
-# Soft checks (video wallpaper when no videos exist yet) warn instead.
+# Soft checks (things that depend on a login the machine may not have done yet)
+# warn instead.
 # =============================================================================
 
 set -e
@@ -27,109 +28,168 @@ chk() {  # chk LABEL EXPECTED ACTUAL
 
 rd() { kreadconfig6 --file "$1" --group "$2" --key "$3" 2>/dev/null || true; }
 
-chk "color scheme"   "CatppuccinMochaMauve" "$(rd kdeglobals General ColorScheme)"
-chk "look-and-feel"  "Catppuccin-Mocha-Mauve" "$(rd kdeglobals KDE LookAndFeelPackage)"
-chk "plasma style"   "catppuccin-glass"     "$(rd plasmarc Theme name)"
-GLASS_SVG="$HOME/.local/share/plasma/desktoptheme/catppuccin-glass/widgets/translucentbackground.svg"
-if grep -qs 'opacity:0\.4' "$GLASS_SVG"; then
-    log_success "glass theme SVG present (opacity 0.40)"
+PALETTE_DIR="$PROJECT_ROOT/assets/desktop/palette"
+read -r SCHEME_NAME WP_FILE SURFACE_HEX < <(python3 -c '
+import json, sys
+d = json.load(open(sys.argv[1]))
+print(d["name"], d["wallpaper"], d["tokens"]["surfaceContainer"])' "$PALETTE_DIR/tokens.json")
+STYLE_DIR="$HOME/.local/share/plasma/desktoptheme/rice-glass"
+
+# --- Palette -------------------------------------------------------------------
+chk "colour scheme"  "$SCHEME_NAME"           "$(rd kdeglobals General ColorScheme)"
+chk "look-and-feel"  "org.kde.breezedark.desktop" "$(rd kdeglobals KDE LookAndFeelPackage)"
+chk "plasma style"   "rice-glass"             "$(rd plasmarc Theme name)"
+chk "accent fixed"   "false"                  "$(rd kdeglobals General accentColorFromWallpaper)"
+
+# The generated scheme must be the one installed, not a stale copy.
+if [[ -L "$HOME/.local/share/color-schemes/$SCHEME_NAME.colors" ]] \
+   && cmp -s "$HOME/.local/share/color-schemes/$SCHEME_NAME.colors" "$PALETTE_DIR/$SCHEME_NAME.colors"; then
+    log_success "colour scheme file linked to the repo's generated one"
 else
-    log_error "glass theme SVG missing or wrong opacity: $GLASS_SVG"
+    log_error "~/.local/share/color-schemes/$SCHEME_NAME.colors is not the generated file — run 15-palette.sh"
     FAIL=1
 fi
-PANEL_SVG="$HOME/.local/share/plasma/desktoptheme/catppuccin-glass/widgets/panel-background.svg"
-if grep -qs 'hint-left-margin' "$PANEL_SVG"; then
+
+if cmp -s "$PALETTE_DIR/tokens.sh" "$HOME/.config/rice/tokens.sh"; then
+    log_success "shell tokens installed (~/.config/rice/tokens.sh)"
+else
+    log_error "~/.config/rice/tokens.sh missing or stale — run 15-palette.sh"
+    FAIL=1
+fi
+
+# --- Plasma style overrides ----------------------------------------------------
+for pair in "widgets/translucentbackground.svg:opacity:0.40:card glass" \
+            "translucent/dialogs/background.svg:opacity:0.60:dialog glass"; do
+    IFS=: read -r rel key val label <<< "$pair"
+    if grep -qs "$key:$val" "$STYLE_DIR/$rel"; then
+        log_success "$label present ($key:$val)"
+    else
+        log_error "$label missing or wrong in $STYLE_DIR/$rel — run 20-theme.sh"
+        FAIL=1
+    fi
+done
+if grep -qs 'hint-left-margin' "$STYLE_DIR/widgets/panel-background.svg"; then
     log_success "panel-background override present (slim content margins)"
 else
-    log_error "panel-background override missing: $PANEL_SVG (dock content gets inset ~16px)"
+    log_error "panel-background override missing (dock content gets inset ~16px)"
     FAIL=1
 fi
-chk "decoration lib" "org.kde.breeze"       "$(rd kwinrc org.kde.kdecoration2 library)"
-chk "cursor theme"   "catppuccin-mocha-mauve-cursors" "$(rd kcminputrc Mouse cursorTheme)"
-chk "icon theme"     "Papirus-Dark"         "$(rd kdeglobals Icons Theme)"
-chk "splash theme"   "Catppuccin-Mocha-Mauve" "$(rd ksplashrc KSplash Theme)"
-chk "blur"           "true"                 "$(rd kwinrc Plugins blurEnabled)"
-chk "night light"    "false"                "$(rd kwinrc NightColor Active)"   # OFF per Hải (tints screen yellow)
-chk "anim factor"    "0.5"                  "$(rd kdeglobals KDE AnimationDurationFactor)"
-chk "gtk3 theme"     "adw-gtk3-dark"        "$(rd kdeglobals KDE GtkTheme)"
 
-# Panel: find the panel group(s) in plasmashellrc
+# --- Desktop chrome ------------------------------------------------------------
+chk "decoration lib" "org.kde.breeze"  "$(rd kwinrc org.kde.kdecoration2 library)"
+chk "cursor theme"   "breeze_cursors"  "$(rd kcminputrc Mouse cursorTheme)"
+chk "icon theme"     "Papirus-Dark"    "$(rd kdeglobals Icons Theme)"
+chk "blur"           "true"            "$(rd kwinrc Plugins blurEnabled)"
+chk "night light"    "false"           "$(rd kwinrc NightColor Active)"   # OFF per Hải
+chk "anim factor"    "0.5"             "$(rd kdeglobals KDE AnimationDurationFactor)"
+chk "gtk3 theme"     "adw-gtk3-dark"   "$(rd kdeglobals KDE GtkTheme)"
+
 PANEL_FLOATING="$(grep -A20 '^\[PlasmaViews\]\[Panel' "$HOME/.config/plasmashellrc" 2>/dev/null | grep -m1 '^floating=' | cut -d= -f2 || true)"
 chk "panel floating" "1" "${PANEL_FLOATING:-}"
 
-# GTK4 bridge carries Mocha colors
-if grep -qsiE '1e1e2e|cba6f7' "$HOME/.config/gtk-4.0/colors.css"; then
-    log_success "GTK4 colors.css carries Mocha palette"
+# GTK4 bridge must carry the generated palette, not a leftover one
+if grep -qsi "${SURFACE_HEX#\#}" "$HOME/.config/gtk-4.0/colors.css"; then
+    log_success "GTK4 colors.css carries the generated palette"
 else
-    log_error "GTK4 colors.css has no Mocha colors (kded bridge didn't regenerate?)"
-    FAIL=1
+    log_warn "GTK4 colors.css has no $SURFACE_HEX — run 70-gtk.sh (kded bridge) or re-login"
 fi
 
-# Widgets — sci-fi HUD round (Reactor/Kurve/panel clock time-only)
+# --- Wallpaper ------------------------------------------------------------------
+WP_PLUGIN="$(grep -m1 '^wallpaperplugin=' "$HOME/.config/plasma-org.kde.plasma.desktop-appletsrc" 2>/dev/null | cut -d= -f2 || true)"
+chk "wallpaper plugin" "org.kde.image" "${WP_PLUGIN:-}"
+WP_IMG="$HOME/.local/share/wallpapers/$SCHEME_NAME/contents/images/$SCHEME_NAME.jpg"
+if cmp -s "$PROJECT_ROOT/assets/desktop/wallpapers/$WP_FILE" "$WP_IMG"; then
+    log_success "wallpaper installed from the repo ($WP_FILE)"
+else
+    log_error "installed wallpaper differs from assets/desktop/wallpapers/$WP_FILE — run 60-wallpaper.sh"
+    FAIL=1
+fi
+if [[ -f "$HOME/.config/environment.d/50-video-wallpaper.conf" ]]; then
+    log_error "stale video-wallpaper env drop-in still present — run 60-wallpaper.sh"
+    FAIL=1
+else
+    log_success "no leftover video-wallpaper environment drop-in"
+fi
+
+# --- Widgets --------------------------------------------------------------------
+for pkg in dev.haint.dashboard dev.haint.claudequota; do
+    if kpackagetool6 -t Plasma/Applet -l 2>/dev/null | grep -qx "$pkg"; then
+        log_success "plasmoid installed: $pkg"
+    else
+        log_error "plasmoid missing: $pkg — run 55-widgets.sh / 58-claude-quota.sh"
+        FAIL=1
+    fi
+done
+for pkg in com.socrates.reactorhud luisbocanegra.audio.visualizer; do
+    if kpackagetool6 -t Plasma/Applet -l 2>/dev/null | grep -qx "$pkg"; then
+        log_error "retired plasmoid still installed: $pkg — run 55-widgets.sh"
+        FAIL=1
+    else
+        log_success "retired plasmoid gone: $pkg"
+    fi
+done
+
 if QD="$(qdbus_cmd)"; then
     W="$("$QD" org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript '
     const d = desktops()[0];
-    var dateless = 1;
+    var clockOk = 1;
     for (const p of panels()) for (const c of p.widgets("org.kde.plasma.digitalclock")) {
         c.currentConfigGroup = ["Appearance"];
-        if (String(c.readConfig("showDate", true)) !== "false") dateless = 0;
-        if (String(c.readConfig("autoFontAndSize", true)) !== "true") dateless = 0;
+        if (String(c.readConfig("showDate", true)) !== "false") clockOk = 0;
+        if (String(c.readConfig("autoFontAndSize", true)) !== "true") clockOk = 0;
     }
-    print([d.widgets("com.socrates.reactorhud").length,
-           d.widgets("luisbocanegra.audio.visualizer").length,
-           d.widgets("org.kde.plasma.systemmonitor.cpu").length,
-           dateless].join(","));' 2>/dev/null)"
-    IFS=, read -r N_REACTOR N_KURVE N_CPU CLOCK_OK <<< "$W"
-    if [[ "${DESKTOP_CLASSIC_HUD:-0}" == "1" ]]; then
-        chk "classic HUD (CPU card)" "1" "${N_CPU:-}"
-    else
-        chk "Reactor HUD widget" "1" "${N_REACTOR:-}"
-    fi
-    chk "Kurve visualizer"      "1" "${N_KURVE:-}"
+    var quota = 0;
+    for (const p of panels()) quota += p.widgets("dev.haint.claudequota").length;
+    print([d.widgets("dev.haint.dashboard").length, quota, clockOk,
+           d.widgets("com.socrates.reactorhud").length
+             + d.widgets("luisbocanegra.audio.visualizer").length].join(","));' 2>/dev/null)"
+    IFS=, read -r N_DASH N_QUOTA CLOCK_OK N_OLD <<< "$W"
+    chk "dashboard on the desktop"        "1" "${N_DASH:-}"
+    chk "quota gauge in the dock"         "1" "${N_QUOTA:-}"
     chk "panel clock time-only+auto-font" "1" "${CLOCK_OK:-}"
+    chk "old HUD widgets removed"         "0" "${N_OLD:-}"
 else
     log_warn "qdbus unreachable — widget checks skipped"
 fi
 
-# Panel Colorizer: declared user presets (hard — 57-panel-style.sh artefacts)
+# --- Helpers inside the packages -------------------------------------------------
+QUOTA_HELPER="$HOME/.local/share/plasma/plasmoids/dev.haint.claudequota/contents/tools/claude-quota.py"
+if [[ ! -f "$HOME/.claude/.credentials.json" ]]; then
+    log_warn "quota helper not testable (no ~/.claude/.credentials.json yet)"
+elif python3 "$QUOTA_HELPER" >/dev/null 2>&1; then
+    log_success "quota helper returns a fresh snapshot"
+else
+    log_warn "quota helper returned stale/failed (expired token or no network) — gauge shows cache"
+fi
+WEATHER_HELPER="$HOME/.local/share/plasma/plasmoids/dev.haint.dashboard/contents/tools/weather.py"
+if [[ -f "$WEATHER_HELPER" ]] && python3 "$WEATHER_HELPER" 2>/dev/null | python3 -c '
+import json, sys
+sys.exit(0 if json.load(sys.stdin).get("temp") is not None else 1)'; then
+    log_success "weather helper returns a temperature"
+else
+    log_warn "weather helper gave no temperature (offline?) — card shows the cached value"
+fi
+
+# --- Panel Colorizer -------------------------------------------------------------
 PC_PRESETS="$HOME/.config/panel-colorizer/presets"
 if python3 -c "
-import json,sys
-slim=json.load(open('$PC_PRESETS/Dock Slim/settings.json'))
-solid=json.load(open('$PC_PRESETS/Dock Solid/settings.json'))
-bc=solid['globalSettings']['panel']['normal']['backgroundColor']
-sys.exit(0 if bc['alpha']==1 and bc['sourceType']==0 else 1)
+import json, sys
+solid = json.load(open('$PC_PRESETS/Dock Solid/settings.json'))
+json.load(open('$PC_PRESETS/Dock Slim/settings.json'))
+bc = solid['globalSettings']['panel']['normal']['backgroundColor']
+sys.exit(0 if bc['alpha'] == 1 and bc['sourceType'] == 0
+         and bc['custom'].lower() == '$SURFACE_HEX'.lower() else 1)
 " 2>/dev/null; then
-    log_success "Colorizer user presets present ('Dock Slim' + opaque 'Dock Solid')"
+    log_success "Colorizer presets present, 'Dock Solid' matches the palette ($SURFACE_HEX)"
 else
-    log_error "Colorizer user presets missing/wrong under $PC_PRESETS — run 57-panel-style.sh"
+    log_error "Colorizer presets missing or off-palette under $PC_PRESETS — run 57-panel-style.sh"
     FAIL=1
 fi
 
-# Panel Colorizer autoload (soft: GUI may legitimately re-point presets later)
 if grep -qs 'presetAutoloading=.*maximized' "$HOME/.config/plasma-org.kde.plasma.desktop-appletsrc"; then
     log_success "Panel Colorizer autoload set (normal/maximized)"
 else
     log_warn "Colorizer autoload not in appletsrc (needs flush/restart or 57-panel-style.sh)"
-fi
-
-# Video wallpaper (soft when no videos yet)
-WP_PLUGIN="$(grep -m1 '^wallpaperplugin=' "$HOME/.config/plasma-org.kde.plasma.desktop-appletsrc" 2>/dev/null | cut -d= -f2 || true)"
-if [[ "$WP_PLUGIN" == "luisbocanegra.smart.video.wallpaper.reborn" ]]; then
-    PAUSE="$(grep -A40 'Wallpaper\]\[luisbocanegra.smart.video.wallpaper.reborn\]\[General\]' \
-        "$HOME/.config/plasma-org.kde.plasma.desktop-appletsrc" 2>/dev/null | grep -m1 '^PauseMode=' | cut -d= -f2 || true)"
-    # PauseMode=0 is the plugin default; an absent key means default = 0 = correct
-    if [[ -z "$PAUSE" || "$PAUSE" == "0" ]]; then
-        log_success "video wallpaper active, PauseMode=MaximizedOrFullScreen"
-    else
-        log_error "video wallpaper PauseMode=$PAUSE (want 0 — pause on fullscreen!)"
-        FAIL=1
-    fi
-elif compgen -G "$HOME/Videos/wallpapers/*.mp4" >/dev/null 2>&1 || compgen -G "$HOME/Videos/wallpapers/*.webm" >/dev/null 2>&1; then
-    log_error "videos exist but wallpaper plugin is '$WP_PLUGIN' — re-run 60-wallpaper.sh"
-    FAIL=1
-else
-    log_warn "video wallpaper not active (no videos in ~/Videos/wallpapers yet — expected)"
 fi
 
 echo ""

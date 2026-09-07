@@ -39,3 +39,7 @@ secrets.*
 # Agent credentials
 .agent/credentials.*
 .agent/secrets.*
+
+# Python bytecode from running the plasmoid helper scripts in place
+__pycache__/
+*.pyc

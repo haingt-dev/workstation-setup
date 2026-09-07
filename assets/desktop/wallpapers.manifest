@@ -1,6 +1,9 @@
-# Wallpaper video manifest — one line per video in ~/Videos/wallpapers/
-# Format: filename | source | codec | resolution | license/notes
-# Recovery: re-download (or regenerate) each entry, then run:
-#   bash scripts/desktop/60-wallpaper.sh
-wanderer-snowy-mountain-moewalls-com.mp4 | https://moewalls.com (search "wanderer snowy mountain") | h264 | 2560x1440@60 | moewalls free wallpaper, no audio track
-catppuccin-gradient.webm | GENERATED: ffmpeg -f lavfi -i "gradients=s=2560x1440:c0=#1e1e2e:c1=#45475a:c2=#313244:c3=#585b70:n=4:speed=0.01:d=30" -pix_fmt yuv420p -c:v libvpx-vp9 -b:v 4M -deadline good -cpu-used 4 -an ~/Videos/wallpapers/catppuccin-gradient.webm | vp9 | 2560x1440 | self-generated, Catppuccin Mocha palette
+# Wallpaper manifest — the desktop wallpaper is IN the repo (it is small, and it
+# is the source of the whole colour palette, so losing it would lose the look).
+# Format: file | source | resolution | licence/notes
+#
+# Changing the wallpaper is a two-step change, in this order:
+#   1. drop the new image in this directory and point palette.toml at it
+#   2. bash scripts/desktop/gen-palette.sh   (regenerates every colour artefact)
+#   3. bash scripts/desktop/15-palette.sh && bash scripts/desktop/60-wallpaper.sh
+firewatch-dusk.jpg | https://wallhaven.cc/w/mdjrqy | 5120x2880 | wallhaven SFW/general; personal use. Firewatch-style dusk ridge line; the orange sun is the palette's source colour (#e8931c, forced in palette.toml — the automatic pick was the forest green).

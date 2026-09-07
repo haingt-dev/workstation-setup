@@ -88,3 +88,56 @@ plasma_restart() {
     sleep 3
     pgrep -x plasmashell >/dev/null
 }
+
+# -----------------------------------------------------------------------------
+# install_own_plasmoid ID
+#   Install/update one of OUR plasmoids (assets/desktop/plasmoids/<ID>) and
+#   echo "installed" | "updated" | "current".
+#
+# The package in the repo is deliberately INCOMPLETE: the colour tokens and the
+# fullscreen/game guard are shared artefacts (assets/desktop/palette/Tokens.qml
+# and assets/desktop/plasmoids/shared/GameGuard.qml) and would otherwise have to
+# be duplicated into every package and kept in sync by hand. So the package is
+# assembled into a staging directory first, and THAT is what kpackagetool6 sees.
+#
+# Idempotency uses `kpackagetool6 --hash`, which hashes the package CONTENT —
+# no version bookkeeping, and an edit to any file (including the generated
+# tokens) triggers exactly one update.
+# -----------------------------------------------------------------------------
+install_own_plasmoid() {
+    local id="$1"
+    local src="$PROJECT_ROOT/assets/desktop/plasmoids/$id"
+    local shared="$PROJECT_ROOT/assets/desktop/plasmoids/shared"
+    local tokens="$PROJECT_ROOT/assets/desktop/palette/Tokens.qml"
+    local stage="$HOME/.cache/workstation-setup/plasmoid-build/$id"
+    local installed="$HOME/.local/share/plasma/plasmoids/$id"
+
+    [[ -d "$src" ]] || { log_error "Package source missing: $src"; return 1; }
+    [[ -f "$tokens" ]] || { log_error "Missing $tokens — run scripts/desktop/gen-palette.sh"; return 1; }
+
+    rm -rf "$stage"
+    mkdir -p "$stage"
+    cp -a "$src/." "$stage/"
+    install -m 644 "$tokens" "$stage/contents/ui/Tokens.qml"
+    install -m 644 "$shared/GameGuard.qml" "$stage/contents/ui/GameGuard.qml"
+
+    local hash_src hash_dst
+    hash_src="$(kpackagetool6 -t Plasma/Applet --hash "$stage" 2>/dev/null | grep -oE '[0-9a-f]{40}' || true)"
+    hash_dst=""
+    [[ -d "$installed" ]] && hash_dst="$(kpackagetool6 -t Plasma/Applet --hash "$installed" 2>/dev/null | grep -oE '[0-9a-f]{40}' || true)"
+
+    if ! kpackagetool6 -t Plasma/Applet -l 2>/dev/null | grep -qx "$id"; then
+        kpackagetool6 -t Plasma/Applet -i "$stage" >/dev/null
+        echo "installed"
+    elif [[ -n "$hash_src" && "$hash_src" == "$hash_dst" ]]; then
+        echo "current"
+    else
+        # -u refuses in some kpackagetool versions when the version string is
+        # unchanged, so fall back to a clean remove+install.
+        if ! kpackagetool6 -t Plasma/Applet -u "$stage" >/dev/null 2>&1; then
+            kpackagetool6 -t Plasma/Applet -r "$id" >/dev/null 2>&1 || true
+            kpackagetool6 -t Plasma/Applet -i "$stage" >/dev/null
+        fi
+        echo "updated"
+    fi
+}

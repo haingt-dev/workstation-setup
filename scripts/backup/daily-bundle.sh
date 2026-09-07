@@ -417,9 +417,11 @@ success "  user-crontab.txt"
 # The rice is applied by setup.sh --desktop (commands, not vendored rc files),
 # so this bundle is the ONLY copy of the applied KDE state. Restore path:
 # recovery phase 08 copies these back, then the user re-runs setup.sh --desktop.
-# Excluded on purpose: wallpaper VIDEO files (regenerable third-party content —
-# wallpaper-videos.txt + assets/desktop/wallpapers.manifest are the record),
-# Papirus icons (dnf-restorable), icon-cache, kwinoutputconfig.json (hardware).
+# Since round 6 the repo is authoritative for the palette, the wallpaper and our
+# own plasmoids (assets/desktop/); what is captured here is the APPLIED state —
+# rc files Plasma wrote, plus third-party widgets we did not author.
+# Excluded on purpose: Papirus icons (dnf-restorable), icon-cache,
+# kwinoutputconfig.json (hardware-specific).
 log ""
 log "=== Section 9: KDE desktop rice ==="
 
@@ -431,8 +433,8 @@ KDE_CONFIGS=(
     plasma-org.kde.plasma.desktop-appletsrc kscreenlockerrc ksplashrc
     kcminputrc plasmanotifyrc kglobalshortcutsrc konsolerc dolphinrc
     gtk-3.0 gtk-4.0 gtkrc gtkrc-2.0 kcmfonts
-    environment.d/50-video-wallpaper.conf
     panel-colorizer
+    rice
 )
 for item in "${KDE_CONFIGS[@]}"; do
     src="$HOME/.config/$item"
@@ -442,19 +444,17 @@ for item in "${KDE_CONFIGS[@]}"; do
     fi
 done
 
-# 9b. Locally-installed theme artefacts (catppuccin/kde output, ~5-15 MB).
-#     Carried because catppuccin/kde could move/break on a future Plasma.
-for d in color-schemes plasma/look-and-feel plasma/plasmoids plasma/desktoptheme aurorae/themes konsole; do
+# 9b. Locally-installed theme artefacts (~5-15 MB). Most are regenerable from
+#     the repo; wallpapers/ and plasmoids/ are carried anyway so a restored
+#     machine has a working desktop before setup.sh --desktop is ever run.
+for d in color-schemes plasma/look-and-feel plasma/plasmoids plasma/desktoptheme aurorae/themes konsole wallpapers; do
     if [[ -d "$HOME/.local/share/$d" ]]; then
         tar czf "$KDE_DST/local-$(echo "$d" | tr / -).tar.gz" -C "$HOME/.local/share" "$d" 2>/dev/null
         success "  ~/.local/share/$d"
     fi
 done
-# Cursors: only the catppuccin sets (Papirus is 100+MB and dnf-restorable)
-if compgen -G "$HOME/.local/share/icons/catppuccin-*" >/dev/null 2>&1; then
-    (cd "$HOME/.local/share/icons" && tar czf "$KDE_DST/local-cursors.tar.gz" catppuccin-*) 2>/dev/null \
-        && success "  ~/.local/share/icons/catppuccin-* cursors"
-fi
+# Cursors: nothing to carry since round 6 — the rice uses Breeze cursors, which
+# ship with Plasma. (Rounds 1-5 tarred ~/.local/share/icons/catppuccin-* here.)
 
 # 9c. Manifests — make disaster recovery diagnosable
 {
@@ -464,10 +464,11 @@ fi
     echo "Cursor=$(kreadconfig6 --file kcminputrc --group Mouse --key cursorTheme 2>/dev/null)"
     echo "Icons=$(kreadconfig6 --file kdeglobals --group Icons --key Theme 2>/dev/null)"
     echo "Splash=$(kreadconfig6 --file ksplashrc --group KSplash --key Theme 2>/dev/null)"
+    echo "Wallpaper=$(kreadconfig6 --file plasma-org.kde.plasma.desktop-appletsrc --group Containments --group 1 --group Wallpaper --group org.kde.image --group General --key Image 2>/dev/null)"
+    echo "Plasmoids=$(kpackagetool6 -t Plasma/Applet -l 2>/dev/null | tr '\n' ' ')"
 } > "$KDE_DST/applied-state.txt" 2>/dev/null || true
-ls -1 "$HOME/Videos/wallpapers" > "$KDE_DST/wallpaper-videos.txt" 2>/dev/null || true
 [[ -f /etc/plasmalogin.conf ]] && /bin/cp /etc/plasmalogin.conf "$KDE_DST/etc-plasmalogin.conf"
-success "  applied-state.txt + wallpaper-videos.txt"
+success "  applied-state.txt"
 
 # ─────────────────────────────────────────────────────────────
 # Section 8: Manifest + repos.txt

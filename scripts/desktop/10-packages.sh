@@ -3,14 +3,21 @@
 # 10-packages.sh - Packages for the desktop rice
 # =============================================================================
 # Everything comes from repos already enabled on Nobara 44:
-#   plasma-smart-video-wallpaper-reborn  (nobara repo — do NOT add the COPR on
-#       top; two sources for one package is a future dnf conflict)
-#   libva-utils   -> vainfo, to verify HW decode is real (not silent CPU)
-#   nvtop         -> decode-engine utilisation check while gaming
-#   rsms-inter-fonts -> Inter UI font
+#   rsms-inter-fonts -> Inter, the UI font
+#   manrope-fonts    -> Manrope, the display face for the big numbers in the
+#                       desktop dashboard (round 6). Inter is a fine UI font but
+#                       reads flat at 60px; Manrope's heavier weights carry the
+#                       Material-3-style figures.
+#   nvtop            -> GPU/decode utilisation, used to prove the "zero cost
+#                       while gaming" rule still holds
 # Already installed (verified 2026-08-18, listed so nobody re-adds them):
-#   qt6-qtmultimedia (ffmpeg backend), ffmpeg-free (h264/vp9 + cuda/vaapi),
-#   libva-nvidia-driver, adw-gtk3-theme, papirus-icon-theme, kde-gtk-config
+#   ffmpeg-free, adw-gtk3-theme, papirus-icon-theme, kde-gtk-config,
+#   gamemode (GameGuard reads `gamemoded -s`)
+#
+# Round 6 dropped plasma-smart-video-wallpaper-reborn and libva-utils from this
+# list: the wallpaper is a still image now, so there is no decoder to verify.
+# The package is left installed if it already is — removing it is the user's
+# call, not a side effect of running setup.
 # =============================================================================
 
 set -e
@@ -21,10 +28,9 @@ source "$DESKTOP_DIR/lib.sh"
 log_section "Desktop 10: packages"
 
 PKGS=(
-    plasma-smart-video-wallpaper-reborn
-    libva-utils
-    nvtop
     rsms-inter-fonts
+    manrope-fonts
+    nvtop
 )
 
 MISSING=()

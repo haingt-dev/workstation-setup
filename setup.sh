@@ -75,7 +75,7 @@ show_help() {
     echo "  --vscode            Visual Studio Code setup"
     echo "  --remote            Remote access setup (Tailscale, Mosh, SSH, WoL)"
     echo "  --display           NVIDIA DisplayPort EDID-loss fix (KDE never-blank + EDID)"
-    echo "  --desktop           Desktop rice (Catppuccin Mocha theme + video wallpaper)"
+    echo "  --desktop           Desktop rice (generated palette + dashboard/quota widgets)"
 
     echo ""
     echo "Skip Flags (For Default Mode):"
@@ -319,7 +319,7 @@ elif ! $EXCLUSIVE_MODE; then
     log_warn "Skipping display setup"
 fi
 
-# 13. Desktop Rice (Catppuccin Mocha + video wallpaper)
+# 13. Desktop Rice (palette generated from the wallpaper + our own widgets)
 if $INSTALL_DESKTOP; then
     log_section "Running Desktop Rice Setup..."
     bash "$SCRIPTS_DIR/desktop_setup.sh"
