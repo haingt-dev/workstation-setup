@@ -95,12 +95,13 @@ if command -v fzf &> /dev/null; then
         source /usr/share/fzf/shell/key-bindings.zsh
     fi
     
-    # Catppuccin Mocha theme for FZF
+    # FZF follows the TERMINAL palette (ANSI indices, and -1 = "whatever the
+    # terminal uses"), so it matches the desktop rice automatically and there is
+    # no third copy of the colours to keep in sync when the wallpaper changes.
     export FZF_DEFAULT_OPTS=" \
-        --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
-        --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
-        --color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8 \
-        --color=selected-bg:#45475a \
+        --color=fg:-1,bg:-1,fg+:15,bg+:8,gutter:-1 \
+        --color=hl:3,hl+:3,info:5,prompt:4,pointer:1 \
+        --color=marker:2,spinner:5,header:6,border:8 \
         --multi"
     
     # Use fd for file searching if available (faster than find)
@@ -134,7 +135,9 @@ if command -v bat &> /dev/null; then
     alias cat='bat --paging=never'
     alias catp='bat'  # with paging
     export MANPAGER="sh -c 'col -bx | bat -l man -p'"
-    export BAT_THEME="Catppuccin-mocha"
+    # "ansi" renders through the terminal's own 16 colours — the same ones the
+    # rice generates — instead of shipping a second palette.
+    export BAT_THEME="ansi"
 fi
 
 # -----------------------------------------------------------------------------

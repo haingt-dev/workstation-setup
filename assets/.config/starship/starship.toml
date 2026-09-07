@@ -1,180 +1,165 @@
-"$schema" = 'https://starship.rs/config-schema.json'
-
+palette = "rice"
 format = """
-[](color_orange)\
+[░▒▓](crust)\
 $os\
-$username\
-[](bg:color_yellow fg:color_orange)\
+[](bg:lavender fg:crust)\
 $directory\
-[](fg:color_yellow bg:color_aqua)\
+[ ](fg:lavender bg:surface0)\
 $git_branch\
 $git_status\
-[](fg:color_aqua bg:color_blue)\
-$c\
-$cpp\
-$rust\
-$golang\
-$nodejs\
-$php\
-$java\
-$kotlin\
-$haskell\
-$python\
-[](fg:color_blue bg:color_bg3)\
-$docker_context\
-$conda\
-$pixi\
-[](fg:color_bg3 bg:color_bg1)\
-$time\
-[ ](fg:color_bg1)\
-$line_break$character"""
+$hg_branch\
+[ ](fg:surface0 bg:crust)\
+[▓▒░](crust)\
+[ ◦•](surface2)\
+$fill\
+[•◦ ](surface2)\
+[░▒▓](crust)\
+[ ](fg:surface0 bg:crust)\
+$status\
+$cmd_duration\
+[ ](fg:crust bg:surface0)\
+$battery\
+[▓▒░](crust)
+[·](surface0)\
+[·](surface2)\
+[•](overlay1)\
+[ ](teal)\
+"""
 
-palette = 'gruvbox_dark'
-
-[palettes.gruvbox_dark]
-color_fg0 = '#fbf1c7'
-color_bg1 = '#3c3836'
-color_bg3 = '#665c54'
-color_blue = '#458588'
-color_aqua = '#689d6a'
-color_green = '#98971a'
-color_orange = '#d65d0e'
-color_purple = '#b16286'
-color_red = '#cc241d'
-color_yellow = '#d79921'
-
-[os]
-disabled = false
-style = "bg:color_orange fg:color_fg0"
-
-[os.symbols]
-Windows = "󰍲"
-Ubuntu = "󰕈"
-SUSE = ""
-Raspbian = "󰐿"
-Mint = "󰣭"
-Macos = "󰀵"
-Manjaro = ""
-Linux = "󰌽"
-Gentoo = "󰣨"
-Fedora = "󰣛"
-Alpine = ""
-Amazon = ""
-Android = ""
-Arch = "󰣇"
-Artix = "󰣇"
-EndeavourOS = ""
-CentOS = ""
-Debian = "󰣚"
-Redhat = "󱄛"
-RedHatEnterprise = "󱄛"
-Pop = ""
-
-[username]
-show_always = true
-style_user = "bg:color_orange fg:color_fg0"
-style_root = "bg:color_orange fg:color_fg0"
-format = '[ $user ]($style)'
+[fill]
+symbol = "·"
+style = "surface2"
 
 [directory]
-style = "fg:color_fg0 bg:color_yellow"
+style = "fg:surface0 bg:lavender"
 format = "[ $path ]($style)"
 truncation_length = 3
 truncation_symbol = "…/"
 
 [directory.substitutions]
-"Documents" = "󰈙 "
-"Downloads" = " "
-"Music" = "󰝚 "
-"Pictures" = " "
-"Developer" = "󰲋 "
+"~" = "  "
+"Applications" = "  "
+"Desktop" = "  "
+"Developer" = "  "
+"Documents" = " 󰈙 "
+"Downloads" = "  "
+"Games" = "  "
+"GitHub" = "  "
+"Library" = "  "
+"Movies" = "  "
+"Music" = "  "
+"Pictures" = "  "
+"Projects" = "  "
+"Public" = "  "
+"Screenshots" = " 󱣴 "
+"Videos" = "  "
+"Thunderbird" = "   "
+"source" = " 󰈹 "
+"comm" = "  "
 
 [git_branch]
 symbol = ""
-style = "bg:color_aqua"
-format = '[[ $symbol $branch ](fg:color_fg0 bg:color_aqua)]($style)'
+style = "bg:surface0"
+format = '[[ $symbol $branch ](fg:lavender bg:surface0)]($style)'
 
 [git_status]
-style = "bg:color_aqua"
-format = '[[($all_status$ahead_behind )](fg:color_fg0 bg:color_aqua)]($style)'
+style = "bg:surface0"
+format = '[[($all_status$ahead_behind )](fg:lavender bg:surface0)]($style)'
 
-[nodejs]
-symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
-
-[c]
-symbol = " "
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
-
-[cpp]
-symbol = " "
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
-
-[rust]
-symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
-
-[golang]
-symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
-
-[php]
-symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
-
-[java]
-symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
-
-[kotlin]
-symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
-
-[haskell]
-symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
-
-[python]
-symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
-
-[docker_context]
-symbol = ""
-style = "bg:color_bg3"
-format = '[[ $symbol( $context) ](fg:#83a598 bg:color_bg3)]($style)'
-
-[conda]
-style = "bg:color_bg3"
-format = '[[ $symbol( $environment) ](fg:#83a598 bg:color_bg3)]($style)'
-
-[pixi]
-style = "bg:color_bg3"
-format = '[[ $symbol( $version)( $environment) ](fg:color_fg0 bg:color_bg3)]($style)'
-
-[time]
+[hg_branch]
 disabled = false
-time_format = "%R"
-style = "bg:color_bg1"
-format = '[[  $time ](fg:color_fg0 bg:color_bg1)]($style)'
+symbol = ""
+style = "bg:surface0"
+format = '[[ $symbol $branch ](fg:lavender bg:surface0)]($style)'
 
-[line_break]
+[cmd_duration]
+disabled = false
+min_time = 0
+show_milliseconds = true
+style = "fg:text bg:surface0"
+format = '[$duration]($style)'
+
+[status]
+symbol = '  '
+success_symbol = '  '
+not_executable_symbol = '  '
+not_found_symbol = '  '
+map_symbol = true
+disabled = false
+style = 'fg:text bg:surface0'
+format = '[$symbol]($style)'
+
+[battery]
+disabled = false
+full_symbol = ''
+charging_symbol = '⚡️'
+discharging_symbol = ''
+unknown_symbol = ''
+empty_symbol = ''
+format = '[[ $symbol $percentage ](fg:text bg:crust)]($style)'
+
+[[battery.display]]
+threshold = 25
+discharging_symbol = ''
+style = 'fg:yellow bg:crust'
+
+[[battery.display]]
+threshold = 10
+discharging_symbol = ''
+style = 'fg:peach bg:crust'
+
+[[battery.display]]
+threshold = 5
+discharging_symbol = ''
+style = 'bold fg:red bg:crust'
+
+[os]
+format = '[ $symbol]($style)'
+style = 'fg:lavender bg:crust'
 disabled = false
 
-[character]
-disabled = false
-success_symbol = '[](bold fg:color_green)'
-error_symbol = '[](bold fg:color_red)'
-vimcmd_symbol = '[](bold fg:color_green)'
-vimcmd_replace_one_symbol = '[](bold fg:color_purple)'
-vimcmd_replace_symbol = '[](bold fg:color_purple)'
-vimcmd_visual_symbol = '[](bold fg:color_yellow)'
+[os.symbols]
+Arch = " "
+Debian = " "
+Fedora = " "
+FreeBSD = " "
+Linux = " "
+Macos = " "
+NixOS = "󱄅 "
+Nobara = " "
+Pop = " "
+Raspbian = " "
+Ubuntu = " "
+Unknown = " "
+
+# palette tables should be last in the config ⚓️
+
+# >>> rice palette — generated by gen-palette.py, do not edit >>>
+[palettes.rice]
+rosewater = "#ffd6ab"
+flamingo = "#ffbda5"
+pink = "#ffbeeb"
+mauve = "#ff85e4"
+red = "#ff946b"
+maroon = "#ffc4b0"
+peach = "#eebe8b"
+yellow = "#d2ab63"
+green = "#8dc048"
+teal = "#35c3c3"
+sky = "#61e5e4"
+sapphire = "#c3d0ff"
+blue = "#93aeff"
+lavender = "#bbcbff"
+text = "#ebe4e0"
+subtext1 = "#ccc5c1"
+subtext0 = "#b0aaa6"
+overlay2 = "#95908c"
+overlay1 = "#797471"
+overlay0 = "#4b4745"
+surface2 = "#2f2b29"
+surface1 = "#282523"
+surface0 = "#221f1d"
+base = "#1b1917"
+mantle = "#151311"
+crust = "#0f0e0c"
+# <<< rice palette <<<

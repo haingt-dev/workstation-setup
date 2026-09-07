@@ -207,8 +207,11 @@ run_core_setup() {
     ensure_dir ~/.config
 
     # starship config
-    link_file ".config/starship/starship.toml" ~/.config/starship/starship.toml
-    link_file ".config/starship/starship-catppuccin.toml" ~/.config/starship/starship-catppuccin.toml
+    # Starship reads ~/.config/starship.toml (top level) unless STARSHIP_CONFIG
+    # says otherwise — linking it inside ~/.config/starship/ meant the prompt Hải
+    # actually saw was an untracked file (found 2026-09-07). Its colour palette
+    # is generated: see assets/desktop/palette/gen-palette.py.
+    link_file ".config/starship/starship.toml" ~/.config/starship.toml
     # remote/mobile prompt (glyph-free) — activated by .zshrc when $SSH_CONNECTION set
     link_file ".config/starship/starship-remote.toml" ~/.config/starship-remote.toml
 
