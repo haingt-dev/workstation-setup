@@ -51,7 +51,7 @@ Rectangle {
             text: root.value
             color: Tokens.primary
             font.family: "Manrope"
-            font.weight: Font.Black
+            font.weight: Font.ExtraBold
             font.pixelSize: 26
             horizontalAlignment: Text.AlignLeft
             elide: Text.ElideRight

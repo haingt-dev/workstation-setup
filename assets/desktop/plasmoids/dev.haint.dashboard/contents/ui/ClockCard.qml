@@ -70,6 +70,9 @@ ColumnLayout {
         function onResumed() { root.refresh(); root.realign(); }
     }
 
+    // Manrope's heaviest face is ExtraBold (800) — there is no Black. Asking
+    // for Font.Black just makes Qt fall back to the same face, so the weight
+    // that is actually shipped is the one requested.
     // The clock sits directly on the wallpaper with no card behind it, so it
     // needs its own contrast: a black copy offset by 2/3px underneath.
     // NOTE anchors.fill would copy the shadow's POSITION as well as its size
@@ -87,7 +90,7 @@ ColumnLayout {
             color: "#000000"
             opacity: 0.28
             font.family: "Manrope"
-            font.weight: Font.Black
+            font.weight: Font.ExtraBold
             font.pixelSize: 68
         }
         Text {
@@ -97,7 +100,7 @@ ColumnLayout {
             text: root.timeText
             color: Tokens.fgSurface
             font.family: "Manrope"
-            font.weight: Font.Black
+            font.weight: Font.ExtraBold
             font.pixelSize: 68
         }
     }

@@ -115,7 +115,7 @@ Rectangle {
                         : "--°"
                     color: Tokens.tertiary
                     font.family: "Manrope"
-                    font.weight: Font.Black
+                    font.weight: Font.ExtraBold
                     font.pixelSize: 26
                 }
 
