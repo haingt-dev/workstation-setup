@@ -76,6 +76,34 @@ def tone_of(a: int, tone: float) -> int:
     return Hct.from_hct(h.hue, h.chroma, tone).to_int()
 
 
+# Material You tints the NEUTRALS with the source hue too, not just the accents.
+# At a warm source that means the background, the body text and the greys all
+# carry real chroma — and a terminal painted in them reads as if night-light is
+# on (Hải, 2026-09-07: "terminal đang bị ám vàng kiểu night light mode"). These
+# are the roles that come from the neutral / neutral-variant palettes; scaling
+# their chroma keeps the hue (so the desktop still reads as one family) while
+# taking the cast off.
+NEUTRAL_ROLES = {
+    "background", "onBackground", "surface", "surfaceDim", "surfaceBright",
+    "surfaceContainerLowest", "surfaceContainerLow", "surfaceContainer",
+    "surfaceContainerHigh", "surfaceContainerHighest", "surfaceVariant",
+    "onSurface", "onSurfaceVariant", "outline", "outlineVariant",
+    "inverseSurface", "inverseOnSurface", "scrim", "shadow",
+    "neutralPaletteKeyColor", "neutralVariantPaletteKeyColor",
+}
+
+
+def desaturate_neutrals(tokens: dict[str, int], keep: float) -> dict[str, int]:
+    """Scale the chroma of the neutral roles to `keep` (1.0 = untouched)."""
+    if keep >= 1.0:
+        return tokens
+    out = dict(tokens)
+    for role in NEUTRAL_ROLES & set(out):
+        h = Hct.from_int(out[role])
+        out[role] = Hct.from_hct(h.hue, h.chroma * keep, h.tone).to_int()
+    return out
+
+
 def pick_source(cfg) -> int:
     """Explicit hex, or score the wallpaper's quantised colours."""
     src = str(cfg.get("source_color", "auto")).strip()
@@ -341,6 +369,9 @@ def main() -> int:
     t = {n: getattr(MaterialDynamicColors, n).get_argb(scheme)
          for n in dir(MaterialDynamicColors)
          if not n.startswith("_") and hasattr(getattr(MaterialDynamicColors, n), "get_argb")}
+    t = desaturate_neutrals(t, float(cfg.get("neutral_chroma", 1.0)))
+    # ANSI is built AFTER the neutrals are calmed: colours 0/7/8/15 are taken
+    # straight from them, so the terminal's own greys follow the same rule.
     ansi = build_ansi(source, t)
 
     name, low = cfg["name"], cfg["name"].lower()

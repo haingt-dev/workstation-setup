@@ -19,5 +19,12 @@ variant       = "tonal_spot"   # tonal_spot | expressive | fidelity | content | 
 contrast      = 0.0            # -1.0 .. 1.0, Material contrast level
 dark          = true
 
+# How much of the source hue the NEUTRALS keep (1.0 = full Material You, which
+# tints the background, the body text and every grey; 0.0 = pure grey).
+# Anything near 1.0 makes a terminal look like night-light is on, because the
+# text itself is cream rather than white. 0.25 keeps the family resemblance
+# without the cast.
+neutral_chroma = 0.25
+
 # Card translucency used by our own plasmoids (0 = invisible, 1 = opaque).
 card_alpha    = 0.82

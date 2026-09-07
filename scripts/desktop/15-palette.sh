@@ -70,10 +70,28 @@ else
 fi
 
 # --- 4. Apply the scheme -------------------------------------------------------
+# Checking the scheme NAME is not enough: regenerating the palette keeps the
+# name and changes the file, and plasma-apply-colorscheme is what copies those
+# values into kdeglobals. So compare a real colour instead — what Plasma is
+# actually painting with versus what the generated file says it should be.
 CURRENT="$(kreadconfig6 --file kdeglobals --group General --key ColorScheme 2>/dev/null || true)"
-if [[ "$CURRENT" == "$SCHEME_NAME" ]]; then
-    log_success "OK  colour scheme already $SCHEME_NAME"
+LIVE_WINDOW="$(kreadconfig6 --file kdeglobals --group "Colors:Window" --key BackgroundNormal 2>/dev/null || true)"
+WANT_WINDOW="$(kreadconfig6 --file "$PALETTE_DIR/$SCHEME_NAME.colors" --group "Colors:Window" --key BackgroundNormal 2>/dev/null || true)"
+
+if [[ "$CURRENT" == "$SCHEME_NAME" && -n "$WANT_WINDOW" && "$LIVE_WINDOW" == "$WANT_WINDOW" ]]; then
+    log_success "OK  colour scheme already $SCHEME_NAME (and up to date)"
 else
-    plasma-apply-colorscheme "$SCHEME_NAME" >/dev/null
-    log_success "SET colour scheme: '${CURRENT:-<unset>}' -> $SCHEME_NAME"
+    if [[ "$CURRENT" == "$SCHEME_NAME" ]]; then
+        # plasma-apply-colorscheme short-circuits on the NAME ("already set as
+        # the theme for the current Plasma session") and never re-reads the
+        # file, so a regenerated palette would silently never reach kdeglobals.
+        # Bouncing through a scheme that always exists forces the reload; the
+        # flash lasts one repaint.
+        plasma-apply-colorscheme BreezeDark >/dev/null
+        plasma-apply-colorscheme "$SCHEME_NAME" >/dev/null
+        log_success "SET colour scheme $SCHEME_NAME re-applied (palette was regenerated)"
+    else
+        plasma-apply-colorscheme "$SCHEME_NAME" >/dev/null
+        log_success "SET colour scheme: '${CURRENT:-<unset>}' -> $SCHEME_NAME"
+    fi
 fi
