@@ -113,9 +113,22 @@ cat > "$FCITX5_CONFIG_DIR/config" << 'EOF'
 
 [Hotkey/EnumerateBackwardKeys]
 0=Shift+Super+space
+
+# Empty on purpose: fcitx5 defaults AltTriggerKeys to Shift_L
+# ("Temporarily Toggle Input Method"). Left Shift alone then flips
+# unikey -> keyboard-us mid-sentence. Super+Space is the only toggle we want.
+[Hotkey/AltTriggerKeys]
+
+# Per-application VN/EN state (enum: All | Program | No). fcitx5 defaults to
+# "No", which is per-input-context: clicking into a second text field in the
+# same window drops back to English. "Program" keeps a whole app on one state
+# while kitty / the IDE stay independent and still open in English, since
+# ActiveByDefault is left at its default of false.
+[Behavior]
+ShareInputState=Program
 EOF
 
-log_success "fcitx5 trigger key set to Super+Space"
+log_success "fcitx5 hotkeys set (Super+Space toggle, Shift_L alt-trigger disabled)"
 
 # =============================================================================
 # Disable imsettings (conflicts with fcitx5 on Wayland)
