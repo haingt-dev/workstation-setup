@@ -13,10 +13,12 @@
 #      (#281). A JPEG has none of those failure modes and costs 0% GPU.
 # The old video path is in git history (before round 6) if it is ever wanted.
 #
-# Three surfaces, one image:
+# Four surfaces, one image:
 #   desktop  -> org.kde.image via the PlasmaShell scripting API (applies live)
 #   lock     -> the same image, darkened+blurred so the password field reads
 #   greeter  -> plasmalogin, via a drop-in under /etc/plasmalogin.conf.d/
+#   terminal -> a CROP of the same image, used as kitty's background_image
+#               (crop parameters live in palette.toml [terminal])
 #               (NEVER edit /etc/plasmalogin.conf — it carries [Autologin])
 #
 # The wallpaper is installed as a proper KDE wallpaper PACKAGE rather than a
@@ -43,6 +45,7 @@ PKG_DIR="$HOME/.local/share/wallpapers/$WP_NAME"
 IMG_DIR="$PKG_DIR/contents/images"
 DEST="$IMG_DIR/${WP_NAME}.jpg"
 DIM="$PKG_DIR/contents/images_dark/${WP_NAME}-dim.jpg"
+TERM_IMG="$PKG_DIR/contents/terminal/${WP_NAME}-terminal.jpg"
 
 # --- 1. Install as a wallpaper package -----------------------------------------
 ensure_dir "$IMG_DIR"
@@ -87,6 +90,59 @@ else
     DIM="$DEST"
 fi
 [[ -f "$DIM" ]] || DIM="$DEST"
+
+# --- 2b. Terminal crop ---------------------------------------------------------
+# kitty draws this instead of being translucent. A window that lets the desktop
+# through sounds nicer than it looks here: this picture is nearly black, so the
+# glass showed almost nothing, and any window underneath bled into the text
+# (Hải, 2026-09-07). A fixed crop shows the sun, which is the one thing worth
+# seeing, and never changes with what is behind the window.
+#
+# Pillow rather than ffmpeg: the crop is anchored on a point (the sun) that has
+# to be able to land in a corner, which means padding the source when the frame
+# runs off its edge — expressible in four lines of numpy, awkward in a filter
+# graph. ffmpeg still does the lock-screen blur above, where no such maths is
+# needed.
+ensure_dir "$(dirname "$TERM_IMG")"
+if [[ -f "$TERM_IMG" && "$TERM_IMG" -nt "$DEST" && "$TERM_IMG" -nt "$PALETTE_DIR/tokens.json" ]]; then
+    log_success "OK  terminal crop up to date"
+else
+    python3 - "$DEST" "$TERM_IMG" "$PALETTE_DIR/tokens.json" <<'PY'
+import json, sys
+import numpy as np
+from PIL import Image
+
+src_path, out_path, tokens_path = sys.argv[1:4]
+cfg = json.load(open(tokens_path)).get("terminal") or {}
+if not cfg:
+    print("no [terminal] block in palette.toml — skipping"); sys.exit(0)
+
+W, H = 2560, 1440                      # the screen this rice is built for
+zoom = float(cfg["zoom"])
+fx, fy = (float(v) for v in cfg["focus"])
+ax, ay = (float(v) for v in cfg["anchor"])
+
+src = np.asarray(Image.open(src_path).convert("RGB"))
+sh, sw = src.shape[:2]
+cw, ch = int(sw / zoom), int(sh / zoom)
+x0, y0 = int(fx * sw - ax * cw), int(fy * sh - ay * ch)
+
+# The anchor can pull the frame past the top/left edge (it does for any focus
+# point left of anchor*width). Mirror the source there rather than clamping:
+# clamping would silently move the subject away from the corner it was placed in.
+pad_l, pad_t = max(0, -x0), max(0, -y0)
+pad_r, pad_b = max(0, x0 + cw - sw), max(0, y0 + ch - sh)
+if pad_l or pad_t or pad_r or pad_b:
+    src = np.pad(src, ((pad_t, pad_b), (pad_l, pad_r), (0, 0)), mode="reflect")
+    x0 += pad_l
+    y0 += pad_t
+
+crop = Image.fromarray(src[y0:y0 + ch, x0:x0 + cw]).resize((W, H), Image.LANCZOS)
+crop.save(out_path, "JPEG", quality=90, optimize=True)
+print(f"{W}x{H} from {cw}x{ch} at ({x0},{y0})")
+PY
+    log_success "SET terminal crop -> $TERM_IMG"
+fi
 
 # --- 3. Desktop ----------------------------------------------------------------
 CUR_PLUGIN="$(plasma_script 'print(desktops()[0].wallpaperPlugin);' 2>/dev/null | tr -d '\r\n')"

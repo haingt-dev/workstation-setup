@@ -30,3 +30,28 @@ neutral_chroma = 0.25
 
 # Card translucency used by our own plasmoids (0 = invisible, 1 = opaque).
 card_alpha    = 0.82
+
+# ---------------------------------------------------------------------------
+# Terminal backdrop — a THIRD crop of the same wallpaper, rendered by
+# scripts/desktop/60-wallpaper.sh and set as kitty's background_image.
+#
+# Why an image and not a translucent window: this wallpaper is nearly black
+# (sky ~45/255, forest ~18/255), so at any opacity the glass showed almost
+# nothing — and whatever window happened to sit underneath bled through the
+# text instead (Hải, 2026-09-07). A fixed crop gives the terminal the picture's
+# one bright feature and never changes with what is behind it.
+#
+# focus  = where the subject sits in the SOURCE image, as a fraction (the sun,
+#          measured by finding the warmest bright blob). Re-measure when the
+#          wallpaper changes.
+# anchor = where that point lands in the terminal frame. Bottom-right, because
+#          that is the emptiest corner of a shell: prompt and statusline live
+#          there, long output does not.
+# zoom   = how much of the source the frame covers (2.0 = a quarter of it).
+# tint   = how far kitty dims the image toward the background colour before
+#          drawing text on it. Applied by kitty, not baked into the file.
+[terminal]
+zoom   = 2.0
+focus  = [0.504, 0.452]
+anchor = [0.86, 0.86]
+tint   = 0.35

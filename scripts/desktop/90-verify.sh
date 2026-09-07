@@ -170,6 +170,22 @@ else
     log_warn "weather helper gave no temperature (offline?) — card shows the cached value"
 fi
 
+# --- Terminal backdrop -----------------------------------------------------------
+TERM_IMG="$HOME/.local/share/wallpapers/$SCHEME_NAME/contents/terminal/$SCHEME_NAME-terminal.jpg"
+if [[ -f "$TERM_IMG" ]]; then
+    log_success "terminal backdrop rendered ($(basename "$TERM_IMG"))"
+else
+    log_error "terminal backdrop missing: $TERM_IMG — run 60-wallpaper.sh"
+    FAIL=1
+fi
+if grep -q "^background_image  *~/.local/share/wallpapers/" \
+        "$PROJECT_ROOT/assets/desktop/palette/$(echo "$SCHEME_NAME" | tr "[:upper:]" "[:lower:]").kitty.conf"; then
+    log_success "kitty theme points at the backdrop"
+else
+    log_error "kitty theme has no background_image — run scripts/desktop/gen-palette.sh"
+    FAIL=1
+fi
+
 # --- Panel Colorizer -------------------------------------------------------------
 # One preset, no autoload (v4, 2026-09-07). "Dock Solid" and the maximized flip
 # are retired — their presence means 57-panel-style.sh has not run since.

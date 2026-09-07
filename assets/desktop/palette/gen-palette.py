@@ -274,6 +274,24 @@ def kitty_conf(cfg, t, ansi) -> str:
     ]
     for i in range(16):
         lines.append(f"color{i:<2}                  {hexs(ansi[i])}")
+
+    # Backdrop: the crop of the wallpaper that 60-wallpaper.sh renders into the
+    # wallpaper package. kitty resolves a leading ~ itself, so the path stays
+    # portable across machines. `cscaled` keeps the aspect ratio; the crop is
+    # already 16:9, so it fills without distorting.
+    term = cfg.get("terminal")
+    if term:
+        img = f"~/.local/share/wallpapers/{cfg['name']}/contents/terminal/{cfg['name']}-terminal.jpg"
+        lines += [
+            "",
+            "# Backdrop — rendered from the wallpaper by scripts/desktop/60-wallpaper.sh.",
+            "# Crop/anchor/tint live in palette.toml [terminal]; kitty.conf keeps",
+            "# background_opacity at 1 so nothing behind the window shows through.",
+            f"background_image        {img}",
+            "background_image_layout cscaled",
+            "background_image_linear yes",
+            f"background_tint         {float(term['tint'])}",
+        ]
     return "\n".join(lines) + "\n"
 
 
@@ -499,6 +517,8 @@ def main() -> int:
             "variant": cfg["variant"],
             "wallpaper": cfg["wallpaper"],
             "cardAlpha": cfg["card_alpha"],
+            # Read by 60-wallpaper.sh to render the terminal crop.
+            "terminal": cfg.get("terminal", {}),
             "tokens": {k: hexs(v) for k, v in sorted(t.items())},
             "ansi": {str(i): hexs(ansi[i]) for i in range(16)},
         }, indent=2) + "\n",
