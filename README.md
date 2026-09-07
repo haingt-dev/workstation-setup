@@ -36,7 +36,7 @@ Automated workstation setup for Nobara 42 / Fedora — terminal, dev tools, apps
 - **Static wallpaper**: the picture the palette came from (`assets/desktop/wallpapers/`), installed as a proper wallpaper package; a blurred+darkened variant is generated for the lock screen and the plasmalogin greeter. Zero GPU, and none of the video plugin's failure modes.
 - **Own widgets**: `dev.haint.dashboard` on the desktop (clock + date, CPU/RAM/GPU/Disk cards, HCMC weather from Open-Meteo) and `dev.haint.claudequota` in the dock (ring gauge of the worst Claude Code rate-limit window, popup with every window and its reset time — including the per-model weekly limit that nothing else exposes). Both read the generated tokens, so they match everything else by construction.
 - **Zero cost while gaming** (hard rule): both widgets share `GameGuard.qml`, which watches `TasksModel`/`IsFullScreen` plus `gamemoded -s` (for borderless-windowed games) and stops every timer, sensor subscription and helper process while a game is on screen.
-- **Panel**: slim 42px vertical dock styled by Panel Colorizer — theme panel-background margins collapsed so icons/clock get the full width; preset autoload switches "Dock Slim" (translucent) ↔ "Dock Solid" (opaque, colour taken from the palette so it merges with maximized windows)
+- **Panel**: slim 42px vertical dock styled by Panel Colorizer (one "Dock Slim" preset: translucent + blur, no window-state autoload) — theme panel-background margins collapsed so icons/clock get the full width
 - All applied by idempotent `scripts/desktop/` stages; KDE state backed up (bundle Section 9) and restored by recovery phase 8 + `./setup.sh --desktop`
 
 ## Quick Start

@@ -171,26 +171,36 @@ else
 fi
 
 # --- Panel Colorizer -------------------------------------------------------------
+# One preset, no autoload (v4, 2026-09-07). "Dock Solid" and the maximized flip
+# are retired — their presence means 57-panel-style.sh has not run since.
 PC_PRESETS="$HOME/.config/panel-colorizer/presets"
-if python3 -c "
-import json, sys
-solid = json.load(open('$PC_PRESETS/Dock Solid/settings.json'))
-json.load(open('$PC_PRESETS/Dock Slim/settings.json'))
-bc = solid['globalSettings']['panel']['normal']['backgroundColor']
-sys.exit(0 if bc['alpha'] == 1 and bc['sourceType'] == 0
-         and bc['custom'].lower() == '$SURFACE_HEX'.lower() else 1)
-" 2>/dev/null; then
-    log_success "Colorizer presets present, 'Dock Solid' matches the palette ($SURFACE_HEX)"
+if python3 -c "import json; json.load(open('$PC_PRESETS/Dock Slim/settings.json'))" 2>/dev/null; then
+    log_success "Colorizer preset 'Dock Slim' present"
 else
-    log_error "Colorizer presets missing or off-palette under $PC_PRESETS — run 57-panel-style.sh"
+    log_error "Colorizer preset 'Dock Slim' missing/invalid under $PC_PRESETS — run 57-panel-style.sh"
+    FAIL=1
+fi
+if [[ -d "$PC_PRESETS/Dock Solid" ]]; then
+    log_error "Retired preset 'Dock Solid' still present — run 57-panel-style.sh"
     FAIL=1
 fi
 
-if grep -qs 'presetAutoloading=.*maximized' "$HOME/.config/plasma-org.kde.plasma.desktop-appletsrc"; then
-    log_success "Panel Colorizer autoload set (normal/maximized)"
-else
-    log_warn "Colorizer autoload not in appletsrc (needs flush/restart or 57-panel-style.sh)"
-fi
+# Read the LIVE key only: the widget reads [Configuration][General], and v1
+# left dead copies in [Configuration] root (57-panel-style.sh clears those).
+AUTOLOAD="$(python3 - "$HOME/.config/plasma-org.kde.plasma.desktop-appletsrc" <<'PY'
+import re, sys
+txt = open(sys.argv[1]).read()
+hit = re.search(r"^\[Containments\]\[\d+\]\[Applets\]\[\d+\]\[Configuration\]\[General\]$(.*?)(?=^\[|\Z)",
+                txt, re.M | re.S)
+vals = re.findall(r"^presetAutoloading=(.*)$", txt, re.M) if hit else []
+print(vals[-1] if vals else "")
+PY
+)"
+case "$AUTOLOAD" in
+    *'"enabled":false'*) log_success "Panel Colorizer autoload off" ;;
+    "")                  log_warn "Colorizer autoload state not in appletsrc yet (needs flush/restart or 57-panel-style.sh)" ;;
+    *)                   log_error "Colorizer autoload still on: $AUTOLOAD — run 57-panel-style.sh"; FAIL=1 ;;
+esac
 
 echo ""
 if [[ $FAIL -eq 0 ]]; then
