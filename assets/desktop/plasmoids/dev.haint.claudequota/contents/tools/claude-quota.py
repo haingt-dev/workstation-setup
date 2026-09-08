@@ -30,6 +30,9 @@ CONFIG_DIR = os.environ.get("CLAUDE_CONFIG_DIR") or os.path.expanduser("~/.claud
 CREDENTIALS_PATH = os.path.join(CONFIG_DIR, ".credentials.json")
 CACHE_DIR = os.path.expanduser("~/.cache/workstation-setup")
 CACHE_PATH = os.path.join(CACHE_DIR, "claude-quota.json")
+HISTORY_DIR = os.path.expanduser("~/.local/share/workstation-setup")
+HISTORY_PATH = os.path.join(HISTORY_DIR, "claude-quota-history.json")
+HISTORY_KEEP_DAYS = 400
 USAGE_URL = "https://api.anthropic.com/api/oauth/usage"
 STALE_THROTTLE_SEC = 55
 CACHE_MAX_AGE_SEC = 6 * 3600
@@ -198,6 +201,66 @@ def write_cache(payload):
         raise
 
 
+def record_history(result):
+    """Keep a per-day MAX of each window so usage can be read as a trend.
+
+    The endpoint only ever reports the window it is in right now, and Claude
+    Code prunes its transcripts after about five weeks — so without this, any
+    review more than a month apart is looking at a single sampled moment and
+    calling it a quarter. This poller already runs every 60s all day, which
+    makes it the one place that can see a week's true peak rather than
+    whatever the number happened to be when someone opened a terminal.
+
+    Lives under ~/.local/share (not ~/.cache): a cache sweep must not erase
+    the record. Per-day maxima keep it to one small row a day, capped at
+    HISTORY_KEEP_DAYS so it never grows without bound.
+    """
+    # Local day, so the row lines up with how Hải reads a calendar. A weekly
+    # window resets mid-day (Thu 20:00 local), so that one day's row holds the
+    # peak of the window that just ended — which is the number worth keeping.
+    day = time.strftime("%Y-%m-%d", time.localtime(result.get("fetchedAt") or time.time()))
+    try:
+        with open(HISTORY_PATH, "r", encoding="utf-8") as f:
+            hist = json.load(f)
+    except (OSError, ValueError):
+        hist = {}
+    days = hist.get("days") or {}
+
+    row = days.get(day) or {"samples": 0}
+    row["samples"] = int(row.get("samples", 0)) + 1
+    row["plan"] = result.get("plan", "")
+    row["tier"] = result.get("tier", "")
+    for lim in result.get("limits") or []:
+        key = lim.get("id")
+        if not key:
+            continue
+        pct = lim.get("percent")
+        if isinstance(pct, (int, float)):
+            row[key] = max(int(pct), int(row.get(key, 0)))
+        if key == "weekly_scoped" and lim.get("label"):
+            row["scoped_label"] = lim["label"]
+    days[day] = row
+
+    if len(days) > HISTORY_KEEP_DAYS:
+        for stale in sorted(days)[: len(days) - HISTORY_KEEP_DAYS]:
+            days.pop(stale, None)
+    hist["days"] = days
+
+    os.makedirs(HISTORY_DIR, mode=0o700, exist_ok=True)
+    fd, tmp_path = tempfile.mkstemp(dir=HISTORY_DIR, prefix=".claude-quota-history.", suffix=".tmp")
+    try:
+        os.fchmod(fd, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(hist, f)
+        os.replace(tmp_path, HISTORY_PATH)
+    except BaseException:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
+
+
 def emit(result, exit_code):
     print(json.dumps(result))
     sys.exit(exit_code)
@@ -252,6 +315,17 @@ def main():
     # A cache write must never cost us a good answer: without this guard an
     # unwritable ~/.cache makes main() raise before emit() and the widget gets
     # empty stdout, i.e. "unavailable" while the API was actually fine.
+    # Same guard as the cache write, and for the same reason: a broken history
+    # file must dim nothing. Broader than OSError because this one parses JSON.
+    # But swallowing it outright would repeat this repo's oldest bug shape —
+    # "exit 0 is not success" — with a three-month fuse: nothing would look
+    # wrong until a quarterly review opened an empty file. So the reason is
+    # carried in the payload, where `claude-quota.py --refresh` shows it and
+    # the QML simply ignores the extra key.
+    try:
+        record_history(result)
+    except Exception as e:  # noqa: BLE001
+        result["historyError"] = str(e)
     try:
         write_cache(result)
     except OSError:

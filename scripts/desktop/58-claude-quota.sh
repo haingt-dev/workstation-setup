@@ -21,6 +21,14 @@
 # line of JSON — so a rotated token or a dead network dims the gauge instead of
 # breaking the dock.
 #
+# It also appends a per-day MAX of every window to
+# ~/.local/share/workstation-setup/claude-quota-history.json (kept 400 days).
+# The endpoint has no history of its own and Claude Code prunes transcripts
+# after ~5 weeks, so without this a quarterly plan review would be reading a
+# single sampled moment. A failed history write never dims the gauge; the
+# reason lands in the emitted JSON as `historyError` instead of being
+# swallowed, because a silent failure here would only surface a quarter later.
+#
 # The applet is added to the panel only when it is missing, so dragging it to a
 # different slot in Edit Mode survives every later run. (Plasma 6.7's scripting
 # API reports Applet.index as -1 for panel applets, so there is no supported
