@@ -139,7 +139,7 @@ GridLayout {
             const cores = root.coresValid ? Math.round(coresS.value) : probeSrc.parsed.cores;
             const parts = [];
             if (t !== undefined && t !== null) parts.push(Math.round(t) + "°C");
-            if (cores) parts.push(cores + " nhân");
+            if (cores) parts.push(cores + " cores");
             return parts.join(" · ") || "—";
         }
     }

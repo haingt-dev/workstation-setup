@@ -17,9 +17,17 @@ Landmines this file works around (verified live against the real API,
   - Self-throttled + cached so a 60s-interval QML timer never hammers the API
     or spawns python needlessly; a stale cache is still better than a blank
     widget, so failures still print the last good payload (marked stale).
+  - Failures are classified before they reach the widget. The popup prints
+    `error` verbatim, and the first fetch of the day happens seconds after
+    login — before NetworkManager has DNS — so the raw
+    "<urlopen error [Errno -3] Temporary failure in name resolution>" used to
+    greet a cold boot as a red X. `errorKind` also tells the QML how hard to
+    retry: "offline" is a few-seconds-old boot race, not an outage.
 """
+import errno
 import json
 import os
+import socket
 import sys
 import tempfile
 import time
@@ -38,8 +46,8 @@ STALE_THROTTLE_SEC = 55
 CACHE_MAX_AGE_SEC = 6 * 3600
 
 KIND_LABELS = {
-    "session": ("Phiên 5 giờ", "5h"),
-    "weekly_all": ("Tuần, tất cả", "wk"),
+    "session": ("5-hour session", "5h"),
+    "weekly_all": ("Weekly, all models", "wk"),
 }
 
 
@@ -89,7 +97,7 @@ def label_for(kind, scope):
             model = scope.get("model") or {}
             model_name = model.get("display_name")
         model_name = model_name or "?"
-        return "Tuần, " + model_name, model_name[:2]
+        return "Weekly, " + model_name, model_name[:2]
     if kind in KIND_LABELS:
         return KIND_LABELS[kind]
     # Unknown kind: prettify rather than drop, per spec.
@@ -152,6 +160,48 @@ def parse_iso_to_epoch(iso_str):
         return int(dt.timestamp())
     except (ValueError, TypeError):
         return 0
+
+
+# Errnos that mean "the network stack itself isn't there yet / isn't
+# reachable" — as opposed to a server that answered with something we dislike.
+OFFLINE_ERRNOS = frozenset((
+    errno.ENETUNREACH, errno.ENETDOWN, errno.EHOSTUNREACH,
+    errno.ECONNREFUSED, errno.ECONNRESET, errno.ENOTCONN,
+))
+
+
+def classify_error(exc):
+    """(kind, human message) for anything the fetch can throw.
+
+    The message is shown to Hải as-is, so it has to read like a status line,
+    not a traceback; the kind is what the QML branches on (icon + retry
+    cadence). The raw string still travels alongside as errorDetail.
+    """
+    if isinstance(exc, urllib.error.HTTPError):
+        if exc.code == 401:
+            return "auth", "Token expired — open Claude Code to sign in again"
+        if exc.code == 429:
+            return "rate", "API throttled (429), will retry"
+        return "http", "API returned HTTP " + str(exc.code)
+    if isinstance(exc, urllib.error.URLError):
+        reason = exc.reason
+        if isinstance(reason, socket.gaierror):
+            return "offline", "No network yet (DNS is not up)"
+        if isinstance(reason, (TimeoutError, socket.timeout)):
+            return "timeout", "API did not answer within 10s"
+        if isinstance(reason, OSError) and reason.errno in OFFLINE_ERRNOS:
+            return "offline", "No network"
+        return "net", "Could not reach the API: " + str(reason)
+    if isinstance(exc, (TimeoutError, socket.timeout)):
+        return "timeout", "API did not answer within 10s"
+    if isinstance(exc, OSError) and exc.errno in OFFLINE_ERRNOS:
+        return "offline", "No network"
+    if isinstance(exc, FileNotFoundError):
+        return "creds", "Not signed in to Claude Code"
+    if isinstance(exc, ValueError):
+        # json.JSONDecodeError included: credentials file or response body.
+        return "creds", "Could not read Claude Code's token"
+    return "unknown", str(exc) or exc.__class__.__name__
 
 
 def claude_is_running():
@@ -266,7 +316,7 @@ def emit(result, exit_code):
     sys.exit(exit_code)
 
 
-def stale_result(error, cache, now):
+def stale_result(kind, message, detail, cache, now):
     running = claude_is_running()
     if cache:
         age = int(now - cache.get("fetchedAt", now))
@@ -275,13 +325,16 @@ def stale_result(error, cache, now):
             cache["ok"] = False
             cache["stale"] = True
             cache["ageSec"] = age
-            cache["error"] = error
+            cache["error"] = message
+            cache["errorKind"] = kind
+            cache["errorDetail"] = detail
             cache["claudeRunning"] = running
             return cache
     return {
         "ok": False, "plan": "", "tier": "", "claudeRunning": running,
         "fetchedAt": int(now), "stale": True, "ageSec": 0,
-        "error": error, "limits": [],
+        "error": message, "errorKind": kind, "errorDetail": detail,
+        "limits": [],
     }
 
 
@@ -298,7 +351,8 @@ def main():
     try:
         payload, oauth = fetch_usage_with_retry()
     except Exception as e:  # noqa: BLE001 - any failure degrades to cache, never crashes
-        emit(stale_result(str(e), cache, now), 1)
+        kind, message = classify_error(e)
+        emit(stale_result(kind, message, str(e), cache, now), 1)
         return
 
     result = {
@@ -310,6 +364,8 @@ def main():
         "stale": False,
         "ageSec": 0,
         "error": "",
+        "errorKind": "",
+        "errorDetail": "",
         "limits": limits_from_payload(payload),
     }
     # A cache write must never cost us a good answer: without this guard an

@@ -20,12 +20,12 @@ ColumnLayout {
 
     readonly property date now: new Date()
     property string timeText: Qt.formatTime(now, "hh:mm")
-    property string dateText: Qt.locale("vi_VN").toString(now, "dddd, d MMMM")
+    property string dateText: Qt.locale("en_GB").toString(now, "dddd, d MMMM")
 
     function refresh() {
         const d = new Date();
         timeText = Qt.formatTime(d, "hh:mm");
-        dateText = Qt.locale("vi_VN").toString(d, "dddd, d MMMM");
+        dateText = Qt.locale("en_GB").toString(d, "dddd, d MMMM");
     }
 
     // Aligns the recurring tick to the wall-clock minute boundary, then hands

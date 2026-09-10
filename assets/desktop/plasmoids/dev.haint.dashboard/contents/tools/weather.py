@@ -24,41 +24,41 @@ CACHE_DIR = os.path.expanduser("~/.cache/workstation-setup")
 CACHE_PATH = os.path.join(CACHE_DIR, "weather.json")
 MIN_REFETCH_SEC = 600  # 10 minutes — open-meteo's own current-weather cadence
 
-# WMO weather_code -> (Vietnamese text, day icon, night icon)
+# WMO weather_code -> (text, day icon, night icon)
 CODE_MAP = {
-    0: ("trời quang", "weather-clear", "weather-clear-night"),
-    1: ("ít mây", "weather-few-clouds", "weather-few-clouds-night"),
-    2: ("mây rải rác", "weather-few-clouds", "weather-few-clouds-night"),
-    3: ("nhiều mây", "weather-many-clouds", "weather-many-clouds"),
-    45: ("sương mù", "weather-fog", "weather-fog"),
-    48: ("sương mù đóng băng", "weather-fog", "weather-fog"),
-    51: ("mưa phùn nhẹ", "weather-showers-scattered", "weather-showers-scattered"),
-    53: ("mưa phùn", "weather-showers-scattered", "weather-showers-scattered"),
-    55: ("mưa phùn dày", "weather-showers-scattered", "weather-showers-scattered"),
-    56: ("mưa phùn đóng băng", "weather-showers-scattered", "weather-showers-scattered"),
-    57: ("mưa phùn đóng băng dày", "weather-showers-scattered", "weather-showers-scattered"),
-    61: ("mưa nhỏ", "weather-showers", "weather-showers"),
-    63: ("mưa", "weather-showers", "weather-showers"),
-    65: ("mưa to", "weather-showers", "weather-showers"),
-    66: ("mưa đóng băng", "weather-showers", "weather-showers"),
-    67: ("mưa đóng băng to", "weather-showers", "weather-showers"),
-    71: ("tuyết nhẹ", "weather-snow", "weather-snow"),
-    73: ("tuyết", "weather-snow", "weather-snow"),
-    75: ("tuyết dày", "weather-snow", "weather-snow"),
-    77: ("hạt tuyết", "weather-snow", "weather-snow"),
-    80: ("mưa rào nhẹ", "weather-showers-scattered", "weather-showers-scattered"),
-    81: ("mưa rào", "weather-showers-scattered", "weather-showers-scattered"),
-    82: ("mưa rào lớn", "weather-showers-scattered", "weather-showers-scattered"),
-    85: ("mưa tuyết nhẹ", "weather-snow", "weather-snow"),
-    86: ("mưa tuyết dày", "weather-snow", "weather-snow"),
-    95: ("dông", "weather-storm", "weather-storm"),
-    96: ("dông kèm mưa đá", "weather-storm", "weather-storm"),
-    99: ("dông kèm mưa đá lớn", "weather-storm", "weather-storm"),
+    0: ("Clear sky", "weather-clear", "weather-clear-night"),
+    1: ("Mainly clear", "weather-few-clouds", "weather-few-clouds-night"),
+    2: ("Partly cloudy", "weather-few-clouds", "weather-few-clouds-night"),
+    3: ("Overcast", "weather-many-clouds", "weather-many-clouds"),
+    45: ("Fog", "weather-fog", "weather-fog"),
+    48: ("Rime fog", "weather-fog", "weather-fog"),
+    51: ("Light drizzle", "weather-showers-scattered", "weather-showers-scattered"),
+    53: ("Drizzle", "weather-showers-scattered", "weather-showers-scattered"),
+    55: ("Dense drizzle", "weather-showers-scattered", "weather-showers-scattered"),
+    56: ("Light freezing drizzle", "weather-showers-scattered", "weather-showers-scattered"),
+    57: ("Dense freezing drizzle", "weather-showers-scattered", "weather-showers-scattered"),
+    61: ("Slight rain", "weather-showers", "weather-showers"),
+    63: ("Rain", "weather-showers", "weather-showers"),
+    65: ("Heavy rain", "weather-showers", "weather-showers"),
+    66: ("Light freezing rain", "weather-showers", "weather-showers"),
+    67: ("Heavy freezing rain", "weather-showers", "weather-showers"),
+    71: ("Slight snow", "weather-snow", "weather-snow"),
+    73: ("Snow", "weather-snow", "weather-snow"),
+    75: ("Heavy snow", "weather-snow", "weather-snow"),
+    77: ("Snow grains", "weather-snow", "weather-snow"),
+    80: ("Slight rain showers", "weather-showers-scattered", "weather-showers-scattered"),
+    81: ("Rain showers", "weather-showers-scattered", "weather-showers-scattered"),
+    82: ("Violent rain showers", "weather-showers-scattered", "weather-showers-scattered"),
+    85: ("Slight snow showers", "weather-snow", "weather-snow"),
+    86: ("Heavy snow showers", "weather-snow", "weather-snow"),
+    95: ("Thunderstorm", "weather-storm", "weather-storm"),
+    96: ("Thunderstorm with hail", "weather-storm", "weather-storm"),
+    99: ("Thunderstorm with heavy hail", "weather-storm", "weather-storm"),
 }
 
 
 def code_to_text_icon(code, is_day):
-    text, day_icon, night_icon = CODE_MAP.get(int(code), ("không rõ", "weather-none-available", "weather-none-available"))
+    text, day_icon, night_icon = CODE_MAP.get(int(code), ("Unknown", "weather-none-available", "weather-none-available"))
     return text, (day_icon if is_day else night_icon)
 
 

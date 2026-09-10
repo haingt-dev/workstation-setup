@@ -20,6 +20,15 @@ PlasmoidItem {
     property int ageSec: 0
     property int fetchedAt: 0
     property string errorText: ""
+    // Set by claude-quota.py (see classify_error there): "offline", "timeout",
+    // "auth", "rate", "http", "net", "creds", "unknown" — or "local" for a
+    // failure of the helper itself. Drives the popup's icon and the retry
+    // cadence below, never shown raw.
+    property string errorKind: ""
+    // Consecutive failures OF THE SAME errorKind, for the offline back-off.
+    // Per-kind, so a switch from (say) "auth" to "offline" starts the back-off
+    // at 15s instead of inheriting a long wait from an unrelated failure.
+    property int failStreak: 0
     property var limits: []       // [{id,label,short,percent,severity,resetsAt,active}]
     readonly property int worstPercent: {
         let w = -1;
@@ -40,7 +49,7 @@ PlasmoidItem {
     // No session window on this plan/response: fall back to the worst one
     // rather than showing nothing.
     readonly property int ringPercent: sessionLimit ? sessionLimit.percent : worstPercent
-    readonly property string ringLabel: sessionLimit ? sessionLimit.label : "Cao nhất"
+    readonly property string ringLabel: sessionLimit ? sessionLimit.label : "Worst"
 
     readonly property bool hasData: limits.length > 0
 
@@ -51,25 +60,25 @@ PlasmoidItem {
     toolTipMainText: {
         if (!hasData) return "Claude Code" + (plan ? " · " + plan : "");
         let head = "Claude Code · " + ringPercent + "% " + (sessionLimit ? "5h" : "");
-        if (worstPercent > ringPercent) head += "  (cao nhất " + worstPercent + "%)";
+        if (worstPercent > ringPercent) head += "  (worst " + worstPercent + "%)";
         return head.trim();
     }
     toolTipSubText: {
-        if (!hasData) return errorText || "Chưa có dữ liệu";
+        if (!hasData) return errorText || "No data yet";
         let lines = limits.map(l => l.label + ": " + l.percent + "%" + (l.active ? " (active)" : ""));
-        if (stale) lines.push("— dữ liệu cũ (" + Math.round(ageSec / 60) + " phút) —");
-        if (errorText) lines.push("Lỗi: " + errorText);
+        if (stale) lines.push("— stale data (" + Math.round(ageSec / 60) + " min) —");
+        if (errorText) lines.push("Error: " + errorText);
         return lines.join("\n");
     }
 
     Plasmoid.contextualActions: [
         PlasmaCore.Action {
-            text: "Làm mới ngay"
+            text: "Refresh now"
             icon.name: "view-refresh"
             onTriggered: root.refresh(true)
         },
         PlasmaCore.Action {
-            text: "Mở trang usage"
+            text: "Open usage page"
             icon.name: "internet-web-browser"
             onTriggered: Qt.openUrlExternally("https://claude.ai/settings/usage")
         }
@@ -95,14 +104,18 @@ PlasmoidItem {
             root.busy = false;
             const stdout = (data["stdout"] || "").trim();
             if (!stdout) {
-                root.errorText = "không có output từ claude-quota.py";
+                root.errorText = "no output from claude-quota.py";
+                root.failStreak = root.errorKind === "local" ? root.failStreak + 1 : 1;
+                root.errorKind = "local";
                 return;
             }
             let parsed;
             try {
                 parsed = JSON.parse(stdout);
             } catch (e) {
-                root.errorText = "JSON hỏng: " + e;
+                root.errorText = "bad JSON: " + e;
+                root.failStreak = root.errorKind === "local" ? root.failStreak + 1 : 1;
+                root.errorKind = "local";
                 return;
             }
             root.ok = !!parsed.ok;
@@ -111,6 +124,9 @@ PlasmoidItem {
             root.ageSec = parsed.ageSec || 0;
             root.fetchedAt = parsed.fetchedAt || 0;
             root.errorText = parsed.error || "";
+            const nextKind = parsed.errorKind || "";
+            root.failStreak = root.ok ? 0 : (nextKind === root.errorKind ? root.failStreak + 1 : 1);
+            root.errorKind = nextKind;
             root.limits = parsed.limits || [];
             root.claudeRunning = !!parsed.claudeRunning;
         }
@@ -135,7 +151,9 @@ PlasmoidItem {
                 source.disconnectSource(source.connectedSources[0]);
             }
             root.busy = false;
-            root.errorText = "hết thời gian chờ claude-quota.py";
+            root.errorText = "claude-quota.py timed out";
+            root.failStreak = root.errorKind === "local" ? root.failStreak + 1 : 1;
+            root.errorKind = "local";
         }
     }
 
@@ -154,6 +172,12 @@ PlasmoidItem {
     // scales with how close the worst limit is, and backs way off (900s)
     // when Claude isn't even running and nothing is close to the ceiling.
     readonly property int pollInterval: {
+        // A cold boot fires the first fetch before NetworkManager has DNS, so
+        // the commonest "offline" is seconds old, not an outage: come back in
+        // 15s, then double each miss up to 5 minutes so a real outage doesn't
+        // mean a python spawn every 15s all afternoon.
+        if (!root.ok && root.errorKind === "offline")
+            return Math.min(15000 * Math.pow(2, Math.max(0, root.failStreak - 1)), 300000);
         if (!root.ok) return 60000;
         if (root.worstPercent >= 80) return 120000;
         if (!root.claudeRunning && root.worstPercent < 30) return 900000;
@@ -182,7 +206,7 @@ PlasmoidItem {
         function onResumed() { root.refresh(true); }
     }
 
-    // Separate from polling: just re-renders "còn Xh Ym nữa" text without
+    // Separate from polling: just re-renders the "resets in Xh Ym" text without
     // touching the network, so the countdown doesn't visibly freeze between
     // the (much longer) poll intervals.
     Timer {

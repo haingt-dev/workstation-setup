@@ -27,9 +27,14 @@ PlasmaExtras.Representation {
             }
 
             PlasmaComponents.Label {
-                text: root.stale
-                    ? "cũ, " + Math.round(root.ageSec / 60) + " phút trước"
-                    : (root.now - root.fetchedAt < 60 ? "live" : Math.round((root.now - root.fetchedAt) / 60) + " phút trước")
+                // "stale, 0 min ago" is what a failure with no cache behind it
+                // used to read as — stale is true, but there is nothing old to
+                // be stale about. Say so instead.
+                text: !root.hasData
+                    ? "no data yet"
+                    : (root.stale
+                        ? "stale, " + Math.round(root.ageSec / 60) + " min ago"
+                        : (root.now - root.fetchedAt < 60 ? "live" : Math.round((root.now - root.fetchedAt) / 60) + " min ago"))
                 opacity: 0.7
                 font: Kirigami.Theme.smallFont
             }
@@ -38,7 +43,7 @@ PlasmaExtras.Representation {
                 icon.name: "view-refresh"
                 enabled: !root.busy
                 onClicked: root.refresh(true)
-                PlasmaComponents.ToolTip.text: "Làm mới ngay"
+                PlasmaComponents.ToolTip.text: "Refresh now"
                 PlasmaComponents.ToolTip.visible: hovered
             }
 
@@ -49,7 +54,7 @@ PlasmaExtras.Representation {
             PlasmaComponents.ToolButton {
                 icon.name: "internet-web-browser"
                 onClicked: Qt.openUrlExternally("https://claude.ai/settings/usage")
-                PlasmaComponents.ToolTip.text: "Mở trang usage"
+                PlasmaComponents.ToolTip.text: "Open usage page"
                 PlasmaComponents.ToolTip.visible: hovered
             }
         }
@@ -62,8 +67,13 @@ PlasmaExtras.Representation {
             Layout.fillWidth: true
             Layout.fillHeight: true
             visible: !root.hasData
-            iconName: root.errorText ? "data-error" : "hourglass"
-            text: root.errorText || "Đang lấy dữ liệu quota…"
+            // No network yet is the normal state for the first seconds after a
+            // cold boot, so it gets a plug icon and a "will retry" line — not
+            // the red X that says something is broken.
+            iconName: root.errorKind === "offline" ? "network-disconnect"
+                : (root.errorText ? "data-error" : "hourglass")
+            text: root.errorText || "Fetching quota…"
+            explanation: root.errorKind === "offline" ? "Will retry when the network is up." : ""
         }
 
         Repeater {
@@ -114,7 +124,7 @@ PlasmaExtras.Representation {
                 }
 
                 PlasmaComponents.Label {
-                    text: "còn " + full.formatRemaining(modelData.resetsAt) + " nữa"
+                    text: "resets in " + full.formatRemaining(modelData.resetsAt)
                     opacity: 0.6
                     font: Kirigami.Theme.smallFont
                 }

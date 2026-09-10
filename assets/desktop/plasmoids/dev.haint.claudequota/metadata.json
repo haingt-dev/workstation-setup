@@ -3,7 +3,7 @@
     "KPlugin": {
         "Id": "dev.haint.claudequota",
         "Name": "Claude Code Quota",
-        "Description": "Quota phiên 5h và tuần của Claude Code subscription",
+        "Description": "5-hour and weekly quota of the Claude Code subscription",
         "Icon": "speedometer",
         "Authors": [ { "Name": "Hải Nguyễn" } ],
         "Version": "1.0.0",

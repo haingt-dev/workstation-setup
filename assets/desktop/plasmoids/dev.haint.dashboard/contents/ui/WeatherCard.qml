@@ -22,7 +22,7 @@ Rectangle {
     // CHILDREN, so `property var data` silently replaces the children list and
     // the card renders as an empty box. Plasma only whispers about it
     // ("Member data ... overrides a member of the base object").
-    property var wx: ({ ok: false, text: "Đang tải...", icon: "weather-none-available" })
+    property var wx: ({ ok: false, text: "Loading…", icon: "weather-none-available" })
 
     // decodeURIComponent + quotes: Qt percent-encodes the URL and the
     // executable engine splits with KShell::splitArgs, so a space in $HOME
@@ -132,9 +132,9 @@ Rectangle {
                 width: parent.width
                 elide: Text.ElideRight
                 text: (root.wx.ok || root.wx.stale)
-                    ? "Cảm giác như " + Math.round(root.wx.feels) + "°"
-                      + " · Ẩm " + root.wx.humidity + "%"
-                      + " · Gió " + Math.round(root.wx.wind) + " km/h"
+                    ? "Feels like " + Math.round(root.wx.feels) + "°"
+                      + " · Humidity " + root.wx.humidity + "%"
+                      + " · Wind " + Math.round(root.wx.wind) + " km/h"
                     : ""
                 color: Tokens.fgSurfaceVariant
                 font.pixelSize: 12
@@ -145,8 +145,8 @@ Rectangle {
                 width: parent.width
                 elide: Text.ElideRight
                 text: (root.wx.ok || root.wx.stale)
-                    ? "Mặt trời mọc " + root.wx.sunrise + " · lặn " + root.wx.sunset
-                      + (root.wx.stale ? "  (dữ liệu cũ)" : "")
+                    ? "Sunrise " + root.wx.sunrise + " · sunset " + root.wx.sunset
+                      + (root.wx.stale ? "  (stale)" : "")
                     : ""
                 color: Tokens.outline
                 font.pixelSize: 11
